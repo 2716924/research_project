@@ -53,6 +53,17 @@ register_envs()
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
+# Use a GPU if one is visible (SLURM sets CUDA_VISIBLE_DEVICES via --gres=gpu:N),
+# otherwise fall back to CPU so the same script still runs on a login node.
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# On a shared cluster node, torch's default thread pool can try to grab every
+# core on the machine even though SLURM only allocated you a few. Cap it to
+# whatever SLURM actually gave this task (falls back to all local cores when
+# not running under SLURM, e.g. on your laptop).
+_num_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1))
+torch.set_num_threads(_num_threads)
+
 # ---------------------------------------------------------
 # RCT-level constants (see proposal Sec 4.1, 4.3)
 # ---------------------------------------------------------
@@ -194,7 +205,7 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS):
 
         while not done:
             with torch.no_grad():
-                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(DEVICE)
                 action = q_network(state_tensor).argmax(dim=1).item()
 
             state, reward, terminated, truncated, _ = eval_env.step(action)
@@ -228,8 +239,8 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
     train_env = gym.make(game_id)
 
     # Setup the active brain and the slow, stable target brain
-    q_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"])
-    target_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"])
+    q_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"]).to(DEVICE)
+    target_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"]).to(DEVICE)
     target_network.load_state_dict(q_network.state_dict())
     target_network.eval()
 
@@ -249,7 +260,7 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
         # Decide action: Guess randomly or use the brain
         if random.random() > epsilon:
             with torch.no_grad():
-                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(DEVICE)
                 action = q_network(state_tensor).argmax(dim=1).item()
         else:
             action = random.randrange(num_actions)
@@ -271,11 +282,11 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
         if len(memory) > config["batch_size"]:
             states, actions, rewards, next_states, dones = memory.sample(config["batch_size"])
 
-            states = torch.FloatTensor(states)
-            actions = torch.LongTensor(actions).unsqueeze(1)
-            rewards = torch.FloatTensor(rewards).unsqueeze(1)
-            next_states = torch.FloatTensor(next_states)
-            dones = torch.FloatTensor(dones).unsqueeze(1)
+            states = torch.FloatTensor(states).to(DEVICE)
+            actions = torch.LongTensor(actions).unsqueeze(1).to(DEVICE)
+            rewards = torch.FloatTensor(rewards).unsqueeze(1).to(DEVICE)
+            next_states = torch.FloatTensor(next_states).to(DEVICE)
+            dones = torch.FloatTensor(dones).unsqueeze(1).to(DEVICE)
 
             # Ask the active brain for the current score guess
             current_q_values = q_network(states).gather(1, actions)
@@ -307,16 +318,60 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
     return eval_trajectory
 
 
+def _result_path(output_dir, game_id):
+    return os.path.join(output_dir, f"control_results_{game_id.replace('/', '_')}.json")
+
+
+def _load_existing_results(out_path):
+    """
+    If this game's result file already exists (e.g. from a SLURM run that
+    hit its time limit or got pre-empted), load whatever individuals were
+    already completed so we can skip them instead of re-training from
+    scratch. Returns (list_of_result_dicts, set_of_completed_individual_ids).
+    """
+    if os.path.exists(out_path):
+        with open(out_path) as f:
+            data = json.load(f)
+        results = data.get("results", [])
+        completed_ids = {r["individual_id"] for r in results}
+        return results, completed_ids
+    return [], set()
+
+
+def _save_results(out_path, game_id, total_frames, eval_frequency, num_eval_episodes, game_results):
+    # Write to a temp file first and rename, so a job killed mid-write
+    # (e.g. hitting the SLURM time limit) can't leave a half-written,
+    # corrupt JSON file behind for the next resumed run to choke on.
+    tmp_path = out_path + ".tmp"
+    with open(tmp_path, "w") as f:
+        json.dump({
+            "game_id": game_id,
+            "total_frames": total_frames,
+            "eval_frequency": eval_frequency,
+            "num_eval_episodes": num_eval_episodes,
+            "eval_seeds": EVAL_SEEDS[:num_eval_episodes],
+            "results": game_results,
+        }, f, indent=2)
+    os.replace(tmp_path, out_path)
+
+
 # ---------------------------------------------------------
 # 6. THE MAIN TRIAL LOOP
 # ---------------------------------------------------------
 def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
                        eval_frequency=50_000, num_eval_episodes=10,
-                       output_dir="."):
+                       output_dir=".", games=None):
     """
-    Runs the control-group arm of the RCT across all three MinAtar games,
-    for N sampled individuals, and writes results (+ the individuals
-    themselves) to disk so treatment arms can later reuse them.
+    Runs the control-group arm of the RCT for N sampled individuals, over
+    `games` (defaults to all three MinAtar games), and writes results
+    (+ the individuals themselves) to disk so treatment arms can later
+    reuse them.
+
+    Results are saved incrementally (after every individual, not just at
+    the end of a game) and reloaded on startup, so a job that gets killed
+    partway through -- e.g. hitting a SLURM time limit -- can simply be
+    resubmitted and will pick up where it left off instead of re-training
+    already-completed individuals.
 
     NOTE: the proposal specifies N >= 30 individuals and 5,000,000 frames
     per run (Sec 4.1, 4.3). Those are the defaults here. For a fast local
@@ -324,14 +379,20 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
     the CLI below.
     """
     os.makedirs(output_dir, exist_ok=True)
+    games = games if games is not None else GAMES
 
-    # Sample the population ONCE and reuse it across all three games, so
-    # that (for a given individual_id) the exact same hyperparameter
+    # Sample the population ONCE and reuse it across every game, so that
+    # (for a given individual_id) the exact same hyperparameter
     # configuration and seed is used everywhere -- consistent with the
     # population being defined independently of any single environment.
+    # This must stay identical across separate per-game SLURM tasks, which
+    # it will be, since sample_individuals() is deterministic given
+    # num_individuals and POPULATION_SEED.
     individuals = sample_individuals(num_individuals)
 
-    for game_id in GAMES:
+    print(f"Using device: {DEVICE}")
+
+    for game_id in games:
         print(f"\n{'=' * 50}\nStarting Randomised Control Trial for {game_id}\n{'=' * 50}")
 
         init_env = gym.make(game_id)
@@ -339,10 +400,18 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
         num_actions = init_env.action_space.n
         init_env.close()
 
-        game_results = []
+        out_path = _result_path(output_dir, game_id)
+        game_results, completed_ids = _load_existing_results(out_path)
+        if completed_ids:
+            print(f"Resuming: {len(completed_ids)}/{num_individuals} individuals already completed for {game_id}")
 
         for individual in individuals:
             j = individual["individual_id"]
+
+            if j in completed_ids:
+                print(f"--- Skipping Individual {j + 1}/{num_individuals} (already completed) ---")
+                continue
+
             print(f"\n--- Testing Individual {j + 1}/{num_individuals} ---")
             print(f"Seed: {individual['seed']} | Settings: {individual['config']}")
 
@@ -372,18 +441,10 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
             })
             print(f"Completed Control Group. Total Performance Score (AUC): {computed_auc:.4f}")
 
-        # Persist per-game results + the individuals themselves so a
-        # future treatment-arm script can reuse the exact same population.
-        out_path = os.path.join(output_dir, f"control_results_{game_id.replace('/', '_')}.json")
-        with open(out_path, "w") as f:
-            json.dump({
-                "game_id": game_id,
-                "total_frames": total_frames,
-                "eval_frequency": eval_frequency,
-                "num_eval_episodes": num_eval_episodes,
-                "eval_seeds": EVAL_SEEDS[:num_eval_episodes],
-                "results": game_results,
-            }, f, indent=2)
+            # Save after every individual, not just at the end of the game,
+            # so progress survives a job that gets killed mid-run.
+            _save_results(out_path, game_id, total_frames, eval_frequency, num_eval_episodes, game_results)
+
         print(f"\nSaved results to {out_path}")
 
 
@@ -399,22 +460,27 @@ if __name__ == "__main__":
                          help="Greedy evaluation episodes per checkpoint (proposal spec: 10)")
     parser.add_argument("--output-dir", type=str, default="./results",
                          help="Where to write per-game JSON result files")
+    parser.add_argument("--game", type=str, default=None, choices=GAMES,
+                         help="Run only this game (for one-job-per-game cluster parallelism). "
+                              "Omit to run all three games sequentially in this process.")
     parser.add_argument("--pilot", action="store_true",
                          help="Quick smoke-test scale instead of full spec-scale run")
     args = parser.parse_args()
+
+    games = [args.game] if args.game is not None else None  # None -> all games (see execute_rct_trial)
 
     if args.pilot:
         # Fast local sanity check only -- NOT the values used for the
         # actual dissertation results (see proposal Sec 4.1, 4.3).
         execute_rct_trial(num_individuals=3, total_frames=15_000,
                            eval_frequency=3_000, num_eval_episodes=5,
-                           output_dir=args.output_dir)
+                           output_dir=args.output_dir, games=games)
     else:
         execute_rct_trial(num_individuals=args.num_individuals,
                            total_frames=args.total_frames,
                            eval_frequency=args.eval_frequency,
                            num_eval_episodes=args.num_eval_episodes,
-                           output_dir=args.output_dir)
+                           output_dir=args.output_dir, games=games)
 
 # ---------------------------------------------------------
 # Where the treatment arms plug in later
