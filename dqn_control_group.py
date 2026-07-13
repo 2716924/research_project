@@ -2,30 +2,16 @@
 Control Group (Canonical Nature-DQN) Trainer
 =============================================
 Implements the "control group" arm of the Randomised Control Trial (RCT)
-described in the research proposal (Chapter 4): a canonical Nature-DQN
+described in the research proposal: a canonical Nature-DQN
 [Mnih et al. 2015] trained under hyperparameter configurations sampled
-from the shared population space in Table 4.1.
+from the shared population space.
 
-This script is deliberately scoped to the CONTROL GROUP only. The four
-treatment arms (Double DQN, Prioritised Experience Replay, n-step
-learning, Averaged DQN) are not implemented here -- see the note at the
-bottom of the file for how this scaffolding is meant to support them.
-
-Design decisions worth flagging to a reader/reviewer:
+Design decisions:
   * Individuals (hyperparameter configs) are sampled ONCE up front from a
-    dedicated RNG, independent of the RNG used during training. This
-    keeps the sampled population reproducible regardless of how many
-    random draws training happens to make.
-  * Each individual gets its own training seed (TRAINING_SEED_BASE + j),
-    rather than every individual sharing one fixed seed. This preserves
-    genuine across-individual variation while still being reproducible.
-  * Individuals (id, seed, config) are persisted to disk per game, so a
-    future treatment-arm script can load the *same* individuals and train
-    under the *same* configuration + seed -- the paired design the
-    proposal's statistical analysis (paired t-tests, Sec 4.4.2) depends on.
-  * Evaluation uses a fixed SET of distinct deterministic seeds (not one
-    seed repeated), since a fully greedy policy would otherwise produce
-    identical episodes every time.
+    dedicated RNG, independent of the RNG used during training.
+  * Each individual gets its own training seed (TRAINING_SEED_BASE + j).
+  * Evaluation uses a fixed SET of distinct deterministic seeds.
+  * Incorporates replay_start_size to match Mnih et al. (2015) specifications.
 """
 
 import argparse
@@ -43,29 +29,18 @@ import gymnasium as gym
 import minatar  # noqa: F401
 from minatar.gym import register_envs
 
-# Gymnasium is supposed to auto-discover this via the 'gymnasium.envs' entry
-# point declared in MinAtar's setup.py, but that plugin-discovery mechanism
-# can silently fail to fire depending on the Gymnasium version/environment.
-# Calling it explicitly is safe (idempotent) and removes that dependency.
 register_envs()
 
-# Lock the randomness so the experiment is exactly repeatable
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-# Use a GPU if one is visible (SLURM sets CUDA_VISIBLE_DEVICES via --gres=gpu:N),
-# otherwise fall back to CPU so the same script still runs on a login node.
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# On a shared cluster node, torch's default thread pool can try to grab every
-# core on the machine even though SLURM only allocated you a few. Cap it to
-# whatever SLURM actually gave this task (falls back to all local cores when
-# not running under SLURM, e.g. on your laptop).
 _num_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1))
 torch.set_num_threads(_num_threads)
 
 # ---------------------------------------------------------
-# RCT-level constants (see proposal Sec 4.1, 4.3)
+# RCT-level constants
 # ---------------------------------------------------------
 GAMES = ["MinAtar/Breakout-v1", "MinAtar/Asterix-v1", "MinAtar/Freeway-v1"]
 
@@ -76,53 +51,37 @@ POPULATION_SPACE = {
     "target_update_freq": [500, 1000, 2000],
     "epsilon_decay_steps": [50000, 100000, 200000],
     "num_layers": [1, 2],
+    "replay_start_size": [5000] # Pure exploration phase before learning begins
 }
 
-POPULATION_SEED = 2024          # Controls which configs get sampled
-TRAINING_SEED_BASE = 1337       # Individual j trains with seed BASE + j
-EVAL_SEEDS = [1000 + i for i in range(10)]  # Fixed set of distinct eval seeds
+POPULATION_SEED = 2024          
+TRAINING_SEED_BASE = 1337       
+EVAL_SEEDS = [1000 + i for i in range(10)]  
 
 
 # ---------------------------------------------------------
 # 1. THE BRAIN OF THE AGENT (NEURAL NETWORK)
 # ---------------------------------------------------------
 class MinAtarQNetwork(nn.Module):
-    """
-    This is the agent's brain. It looks at the game screen and estimates
-    how many points it will get for taking each possible action.
-    """
     def __init__(self, in_channels, num_actions, num_layers=2, hidden_dim=128):
         super(MinAtarQNetwork, self).__init__()
-        # The agent's "eyes" - looking at the 10x10 game grid to spot patterns
         self.conv1 = nn.Conv2d(in_channels, 16, kernel_size=3, stride=1)
-
-        # Flattening the grid into a single line of information.
-        # MinAtar is 10x10, so a 3x3 convolution leaves an 8x8 grid.
         flat_features = 16 * 8 * 8
 
-        # The deeper thinking part of the brain.
-        # Mathematically, this applies the row-vector format: z = xW_1 + b_1
         layers = []
         current_dim = flat_features
         for _ in range(num_layers):
             layers.append(nn.Linear(current_dim, hidden_dim))
-            layers.append(nn.ReLU())  # A mathematical filter that only lets positive signals through
+            layers.append(nn.ReLU())  
             current_dim = hidden_dim
 
         self.hidden_layers = nn.Sequential(*layers)
-
-        # The final output: one score for every possible joystick move
         self.output_layer = nn.Linear(current_dim, num_actions)
 
     def forward(self, x):
-        # Rearrange the game screen data so the PyTorch brain can read it
         x = x.permute(0, 3, 1, 2)
         x = F.relu(self.conv1(x))
-
-        # Flatten the data
         x = x.reshape(x.size(0), -1)
-
-        # Think about the data and make a final prediction
         x = self.hidden_layers(x)
         return self.output_layer(x)
 
@@ -131,20 +90,13 @@ class MinAtarQNetwork(nn.Module):
 # 2. THE MEMORY BANK (EXPERIENCE REPLAY)
 # ---------------------------------------------------------
 class ReplayBuffer:
-    """
-    The agent's memory. It stores past experiences so the agent can
-    look back and learn from past successes and mistakes.
-    """
     def __init__(self, capacity):
-        # A memory box that forgets the oldest memories when it gets full
         self.buffer = collections.deque(maxlen=capacity)
 
     def push(self, state, action, reward, next_state, done):
-        # Save what just happened into the memory box
         self.buffer.append((state, action, reward, next_state, done))
 
     def sample(self, batch_size):
-        # Pick a random handful of past memories to study
         batch = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return state, action, reward, next_state, done
@@ -154,19 +106,9 @@ class ReplayBuffer:
 
 
 # ---------------------------------------------------------
-# 3. POPULATION SAMPLING (Table 4.1)
+# 3. POPULATION SAMPLING
 # ---------------------------------------------------------
 def sample_individuals(num_individuals, population_seed=POPULATION_SEED):
-    """
-    Draws `num_individuals` hyperparameter configurations from the shared
-    population space (Table 4.1), using a dedicated RNG that is completely
-    independent of whatever randomness training itself consumes. This is
-    what makes the sampled population reproducible on its own terms.
-
-    Each individual also gets a fixed training seed, so that a future
-    treatment-arm script can reproduce the exact same "participant" by
-    reusing (config, seed) -- the crux of the paired RCT design.
-    """
     rng = random.Random(population_seed)
     individuals = []
     for j in range(num_individuals):
@@ -183,12 +125,6 @@ def sample_individuals(num_individuals, population_seed=POPULATION_SEED):
 # 4. EVALUATION
 # ---------------------------------------------------------
 def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS):
-    """
-    Tests the agent without any random guessing (fully greedy, epsilon=0)
-    to see how good it really is. Uses a fixed SET of distinct deterministic
-    seeds -- with a greedy policy, reusing one seed for every episode would
-    just replay the same trajectory num_episodes times.
-    """
     if num_episodes > len(eval_seeds):
         raise ValueError(
             f"Requested {num_episodes} eval episodes but only "
@@ -219,26 +155,20 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS):
 
 
 # ---------------------------------------------------------
-# 5. TRAINING A SINGLE INDIVIDUAL (ONE CONTROL-GROUP RUN)
+# 5. TRAINING A SINGLE INDIVIDUAL 
 # ---------------------------------------------------------
 def train_control_individual(game_id, individual, in_channels, num_actions,
                               total_frames, eval_frequency, num_eval_episodes,
                               gamma=0.99):
-    """
-    Trains one canonical Nature-DQN agent for a single sampled individual
-    (hyperparameter configuration) and returns its evaluation trajectory.
-    """
     config = individual["config"]
     seed = individual["seed"]
 
-    # Seed everything for this individual's training run specifically.
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
 
     train_env = gym.make(game_id)
 
-    # Setup the active brain and the slow, stable target brain
     q_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"]).to(DEVICE)
     target_network = MinAtarQNetwork(in_channels, num_actions, num_layers=config["num_layers"]).to(DEVICE)
     target_network.load_state_dict(q_network.state_dict())
@@ -250,65 +180,58 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
     state, _ = train_env.reset(seed=seed)
     eval_trajectory = []
 
-    # Exploration settings: start by guessing, slowly rely on the brain.
-    # epsilon_decay_steps is itself a sampled hyperparameter (Table 4.1).
     epsilon = 1.0
     epsilon_min = 0.1
     epsilon_decay = (1.0 - epsilon_min) / config["epsilon_decay_steps"]
+    
+    replay_start_size = config["replay_start_size"]
 
     for frame in range(total_frames):
-        # Decide action: Guess randomly or use the brain
-        if random.random() > epsilon:
+        # Exploration logic
+        if random.random() > epsilon or len(memory) < replay_start_size:
+            action = random.randrange(num_actions)
+        else:
             with torch.no_grad():
                 state_tensor = torch.FloatTensor(state).unsqueeze(0).to(DEVICE)
                 action = q_network(state_tensor).argmax(dim=1).item()
-        else:
-            action = random.randrange(num_actions)
 
-        # See what happens in the game
         next_state, reward, terminated, truncated, _ = train_env.step(action)
         done = terminated or truncated
 
-        # Remember what happened
         memory.push(state, action, reward, next_state, done)
         state = next_state
 
         if done:
             state, _ = train_env.reset()
 
-        epsilon = max(epsilon_min, epsilon - epsilon_decay)
+        # Only decay epsilon after the initial buffer generation period is complete
+        if len(memory) >= replay_start_size:
+            epsilon = max(epsilon_min, epsilon - epsilon_decay)
 
-        # Learn from past memories
-        if len(memory) > config["batch_size"]:
-            states, actions, rewards, next_states, dones = memory.sample(config["batch_size"])
+            if len(memory) > config["batch_size"]:
+                states, actions, rewards, next_states, dones = memory.sample(config["batch_size"])
 
-            states = torch.FloatTensor(states).to(DEVICE)
-            actions = torch.LongTensor(actions).unsqueeze(1).to(DEVICE)
-            rewards = torch.FloatTensor(rewards).unsqueeze(1).to(DEVICE)
-            next_states = torch.FloatTensor(next_states).to(DEVICE)
-            dones = torch.FloatTensor(dones).unsqueeze(1).to(DEVICE)
+                states = torch.FloatTensor(states).to(DEVICE)
+                actions = torch.LongTensor(actions).unsqueeze(1).to(DEVICE)
+                rewards = torch.FloatTensor(rewards).unsqueeze(1).to(DEVICE)
+                next_states = torch.FloatTensor(next_states).to(DEVICE)
+                dones = torch.FloatTensor(dones).unsqueeze(1).to(DEVICE)
 
-            # Ask the active brain for the current score guess
-            current_q_values = q_network(states).gather(1, actions)
+                current_q_values = q_network(states).gather(1, actions)
 
-            # Ask the stable brain for the best possible future score
-            # (canonical 1-step target -- this is the control group, so no
-            # Double-DQN decoupling, no n-step return, no averaging.)
-            with torch.no_grad():
-                next_q_values = target_network(next_states).max(1)[0].unsqueeze(1)
-                target_q_values = rewards + (gamma * next_q_values * (1 - dones))
+                with torch.no_grad():
+                    next_q_values = target_network(next_states).max(1)[0].unsqueeze(1)
+                    target_q_values = rewards + (gamma * next_q_values * (1 - dones))
 
-            # Calculate the mistake and update the brain
-            loss = F.mse_loss(current_q_values, target_q_values)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                loss = F.mse_loss(current_q_values, target_q_values)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-        # Update the stable brain occasionally
-        if (frame + 1) % config["target_update_freq"] == 0:
-            target_network.load_state_dict(q_network.state_dict())
+            if (frame + 1) % config["target_update_freq"] == 0:
+                target_network.load_state_dict(q_network.state_dict())
 
-        # Periodically test the agent (spec: every 5e4 frames, Sec 4.3)
+        # Testing the agent 
         if (frame + 1) % eval_frequency == 0:
             mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes)
             eval_trajectory.append(mean_score)
@@ -323,12 +246,6 @@ def _result_path(output_dir, game_id):
 
 
 def _load_existing_results(out_path):
-    """
-    If this game's result file already exists (e.g. from a SLURM run that
-    hit its time limit or got pre-empted), load whatever individuals were
-    already completed so we can skip them instead of re-training from
-    scratch. Returns (list_of_result_dicts, set_of_completed_individual_ids).
-    """
     if os.path.exists(out_path):
         with open(out_path) as f:
             data = json.load(f)
@@ -339,9 +256,6 @@ def _load_existing_results(out_path):
 
 
 def _save_results(out_path, game_id, total_frames, eval_frequency, num_eval_episodes, game_results):
-    # Write to a temp file first and rename, so a job killed mid-write
-    # (e.g. hitting the SLURM time limit) can't leave a half-written,
-    # corrupt JSON file behind for the next resumed run to choke on.
     tmp_path = out_path + ".tmp"
     with open(tmp_path, "w") as f:
         json.dump({
@@ -361,33 +275,10 @@ def _save_results(out_path, game_id, total_frames, eval_frequency, num_eval_epis
 def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
                        eval_frequency=50_000, num_eval_episodes=10,
                        output_dir=".", games=None):
-    """
-    Runs the control-group arm of the RCT for N sampled individuals, over
-    `games` (defaults to all three MinAtar games), and writes results
-    (+ the individuals themselves) to disk so treatment arms can later
-    reuse them.
 
-    Results are saved incrementally (after every individual, not just at
-    the end of a game) and reloaded on startup, so a job that gets killed
-    partway through -- e.g. hitting a SLURM time limit -- can simply be
-    resubmitted and will pick up where it left off instead of re-training
-    already-completed individuals.
-
-    NOTE: the proposal specifies N >= 30 individuals and 5,000,000 frames
-    per run (Sec 4.1, 4.3). Those are the defaults here. For a fast local
-    smoke test, override both to much smaller values -- see --pilot in
-    the CLI below.
-    """
     os.makedirs(output_dir, exist_ok=True)
     games = games if games is not None else GAMES
 
-    # Sample the population ONCE and reuse it across every game, so that
-    # (for a given individual_id) the exact same hyperparameter
-    # configuration and seed is used everywhere -- consistent with the
-    # population being defined independently of any single environment.
-    # This must stay identical across separate per-game SLURM tasks, which
-    # it will be, since sample_individuals() is deterministic given
-    # num_individuals and POPULATION_SEED.
     individuals = sample_individuals(num_individuals)
 
     print(f"Using device: {DEVICE}")
@@ -425,8 +316,6 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
                 num_eval_episodes=num_eval_episodes,
             )
 
-            # AUC as per Sec 4.4.1: area under the evaluation-reward curve.
-            # Handle NumPy 2.0+ removal of trapz by falling back dynamically.
             if hasattr(np, 'trapezoid'):
                 integrate_func = np.trapezoid
             else:
@@ -443,8 +332,6 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
             })
             print(f"Completed Control Group. Total Performance Score (AUC): {computed_auc:.4f}")
 
-            # Save after every individual, not just at the end of the game,
-            # so progress survives a job that gets killed mid-run.
             _save_results(out_path, game_id, total_frames, eval_frequency, num_eval_episodes, game_results)
 
         print(f"\nSaved results to {out_path}")
@@ -453,27 +340,24 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Control-group (canonical Nature-DQN) RCT trainer")
     parser.add_argument("--num-individuals", type=int, default=30,
-                         help="N sampled hyperparameter configurations (proposal requires N >= 30)")
+                         help="N sampled hyperparameter configurations")
     parser.add_argument("--total-frames", type=int, default=5_000_000,
-                         help="Frames per individual (proposal spec: 5,000,000)")
+                         help="Frames per individual")
     parser.add_argument("--eval-frequency", type=int, default=50_000,
-                         help="Evaluate every this many frames (proposal spec: 50,000)")
+                         help="Evaluate every this many frames")
     parser.add_argument("--num-eval-episodes", type=int, default=10,
-                         help="Greedy evaluation episodes per checkpoint (proposal spec: 10)")
+                         help="Greedy evaluation episodes per checkpoint")
     parser.add_argument("--output-dir", type=str, default="./results",
                          help="Where to write per-game JSON result files")
     parser.add_argument("--game", type=str, default=None, choices=GAMES,
-                         help="Run only this game (for one-job-per-game cluster parallelism). "
-                              "Omit to run all three games sequentially in this process.")
+                         help="Run only this game")
     parser.add_argument("--pilot", action="store_true",
                          help="Quick smoke-test scale instead of full spec-scale run")
     args = parser.parse_args()
 
-    games = [args.game] if args.game is not None else None  # None -> all games (see execute_rct_trial)
+    games = [args.game] if args.game is not None else None  
 
     if args.pilot:
-        # Fast local sanity check only -- NOT the values used for the
-        # actual dissertation results (see proposal Sec 4.1, 4.3).
         execute_rct_trial(num_individuals=3, total_frames=15_000,
                            eval_frequency=3_000, num_eval_episodes=5,
                            output_dir=args.output_dir, games=games)
@@ -483,20 +367,3 @@ if __name__ == "__main__":
                            eval_frequency=args.eval_frequency,
                            num_eval_episodes=args.num_eval_episodes,
                            output_dir=args.output_dir, games=games)
-
-# ---------------------------------------------------------
-# Where the treatment arms plug in later
-# ---------------------------------------------------------
-# Each treatment arm (Double DQN, PER, n-step, Averaged DQN) should:
-#   1. Call sample_individuals(num_individuals) with the SAME
-#      num_individuals and POPULATION_SEED used here, so it reproduces
-#      the identical set of (config, seed) individuals.
-#   2. Reuse train_control_individual's structure but swap out exactly
-#      one mechanism per arm (e.g. the TD target formula for DDQN /
-#      Averaged DQN, the buffer's sampling distribution for PER, the
-#      return horizon for n-step) -- keeping everything else identical,
-#      per the proposal's Sec 2.4 definitions.
-#   3. Write results to a matching JSON file (e.g.
-#      ddqn_results_<game>.json) with the same individual_id/seed keys,
-#      so the two files can be paired by individual_id for the paired
-#      t-tests in Sec 4.4.2.
