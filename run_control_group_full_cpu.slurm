@@ -4,8 +4,9 @@
 #
 # GPU abandoned: MinAtar's observations are tiny (10x10xC), so this
 # workload doesn't need one, and this cluster's CPUs are strong enough.
-# Runs on the plain `batch` partition at full spec scale
-# (30 individuals x 5,000,000 frames per game).
+# Runs on the `stampede` partition (matching the course's working
+# examples) at full spec scale (30 individuals x 5,000,000 frames
+# per game).
 #
 # Run run_control_group_cpu_test.slurm FIRST if you haven't already --
 # it does the same environment/registration checks at pilot scale, and
@@ -14,7 +15,7 @@
 # ===========================================================
 #SBATCH --job-name=dqn-control-cpu
 #SBATCH --array=0-2
-#SBATCH --partition=batch
+#SBATCH --partition=stampede
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --time=72:00:00
@@ -23,12 +24,40 @@
 #SBATCH --requeue
 
 set -euo pipefail
+
+# Move to the directory this job was submitted from, so relative paths
+# (mkdir results, python dqn_control_group.py, etc.) behave the same
+# regardless of what directory sbatch itself happened to run in.
+cd "$SLURM_SUBMIT_DIR"
+
 mkdir -p logs
 mkdir -p results
+
+# We pause execution briefly, so you get a chance to see your job in the
+# queue. If you don't see your job in the queue at all, execution has not
+# even started, and there is likely something wrong with your #SBATCH
+# lines above.
+sleep 20
+
+# We print out some useful debugging information.
+echo "=== Useful Debugging Information ==="
+echo "Date: "$(date)
+echo "Username: "$USER
+echo "Job ID: "$SLURM_JOB_ID
+echo "Job Name: "$SLURM_JOB_NAME
+echo "Home Directory: "$HOME
+echo "Node: "$HOSTNAME
+echo "Current Working Directory: "$PWD
+echo "Job Submitted From Machine: "$SLURM_SUBMIT_HOST
+echo "Job Submitted From Directory: "$SLURM_SUBMIT_DIR
+echo "Array Task: "$SLURM_ARRAY_TASK_ID
+echo "CPUs allocated: "$SLURM_CPUS_PER_TASK
+echo "======"
 
 # -------------------------
 # Load software environment
 # -------------------------
+source /etc/profile.d/lmod.sh
 module purge
 module load anaconda/anaconda-2025-12-2
 
@@ -47,19 +76,12 @@ GAMES=(
     "MinAtar/Freeway-v1"
 )
 GAME="${GAMES[$SLURM_ARRAY_TASK_ID]}"
-
-echo "=========================================="
-echo "Job ID: $SLURM_JOB_ID"
-echo "Array Task: $SLURM_ARRAY_TASK_ID"
 echo "Game: $GAME"
-echo "Running on: $(hostname)"
-echo "CPUs allocated: $SLURM_CPUS_PER_TASK"
-echo "=========================================="
 
 # -------------------------
 # Run training (CPU only -- dqn_control_group.py already falls back to
-# CPU automatically since torch.cuda.is_available() will be False on
-# the batch partition; nothing to change in the Python code)
+# CPU automatically since torch.cuda.is_available() will be False here;
+# nothing to change in the Python code)
 # -------------------------
 python -u dqn_control_group.py \
     --game "$GAME" \
