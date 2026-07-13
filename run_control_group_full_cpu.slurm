@@ -46,6 +46,16 @@ module purge
 module load anaconda
 
 # ------------------------------------------------------------
+# This is a CPU-only job (no --gres=gpu requested), but the
+# compute node may still have GPUs physically installed and
+# visible. Explicitly hide them from torch so it doesn't try
+# to use an unsupported/incompatible GPU (e.g. old GTX 1060s
+# whose compute capability is no longer built into newer
+# torch+cuda wheels).
+# ------------------------------------------------------------
+export CUDA_VISIBLE_DEVICES=""
+
+# ------------------------------------------------------------
 # Use Python directly from your environment
 # ------------------------------------------------------------
 PYTHON="$HOME/.conda/envs/mltest/bin/python"
