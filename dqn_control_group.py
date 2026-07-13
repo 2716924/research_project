@@ -426,11 +426,13 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
             )
 
             # AUC as per Sec 4.4.1: area under the evaluation-reward curve.
-            # Evaluation points are equally spaced, so trapezoidal
-            # integration is the direct implementation of "area under
-            # the curve" (a plain sum is a monotonic proxy for this but
-            # isn't literally an integral).
-            computed_auc = float(np.trapz(eval_trajectory)) if len(eval_trajectory) > 1 else float(np.sum(eval_trajectory))
+            # Handle NumPy 2.0+ removal of trapz by falling back dynamically.
+            if hasattr(np, 'trapezoid'):
+                integrate_func = np.trapezoid
+            else:
+                integrate_func = np.trapz
+
+            computed_auc = float(integrate_func(eval_trajectory)) if len(eval_trajectory) > 1 else float(np.sum(eval_trajectory))
 
             game_results.append({
                 "individual_id": j,
