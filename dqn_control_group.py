@@ -171,6 +171,20 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS):
     return np.mean(total_rewards)
 
 
+def compute_auc(eval_trajectory, eval_frequency):
+    """Area under the eval learning curve, integrated over training frames."""
+    if not eval_trajectory:
+        return 0.0
+
+    # Checkpoints occur at eval_frequency, 2*eval_frequency, ...
+    x = np.arange(1, len(eval_trajectory) + 1, dtype=float) * eval_frequency
+    y = np.asarray(eval_trajectory, dtype=float)
+
+    if hasattr(np, "trapezoid"):
+        return float(np.trapezoid(y, x=x))
+    return float(np.trapz(y, x=x))
+
+
 # ---------------------------------------------------------
 # 5. TRAINING A SINGLE INDIVIDUAL 
 # ---------------------------------------------------------
@@ -205,7 +219,11 @@ def train_control_individual(game_id, individual, in_channels, num_actions,
 
     for frame in range(total_frames):
         # Exploration logic
-        if random.random() > epsilon or len(memory) < replay_start_size:
+        # NOTE: fixed from `random.random() > epsilon` -- that inverted form
+        # means the agent explores *more* as epsilon decays, i.e. the exact
+        # opposite of an annealed epsilon-greedy schedule. Standard
+        # epsilon-greedy explores when the draw falls BELOW epsilon.
+        if random.random() < epsilon or len(memory) < replay_start_size:
             action = random.randrange(num_actions)
         else:
             with torch.no_grad():
@@ -333,12 +351,7 @@ def execute_rct_trial(num_individuals=30, total_frames=5_000_000,
                 num_eval_episodes=num_eval_episodes,
             )
 
-            if hasattr(np, 'trapezoid'):
-                integrate_func = np.trapezoid
-            else:
-                integrate_func = np.trapz
-
-            computed_auc = float(integrate_func(eval_trajectory)) if len(eval_trajectory) > 1 else float(np.sum(eval_trajectory))
+            computed_auc = compute_auc(eval_trajectory, eval_frequency)
 
             game_results.append({
                 "individual_id": j,

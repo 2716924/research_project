@@ -3,6 +3,21 @@
 # ============================================================
 # DQN CPU Test - Wits HPC
 # ============================================================
+#
+# IMPORTANT -- run this ONCE, from the same directory you will
+# `sbatch` this script from, BEFORE submitting:
+#
+#   mkdir -p logs/dqn_cputest results
+#
+# Why: SLURM opens the --output/--error files at job *dispatch*
+# time (before this script's own commands, including `mkdir -p`,
+# ever run). If the "logs/dqn_cputest" directory doesn't already
+# exist at submission time, SLURM silently fails to create the
+# log files -- the job shows as having run, but you get no .out
+# or .err output anywhere. The `mkdir -p logs` line later in this
+# script is too late to fix that; it only helps the results/ dir,
+# which is created at *runtime* by this script, not by SLURM.
+# ============================================================
 
 #SBATCH --job-name=dqn_cputest
 #SBATCH --partition=batch
@@ -10,8 +25,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=02:00:00
-#SBATCH --output=logs/dqn_cputest_%A_%a.out
-#SBATCH --error=logs/dqn_cputest_%A_%a.err
+#SBATCH --output=logs/dqn_cputest/%x_%A_%a.out
+#SBATCH --error=logs/dqn_cputest/%x_%A_%a.err
 
 set -euo pipefail
 
@@ -49,8 +64,11 @@ export TORCH_CPP_LOG_LEVEL=ERROR
 # ------------------------------------------------------------
 cd "$HOME/research_project"
 
-mkdir -p logs
-mkdir -p results
+# Safety net for local (non-SLURM-managed) paths only -- does
+# NOT retroactively fix SLURM's own --output/--error files if
+# their parent dir was missing at submission time (see notice
+# at the top of this file).
+mkdir -p logs/dqn_cputest
 
 # ------------------------------------------------------------
 # Python interpreter from your Conda environment
@@ -89,18 +107,29 @@ print("CUDA available:", torch.cuda.is_available())
 EOF
 
 # ------------------------------------------------------------
-# Game selection
+# Game selection -- each array task also gets its own results
+# subfolder so runs never collide and are easy to find.
 # ------------------------------------------------------------
 GAMES=(
     "MinAtar/Breakout-v1"
     "MinAtar/Asterix-v1"
     "MinAtar/Freeway-v1"
 )
+GAME_SLUGS=(
+    "breakout"
+    "asterix"
+    "freeway"
+)
 
 GAME="${GAMES[$SLURM_ARRAY_TASK_ID]}"
+GAME_SLUG="${GAME_SLUGS[$SLURM_ARRAY_TASK_ID]}"
+OUTPUT_DIR="results/cputest/${GAME_SLUG}"
+
+mkdir -p "$OUTPUT_DIR"
 
 echo ""
 echo "Running game: ${GAME}"
+echo "Output dir  : ${OUTPUT_DIR}"
 echo ""
 
 # ------------------------------------------------------------
@@ -112,7 +141,7 @@ echo ""
     --total-frames 10000 \
     --eval-frequency 5000 \
     --num-eval-episodes 1 \
-    --output-dir results
+    --output-dir "${OUTPUT_DIR}"
 
 echo ""
 echo "Finished at $(date)"

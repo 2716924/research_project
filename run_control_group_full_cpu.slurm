@@ -3,6 +3,18 @@
 # Control-group (canonical Nature-DQN) RCT trainer -- FULL CPU RUN
 #
 # Runs on the Wits HPC cluster using the mltest Conda environment.
+#
+# IMPORTANT -- run this ONCE, from the same directory you will
+# `sbatch` this script from, BEFORE submitting:
+#
+#   mkdir -p logs/dqn-control-cpu results
+#
+# Why: SLURM opens the --output/--error files at job *dispatch*
+# time, before anything in this script (including `mkdir -p`)
+# runs. If "logs/dqn-control-cpu" doesn't already exist when you
+# call sbatch, SLURM can't create the log files -- the job still
+# runs and finishes, but you get no .out/.err anywhere. This is
+# almost certainly why your previous jobs "ran" with no output.
 # ===========================================================
 
 #SBATCH --job-name=dqn-control-cpu
@@ -11,8 +23,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --time=72:00:00
-#SBATCH --output=logs/dqn_control_%A_%a.out
-#SBATCH --error=logs/dqn_control_%A_%a.err
+#SBATCH --output=logs/dqn-control-cpu/%x_%A_%a.out
+#SBATCH --error=logs/dqn-control-cpu/%x_%A_%a.err
 #SBATCH --requeue
 
 set -euo pipefail
@@ -22,8 +34,11 @@ set -euo pipefail
 # ------------------------------------------------------------
 cd "$SLURM_SUBMIT_DIR"
 
-mkdir -p logs
-mkdir -p results
+# Safety net for local (non-SLURM-managed) paths only -- does
+# NOT retroactively fix SLURM's own --output/--error files if
+# their parent dir was missing at submission time (see notice
+# at the top of this file).
+mkdir -p logs/dqn-control-cpu
 
 sleep 20
 
@@ -104,19 +119,31 @@ print("CUDA available:", torch.cuda.is_available())
 EOF
 
 # ------------------------------------------------------------
-# Select MinAtar game
+# Select MinAtar game -- each array task also gets its own
+# results subfolder so the 30-individual runs for each game
+# are cleanly separated and easy to find.
 # ------------------------------------------------------------
 GAMES=(
     "MinAtar/Breakout-v1"
     "MinAtar/Asterix-v1"
     "MinAtar/Freeway-v1"
 )
+GAME_SLUGS=(
+    "breakout"
+    "asterix"
+    "freeway"
+)
 
 GAME="${GAMES[$SLURM_ARRAY_TASK_ID]}"
+GAME_SLUG="${GAME_SLUGS[$SLURM_ARRAY_TASK_ID]}"
+OUTPUT_DIR="results/${GAME_SLUG}"
+
+mkdir -p "$OUTPUT_DIR"
 
 echo ""
 echo "========================================"
 echo "Running game: $GAME"
+echo "Output dir  : $OUTPUT_DIR"
 echo "========================================"
 
 # ------------------------------------------------------------
@@ -128,7 +155,7 @@ echo "========================================"
     --total-frames 5000000 \
     --eval-frequency 50000 \
     --num-eval-episodes 10 \
-    --output-dir results
+    --output-dir "$OUTPUT_DIR"
 
 echo ""
 echo "========================================"
