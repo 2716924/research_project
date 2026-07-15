@@ -39,6 +39,11 @@ module load anaconda
 # ------------------------------------------------------------
 export CUDA_VISIBLE_DEVICES=""
 
+# Silence c10 WARNING-level logs (e.g. the repeated NNPACK
+# "Unsupported hardware" warning) at the source -- see full_cpu
+# script for details.
+export TORCH_CPP_LOG_LEVEL=ERROR
+
 # ------------------------------------------------------------
 # Go to project directory
 # ------------------------------------------------------------

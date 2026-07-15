@@ -56,6 +56,18 @@ module load anaconda
 export CUDA_VISIBLE_DEVICES=""
 
 # ------------------------------------------------------------
+# Some compute nodes fail NNPACK's runtime hardware probe even
+# though the fallback conv backend works fine. torch.backends.
+# nnpack.enabled=False (set in dqn_control_group.py) doesn't
+# reliably suppress the resulting warning on every torch build,
+# because the warning comes from c10's logging layer, not the
+# nnpack-selection flag. Silence c10 WARNING-level logs directly
+# so it can't spam the .err log across 5M frames.
+# ------------------------------------------------------------
+export TORCH_CPP_LOG_LEVEL=ERROR
+echo "TORCH_CPP_LOG_LEVEL is set to: '${TORCH_CPP_LOG_LEVEL}'"
+
+# ------------------------------------------------------------
 # Use Python directly from your environment
 # ------------------------------------------------------------
 PYTHON="$HOME/.conda/envs/mltest/bin/python"

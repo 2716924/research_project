@@ -20,6 +20,16 @@ import os
 import random
 import collections
 
+# Must be set BEFORE `import torch` -- c10 reads this once at torch's own
+# module-init time. Setting it here (rather than only relying on `export
+# TORCH_CPP_LOG_LEVEL=ERROR` in the SLURM script) guarantees it applies
+# even if something upstream (module load, a wrapped launcher, etc.)
+# doesn't propagate the shell env var through to this process. This is
+# what silences the repeated "[W...] Could not initialize NNPACK!
+# Reason: Unsupported hardware." warning that some HPC nodes' CPUs
+# trigger on every conv2d call.
+os.environ.setdefault("TORCH_CPP_LOG_LEVEL", "ERROR")
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -30,6 +40,13 @@ import minatar  # noqa: F401
 from minatar.gym import register_envs
 
 register_envs()
+
+# Some HPC compute nodes report CPUs that NNPACK's hardware check rejects
+# even though the fallback conv backends work fine. Left enabled, torch
+# retries NNPACK init on every single conv2d call and prints a warning
+# each time -- with millions of frames that floods the logs and makes
+# training crawl, which looks like a hang. Disable it up front.
+torch.backends.nnpack.enabled = False
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
