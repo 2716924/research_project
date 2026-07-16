@@ -1,6 +1,11 @@
 #!/bin/bash
 # ===========================================================
 # Control-group (canonical Nature-DQN) RCT trainer -- FULL CPU RUN
+# (legacy)
+#
+# NOTE: This is a legacy control-group script for older workflows.
+# The current RCT workflow uses `slurm/run_rct_cpu_full.slurm`
+# and `run_rct.py --variant <variant>` for the full cluster experiment.
 #
 # Runs on the Wits HPC cluster using the mltest Conda environment.
 #

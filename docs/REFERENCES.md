@@ -10,6 +10,13 @@ shared Nature-DQN topology, MinAtar environments).
 |-----------|-------|----------------|
 | Experience replay + 1-step target | Mnih et al. 2015 | Original Nature DQN; our baseline in `rct/trainer.py` |
 
+## Trusted implementation sources
+
+The treatment arms were informed by community PyTorch implementations and
+research papers. Key sources include public repositories for Double DQN,
+Rainbow/PER, and Averaged-DQN. These sources validate the design choices used
+in this project and are reflected in the code structure below.
+
 ## Treatment arms
 
 ### Double DQN (DDQN)

@@ -42,13 +42,22 @@ python run_rct.py --variant ddqn --pilot
 
 ## Cluster (Wits HPC)
 
+The repository already includes cluster-friendly SLURM workflows for both
+CPU and GPU jobs. Use the `slurm/` scripts as the main entry points.
+
 ```bash
 module load anaconda
 ~/.conda/envs/mltest/bin/python check_env.py
 
 mkdir -p logs/rct-cpu-test results
 sbatch --export=RCT_VARIANT=control slurm/run_rct_cpu_test.slurm
+sbatch slurm/run_rct_cpu_full.slurm
+sbatch slurm/run_rct_gpu_test.slurm
+sbatch slurm/run_rct_gpu_full.slurm
 ```
+
+If you want the earlier, single-variant control script, the legacy
+`run_control_group_*.slurm` files are still present for backward compatibility.
 
 See `docs/EXPLAINER.md` for a plain-English walkthrough.
 

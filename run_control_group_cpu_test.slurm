@@ -1,8 +1,12 @@
 #!/bin/bash
 #
 # ============================================================
-# DQN CPU Test - Wits HPC
+# DQN CPU Test - Wits HPC (legacy)
 # ============================================================
+#
+# NOTE: This is a legacy control-group script for older workflows.
+# The current RCT workflow uses `slurm/run_rct_cpu_test.slurm` and
+# `slurm/run_rct_cpu_full.slurm` for the full cluster experiment.
 #
 # IMPORTANT -- run this ONCE, from the same directory you will
 # `sbatch` this script from, BEFORE submitting:
