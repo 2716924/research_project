@@ -20,7 +20,7 @@
 # =============================================================================
 
 #SBATCH --job-name=rct-cpu-full
-#SBATCH --partition=stampede
+#SBATCH --partition=bigbatch
 #SBATCH --array=0-14
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
@@ -31,7 +31,13 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/common.sh"
+# SLURM copies the script to /var/lib/slurm/... on compute nodes, so $0
+# cannot locate common.sh — use SLURM_SUBMIT_DIR (where sbatch was run).
+if [[ -f "${SLURM_SUBMIT_DIR}/slurm/common.sh" ]]; then
+    source "${SLURM_SUBMIT_DIR}/slurm/common.sh"
+else
+    source "${SLURM_SUBMIT_DIR}/common.sh"
+fi
 rct_cd_submit_dir
 mkdir -p logs/rct-cpu-full
 
