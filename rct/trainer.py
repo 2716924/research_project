@@ -22,7 +22,12 @@ from rct.constants import TREATMENT_DEFAULTS
 from rct.evaluation import evaluate_agent
 from rct.network import MinAtarQNetwork
 from rct.replay import NStepCollector, PrioritizedReplayBuffer, UniformReplayBuffer
-from rct.targets import AveragedTargetEnsemble, control_target, double_dqn_target
+from rct.targets import (
+    AveragedTargetEnsemble,
+    control_target,
+    double_dqn_target,
+    nstep_target,
+)
 from rct.torch_setup import DEVICE
 
 
@@ -154,7 +159,17 @@ def train_individual(
                     target_q_values = target_ensemble.compute_target(
                         next_states, rewards, dones, target_network, gamma
                     )
+                elif variant == "nstep":
+                    target_q_values = nstep_target(
+                        next_states,
+                        rewards,
+                        dones,
+                        target_network,
+                        gamma,
+                        TREATMENT_DEFAULTS["nstep"]["n_step"],
+                    )
                 else:
+                    # control and per: uniform 1-step max-Q bootstrap
                     target_q_values = control_target(
                         next_states, rewards, dones, target_network, gamma
                     )

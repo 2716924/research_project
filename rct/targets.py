@@ -19,6 +19,19 @@ def control_target(next_states, rewards, dones, target_network, gamma):
         return rewards + (gamma * next_q * (1 - dones))
 
 
+def nstep_target(next_states, rewards, dones, target_network, gamma, n_step):
+    """
+    n-step DQN target — Hernandez-Garcia & Sutton 2019.
+
+    Transitions store the discounted n-step return sum; bootstrap with
+    gamma^n on the state reached after n steps (or zero if terminal).
+    """
+    with torch.no_grad():
+        next_q = target_network(next_states).max(1)[0].unsqueeze(1)
+        bootstrap = (gamma ** n_step) * next_q * (1 - dones)
+        return rewards + bootstrap
+
+
 def double_dqn_target(next_states, rewards, dones, q_network, target_network, gamma):
     """
     Double DQN target — Van Hasselt et al. 2016.
