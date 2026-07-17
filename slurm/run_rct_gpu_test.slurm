@@ -16,7 +16,7 @@
 # =============================================================================
 
 #SBATCH --job-name=rct-gpu-test
-#SBATCH --partition=bigbatch
+#SBATCH --partition=biggpu
 #SBATCH --array=0-2
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4

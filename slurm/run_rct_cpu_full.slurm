@@ -20,7 +20,7 @@
 # =============================================================================
 
 #SBATCH --job-name=rct-cpu-full
-#SBATCH --partition=stampede
+#SBATCH --partition=bigbatch
 #SBATCH --array=0-14
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
