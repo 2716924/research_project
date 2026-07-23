@@ -98,6 +98,20 @@ def test_nstep_collector_returns():
     assert done is False
 
 
+def test_per_large_capacity_small_fill():
+    """Reproduces the cluster PER crash: capacity >> stored transitions."""
+    random.seed(0)
+    buffer = PrioritizedReplayBuffer(capacity=100_000)
+    state = [[0.0] * 10 for _ in range(10)]
+    for _ in range(5_000):
+        buffer.push(state, 0, 1.0, state, False)
+
+    indices, states, actions, rewards, next_states, dones, weights = buffer.sample(64)
+    assert len(indices) == 64
+    assert all(idx < 5_000 for idx in indices)
+    assert all(w > 0 for w in weights)
+
+
 def test_per_buffer_priorities():
     buf = PrioritizedReplayBuffer(capacity=32, alpha=0.6, beta_start=0.4)
     state = np.zeros((10, 10, 1))
@@ -203,6 +217,7 @@ def main():
         test_nstep_target,
         test_nstep_collector_returns,
         test_per_buffer_priorities,
+        test_per_large_capacity_small_fill,
         test_averaged_ensemble,
         test_trainer_variant_isolation,
         test_paired_population,

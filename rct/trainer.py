@@ -28,7 +28,9 @@ from rct.targets import (
     double_dqn_target,
     nstep_target,
 )
+from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
+from rct.wandb_utils import log_eval_metrics, log_training_metrics
 
 
 def train_individual(
@@ -41,6 +43,8 @@ def train_individual(
     eval_frequency,
     num_eval_episodes,
     gamma=0.99,
+    wandb_run=None,
+    log_every=1000,
 ):
     """Train a single hyperparameter individual and return its eval trajectory."""
     config = individual["config"]
@@ -100,6 +104,10 @@ def train_individual(
     replay_start_size = config["replay_start_size"]
 
     for frame in range(total_frames):
+        if should_stop_for_time_limit():
+            print("    Approaching SLURM time limit — stopping mid-individual for resume.")
+            break
+
         memory_len = len(per_buffer) if variant == "per" else len(uniform_buffer)
 
         if random.random() < epsilon or memory_len < replay_start_size:
@@ -188,6 +196,15 @@ def train_individual(
                 loss.backward()
                 optimizer.step()
 
+                if wandb_run is not None and (frame + 1) % log_every == 0:
+                    log_training_metrics(
+                        wandb_run,
+                        frame=frame + 1,
+                        loss=loss.item(),
+                        epsilon=epsilon,
+                        variant=variant,
+                    )
+
             if (frame + 1) % config["target_update_freq"] == 0:
                 target_network.load_state_dict(q_network.state_dict())
                 if variant == "averaged":
@@ -200,6 +217,13 @@ def train_individual(
                 f"    [{variant}] frame {frame + 1}/{total_frames} | "
                 f"eval mean return: {mean_score:.3f}"
             )
+            log_eval_metrics(
+                wandb_run,
+                frame=frame + 1,
+                mean_return=mean_score,
+                variant=variant,
+            )
 
     train_env.close()
-    return eval_trajectory
+    completed = (frame + 1) >= total_frames
+    return eval_trajectory, completed

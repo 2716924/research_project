@@ -1,17 +1,18 @@
 #!/bin/bash
 # =============================================================================
-# RCT GPU TEST — one variant, three games, short pilot on GPU
+# RCT GPU TEST — one variant, three games, short pilot on biggpu
 # =============================================================================
 #
-# WHAT THIS DOES (plain English):
-#   Same as the CPU test, but uses a GPU to train faster.
-#   Good for checking that PyTorch can see the GPU before long runs.
-#
-# BEFORE SUBMITTING:
+# BEFORE SUBMITTING (from project root):
+#   export WANDB_API_KEY=...   # set once in ~/.bashrc (never commit the key)
 #   mkdir -p logs/rct-gpu-test results
 #
-# SUBMIT:
-#   sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_test.slurm
+# SUBMIT (test each arm):
+#   sbatch --export=RCT_VARIANT=control  slurm/run_rct_gpu_test.slurm
+#   sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_gpu_test.slurm
+#   sbatch --export=RCT_VARIANT=per      slurm/run_rct_gpu_test.slurm
+#   sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_gpu_test.slurm
+#   sbatch --export=RCT_VARIANT=averaged slurm/run_rct_gpu_test.slurm
 #
 # =============================================================================
 
@@ -27,23 +28,26 @@
 
 set -euo pipefail
 
-# SLURM copies the script to /var/lib/slurm/... on compute nodes, so $0
-# cannot locate common.sh — use SLURM_SUBMIT_DIR (where sbatch was run).
 if [[ -f "${SLURM_SUBMIT_DIR}/slurm/common.sh" ]]; then
     source "${SLURM_SUBMIT_DIR}/slurm/common.sh"
 else
     source "${SLURM_SUBMIT_DIR}/common.sh"
 fi
+
 rct_cd_submit_dir
 mkdir -p logs/rct-gpu-test
 
 sleep 5
 rct_log_header
+rct_export_time_budget
 rct_setup_gpu
+rct_setup_wandb
 rct_check_python
 rct_map_game_only
 
+export RCT_NUM_INDIVIDUALS=3
 OUTPUT_DIR="results/${RCT_VARIANT}/${RCT_GAME_SLUG}-gpu-pilot"
+export OUTPUT_DIR
 mkdir -p "$OUTPUT_DIR"
 
 echo ""
@@ -51,13 +55,21 @@ echo "Variant:    $RCT_VARIANT"
 echo "Game:       $RCT_GAME"
 echo "Output dir: $OUTPUT_DIR"
 echo "Mode:       GPU pilot"
+echo "W&B entity: ${WANDB_ENTITY}"
+echo "W&B project:${WANDB_PROJECT}"
 echo ""
 
+set +e
 "$PYTHON" -u run_rct.py \
     --variant "$RCT_VARIANT" \
     --game "$RCT_GAME" \
     --pilot \
-    --output-dir "$OUTPUT_DIR"
+    --output-dir "$OUTPUT_DIR" \
+    --wandb-entity "$WANDB_ENTITY" \
+    --wandb-project "$WANDB_PROJECT"
+RUN_EXIT=$?
+set -e
 
 echo ""
-echo "Task ${SLURM_ARRAY_TASK_ID} finished at $(date)"
+echo "Task ${SLURM_ARRAY_TASK_ID} finished at $(date) with exit code ${RUN_EXIT}"
+exit "${RUN_EXIT}"

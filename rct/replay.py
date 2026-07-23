@@ -64,28 +64,55 @@ class PrioritizedReplayBuffer:
         self.pos = (self.pos + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
 
+    def _leaf_priority(self, idx):
+        return float(self.sum_tree.tree[idx + self.capacity - 1])
+
+    def _retrieve_valid_tree(self, value, total):
+        """Tree lookup with resampling guard for ring-buffer slots not yet written."""
+        upper = max(total, np.nextafter(0.0, 1.0))
+        sample_value = min(max(value, np.nextafter(0.0, upper)), upper)
+
+        for _ in range(32):
+            idx = self.sum_tree.retrieve(sample_value)
+            if idx < self.size and self.data[idx] is not None:
+                return idx, self._leaf_priority(idx)
+            sample_value = random.uniform(0.0, upper)
+
+        idx = random.randrange(self.size)
+        return idx, self._leaf_priority(idx)
+
     def sample(self, batch_size):
+        if self.size == 0:
+            raise ValueError("Cannot sample from an empty replay buffer")
+
+        sample_size = min(batch_size, self.size)
         indices = []
         priorities = []
         total = self.sum_tree.total()
-        segment = total / batch_size
+        if total <= 0:
+            raise ValueError("Replay buffer priorities must be positive before sampling")
 
-        for i in range(batch_size):
+        segment = total / sample_size
+
+        for i in range(sample_size):
             low = segment * i
             high = segment * (i + 1)
             value = random.uniform(low, high)
-            idx = self.sum_tree.retrieve(value)
+            idx, priority = self._retrieve_valid_tree(value, total)
             indices.append(idx)
-            tree_idx = idx + self.capacity - 1
-            priorities.append(self.sum_tree.tree[tree_idx])
+            priorities.append(priority)
 
         probs = np.array(priorities, dtype=np.float64) / total
         min_prob = self.min_tree.min() / total
+        min_prob = max(min_prob, 1e-12)
         max_weight = (min_prob * self.size) ** (-self.beta)
         weights = (probs * self.size) ** (-self.beta)
         weights /= max_weight
 
         batch = [self.data[i] for i in indices]
+        if any(item is None for item in batch):
+            raise RuntimeError("PER sampled an uninitialized transition")
+
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return indices, state, action, reward, next_state, done, weights.astype(np.float32)
 

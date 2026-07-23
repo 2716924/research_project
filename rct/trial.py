@@ -6,8 +6,10 @@ from rct.constants import GAMES, VARIANT_LABELS
 from rct.evaluation import compute_auc
 from rct.results import build_metadata, load_existing_results, result_path, save_results
 from rct.sampling import sample_individuals
+from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
 from rct.trainer import train_individual
+from rct.wandb_utils import finish_run, init_run, log_individual_summary
 
 
 def execute_rct_trial(
@@ -18,6 +20,11 @@ def execute_rct_trial(
     num_eval_episodes=10,
     output_dir=".",
     games=None,
+    pilot=False,
+    use_wandb=True,
+    wandb_entity=None,
+    wandb_project=None,
+    log_every=1000,
 ):
     """
     Train one RCT arm (control or treatment) across games and individuals.
@@ -33,11 +40,22 @@ def execute_rct_trial(
 
     print(f"Variant: {VARIANT_LABELS[variant]}")
     print(f"Using device: {DEVICE}")
+    if use_wandb:
+        print("Weights & Biases logging: enabled")
+    else:
+        print("Weights & Biases logging: disabled")
+
+    stopped_early = False
 
     for game_id in games:
         print(f"\n{'=' * 50}")
         print(f"RCT — {VARIANT_LABELS[variant]} — {game_id}")
         print(f"{'=' * 50}")
+
+        if should_stop_for_time_limit():
+            print("Approaching SLURM time limit — stopping before next game.")
+            stopped_early = True
+            break
 
         init_env = gym.make(game_id)
         in_channels = init_env.observation_space.shape[-1]
@@ -63,10 +81,31 @@ def execute_rct_trial(
                 print(f"--- Skipping Individual {j + 1}/{num_individuals} (already done) ---")
                 continue
 
+            if should_stop_for_time_limit():
+                print(
+                    "Approaching SLURM time limit — stopping before next individual "
+                    f"(completed {len(completed_ids)}/{num_individuals} for {game_id})."
+                )
+                stopped_early = True
+                break
+
             print(f"\n--- Individual {j + 1}/{num_individuals} ---")
             print(f"Seed: {individual['seed']} | Settings: {individual['config']}")
 
-            eval_trajectory = train_individual(
+            wandb_run = None
+            if use_wandb:
+                wandb_run = init_run(
+                    variant=variant,
+                    game_id=game_id,
+                    individual_id=j,
+                    seed=individual["seed"],
+                    config=individual["config"],
+                    pilot=pilot,
+                    entity=wandb_entity,
+                    project=wandb_project,
+                )
+
+            eval_trajectory, finished = train_individual(
                 variant=variant,
                 game_id=game_id,
                 individual=individual,
@@ -75,7 +114,18 @@ def execute_rct_trial(
                 total_frames=total_frames,
                 eval_frequency=eval_frequency,
                 num_eval_episodes=num_eval_episodes,
+                wandb_run=wandb_run,
+                log_every=log_every,
             )
+
+            if not finished:
+                print(
+                    f"Individual {j + 1} incomplete (time limit) — "
+                    "progress saved only for completed individuals."
+                )
+                finish_run(wandb_run, exit_code=2)
+                stopped_early = True
+                break
 
             computed_auc = compute_auc(eval_trajectory, eval_frequency)
             game_results.append({
@@ -85,8 +135,20 @@ def execute_rct_trial(
                 "eval_trajectory": eval_trajectory,
                 "auc": computed_auc,
             })
+            completed_ids.add(j)
             print(f"Completed {variant}. AUC: {computed_auc:.4f}")
+
+            if use_wandb:
+                log_individual_summary(
+                    wandb_run,
+                    auc=computed_auc,
+                    num_eval_points=len(eval_trajectory),
+                )
 
             save_results(out_path, metadata, game_results)
 
         print(f"\nSaved results to {out_path}")
+        if stopped_early:
+            break
+
+    return stopped_early

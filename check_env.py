@@ -35,4 +35,11 @@ obs, _ = env.reset(seed=0)
 print(f"MinAtar/Breakout-v1 observation shape: {obs.shape}")
 env.close()
 
+try:
+    import wandb  # noqa: F401
+
+    print(f"wandb installed:    yes ({wandb.__version__})")
+except ImportError:
+    print("wandb installed:    no  (pip install -r requirements.txt)")
+
 print("\nEnvironment check passed.")

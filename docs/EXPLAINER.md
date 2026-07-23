@@ -61,34 +61,37 @@ research_project/
 ├── run_rct.py        # Start one algorithmic arm
 ├── analyze_rct.py    # Statistics after results are collected
 ├── check_env.py      # One-time cluster health check
-├── slurm/            # Cluster job scripts (test + full, CPU + GPU)
+├── slurm/            # Cluster GPU job scripts (biggpu partition)
 ├── docs/             # Guides like this one
 └── results/          # Output data (created when jobs run)
 ```
 
 ## Cluster workflow (simple steps)
 
-1. **Check setup** — make sure Python, PyTorch, and games work:
+1. **Check setup** — make sure Python, PyTorch, GPU, and games work:
    `~/.conda/envs/mltest/bin/python check_env.py`
 
-2. **Practice run** — short test on CPU:
-   `sbatch --export=RCT_VARIANT=control slurm/run_rct_cpu_test.slurm`
+2. **Set wandb key** (once, in `~/.bashrc` — never commit the key):
+   `export WANDB_API_KEY="..."`
 
-3. **Full experiment** — all variants and games:
-   `sbatch slurm/run_rct_cpu_full.slurm`
-   (or `run_rct_gpu_full.slurm` if using GPUs)
+3. **Practice run** — short GPU test for each variant:
+   `sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_test.slurm`
 
-4. **Analyse** — compare treatment vs control:
+4. **Full experiment** — all variants and games on `biggpu`:
+   `sbatch slurm/run_rct_gpu_full.slurm`
+   (auto-resubmits every 3 days until each task finishes)
+
+5. **Monitor** — W&B dashboard + SLURM logs in `logs/rct-gpu-full/`
+
+6. **Analyse** — compare treatment vs control:
    `python analyze_rct.py --results-root results --game-slug breakout`
 
 ## Test vs full jobs
 
 | Script | Purpose | Scale |
 |--------|---------|-------|
-| `run_rct_cpu_test.slurm` | Practice / debugging | 3 profiles, ~15k frames |
-| `run_rct_cpu_full.slurm` | Real data collection | 30 profiles, 5M frames |
-| `run_rct_gpu_test.slurm` | GPU smoke test | Same as CPU test, faster |
-| `run_rct_gpu_full.slurm` | GPU full run | Same as CPU full, faster |
+| `run_rct_gpu_test.slurm` | GPU smoke test | 3 profiles, ~15k frames |
+| `run_rct_gpu_full.slurm` | Real data collection | 30 profiles, 5M frames, auto-resubmit |
 
 ## Resuming interrupted jobs
 

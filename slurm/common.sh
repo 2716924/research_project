@@ -1,11 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Shared setup helpers for Wits HPC SLURM jobs
-# =============================================================================
-# These functions are sourced by the run_*.slurm scripts in this folder.
-# They follow the patterns from the cluster's hpc-examples:
-#   - CPU jobs: Anaconda + conda run -n mltest (no "conda activate" needed)
-#   - GPU jobs: PyTorch module or CUDA-enabled conda env
+# Shared setup helpers for Wits HPC SLURM GPU jobs (biggpu partition)
 # =============================================================================
 
 rct_log_header() {
@@ -19,6 +14,7 @@ rct_log_header() {
     echo "Working Directory: $PWD"
     echo "Submit Directory:  ${SLURM_SUBMIT_DIR:-$PWD}"
     echo "CPUs per task:     ${SLURM_CPUS_PER_TASK:-1}"
+    echo "End time:          ${SLURM_JOB_END_TIME:-n/a}"
     echo "========================================"
 }
 
@@ -28,24 +24,6 @@ rct_cd_submit_dir() {
     fi
 }
 
-# CPU path — matches hpc-examples/06-default-anaconda-with-local-env
-rct_setup_cpu() {
-    source /etc/profile.d/lmod.sh
-    module purge
-    module load anaconda
-
-    export CUDA_VISIBLE_DEVICES=""
-    export TORCH_CPP_LOG_LEVEL=ERROR
-
-    PYTHON="$HOME/.conda/envs/mltest/bin/python"
-    if [[ ! -x "$PYTHON" ]]; then
-        echo "ERROR: mltest environment not found at $PYTHON"
-        echo "Create it with: conda create -n mltest python=3.11 -y"
-        exit 1
-    fi
-}
-
-# GPU path — matches hpc-examples/07-default-pytorch
 rct_setup_gpu() {
     source /etc/profile.d/lmod.sh
     module purge
@@ -53,7 +31,6 @@ rct_setup_gpu() {
 
     export TORCH_CPP_LOG_LEVEL=ERROR
 
-    # Prefer cluster PyTorch module; fall back to mltest conda env
     if command -v python &>/dev/null && python -c "import torch" &>/dev/null; then
         PYTHON="$(command -v python)"
     else
@@ -63,6 +40,32 @@ rct_setup_gpu() {
     if [[ ! -x "$PYTHON" ]]; then
         echo "ERROR: No usable Python with PyTorch found."
         exit 1
+    fi
+}
+
+rct_setup_wandb() {
+    export WANDB_ENTITY="${WANDB_ENTITY:-juniormatimu572-wits}"
+    export WANDB_PROJECT="${WANDB_PROJECT:-DQN modifications}"
+
+    if [[ -z "${WANDB_API_KEY:-}" ]]; then
+        echo "WARNING: WANDB_API_KEY is not set — wandb will run in offline mode."
+        export WANDB_MODE=offline
+    fi
+}
+
+rct_export_time_budget() {
+    export RCT_TIME_LIMIT_BUFFER="${RCT_TIME_LIMIT_BUFFER:-900}"
+
+    local end_time="${SLURM_JOB_END_TIME:-}"
+    if [[ -z "$end_time" || "$end_time" == "Unknown" || "$end_time" == "N/A" ]]; then
+        if [[ -n "${SLURM_JOB_ID:-}" ]]; then
+            end_time=$(scontrol show job "${SLURM_JOB_ID}" 2>/dev/null | awk -F= '/EndTime=/{print $2}' | awk '{print $1}')
+        fi
+    fi
+
+    if [[ -n "$end_time" && "$end_time" != "Unknown" && "$end_time" != "N/A" ]]; then
+        export RCT_JOB_END_EPOCH=$(date -d "${end_time}" +%s 2>/dev/null || true)
+        echo "Job end time: ${end_time} (stop ${RCT_TIME_LIMIT_BUFFER}s before)"
     fi
 }
 
@@ -116,4 +119,41 @@ rct_map_game_only() {
     export RCT_GAME="${GAMES[$TASK_ID]}"
     export RCT_GAME_SLUG="${GAME_SLUGS[$TASK_ID]}"
     export RCT_VARIANT="${RCT_VARIANT:-control}"
+}
+
+# Return 0 when this array task still has unfinished individuals.
+rct_task_incomplete() {
+    "$PYTHON" - <<'EOF'
+import os
+import sys
+
+from rct.results import load_existing_results, result_path
+
+output_dir = os.environ["OUTPUT_DIR"]
+variant = os.environ["RCT_VARIANT"]
+game_id = os.environ["RCT_GAME"]
+num_individuals = int(os.environ.get("RCT_NUM_INDIVIDUALS", "30"))
+
+path = result_path(output_dir, variant, game_id)
+_, completed = load_existing_results(path)
+sys.exit(0 if len(completed) < num_individuals else 1)
+EOF
+}
+
+# Resubmit the same array task when work remains (used after 3-day limit).
+rct_resubmit_if_incomplete() {
+    local SLURM_SCRIPT="$1"
+
+    if rct_task_incomplete; then
+        echo ""
+        echo "Work remains for task ${SLURM_ARRAY_TASK_ID} — resubmitting..."
+        sbatch \
+            --dependency=afterany:"${SLURM_JOB_ID}" \
+            --array="${SLURM_ARRAY_TASK_ID}" \
+            --export=ALL \
+            "${SLURM_SUBMIT_DIR}/${SLURM_SCRIPT}"
+    else
+        echo ""
+        echo "All individuals complete for task ${SLURM_ARRAY_TASK_ID}."
+    fi
 }
