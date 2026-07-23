@@ -50,13 +50,19 @@ rct_setup_gpu() {
         exit 1
     fi
 
+    if [[ -f "requirements.txt" ]]; then
+        echo "Installing Python requirements from requirements.txt"
+        "$PYTHON" -m pip install --user --disable-pip-version-check -r requirements.txt >/dev/null 2>&1 || \
+            echo "WARNING: failed to install all requirements; continuing anyway"
+    fi
+
     if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
 import importlib.util
 print(importlib.util.find_spec("wandb") is not None)
 PY
     then
         echo "Installing wandb into ${PYTHON}"
-        "$PYTHON" -m pip install --user wandb >/dev/null 2>&1 || true
+        "$PYTHON" -m pip install --user --disable-pip-version-check wandb >/dev/null 2>&1 || true
 
         if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
 import importlib.util
