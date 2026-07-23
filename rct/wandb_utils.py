@@ -1,6 +1,7 @@
 """Weights & Biases helpers for RCT experiment logging."""
 
 import os
+import sys
 from typing import Any, Optional
 
 
@@ -35,7 +36,11 @@ def init_run(
     if not wandb_enabled():
         return None
 
-    import wandb
+    try:
+        import wandb
+    except ModuleNotFoundError:
+        print("WARNING: wandb is not installed; skipping W&B logging.", file=sys.stderr)
+        return None
 
     game_slug = game_id.split("/")[-1].replace("-v1", "").lower()
     run_name = f"{variant}-{game_slug}-ind{individual_id:02d}"

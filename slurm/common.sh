@@ -49,6 +49,24 @@ rct_setup_gpu() {
         echo "ERROR: No usable Python with PyTorch found."
         exit 1
     fi
+
+    if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
+import importlib.util
+print(importlib.util.find_spec("wandb") is not None)
+PY
+    then
+        echo "Installing wandb into ${PYTHON}"
+        "$PYTHON" -m pip install --user wandb >/dev/null 2>&1 || true
+
+        if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
+import importlib.util
+print(importlib.util.find_spec("wandb") is not None)
+PY
+        then
+            echo "WARNING: wandb could not be installed; disabling W&B for this job."
+            export WANDB_DISABLED=1
+        fi
+    fi
 }
 
 rct_setup_wandb() {
