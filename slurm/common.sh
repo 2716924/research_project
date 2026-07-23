@@ -25,19 +25,27 @@ rct_cd_submit_dir() {
 }
 
 rct_setup_gpu() {
-    source /etc/profile.d/lmod.sh
-    module purge
-    module load pytorch/2026-02-24 2>/dev/null || module load anaconda
+    source /etc/profile.d/lmod.sh 2>/dev/null || true
+    module purge 2>/dev/null || true
+
+    # Try common module names on the cluster. Some systems do not expose an
+    # "anaconda" module at all, so we tolerate missing modules and fall back.
+    if ! module load pytorch/2026-02-24 2>/dev/null; then
+        module load python/3.11 2>/dev/null || true
+        module load anaconda 2>/dev/null || true
+    fi
 
     export TORCH_CPP_LOG_LEVEL=ERROR
 
     if command -v python &>/dev/null && python -c "import torch" &>/dev/null; then
         PYTHON="$(command -v python)"
-    else
+    elif [[ -x "$HOME/.conda/envs/mltest/bin/python" ]]; then
         PYTHON="$HOME/.conda/envs/mltest/bin/python"
+    else
+        PYTHON="$(which python 2>/dev/null || true)"
     fi
 
-    if [[ ! -x "$PYTHON" ]]; then
+    if [[ -z "${PYTHON:-}" || ! -x "$PYTHON" ]]; then
         echo "ERROR: No usable Python with PyTorch found."
         exit 1
     fi

@@ -69,23 +69,25 @@ def train_individual(
 
     optimizer = optim.RMSprop(q_network.parameters(), lr=config["lr"])
 
-    uniform_buffer = UniformReplayBuffer(config["buffer_capacity"])
-    per_buffer = None
     n_step_collector = None
     target_ensemble = None
 
     if variant == "per":
         per_defaults = TREATMENT_DEFAULTS["per"]
-        per_buffer = PrioritizedReplayBuffer(
+        replay_buffer = PrioritizedReplayBuffer(
             capacity=config["buffer_capacity"],
             alpha=per_defaults["alpha"],
             beta_start=per_defaults["beta_start"],
             priority_eps=per_defaults["priority_eps"],
         )
-    elif variant == "nstep":
-        n_step = TREATMENT_DEFAULTS["nstep"]["n_step"]
-        n_step_collector = NStepCollector(uniform_buffer, n_step=n_step, gamma=gamma)
-    elif variant == "averaged":
+    else:
+        replay_buffer = UniformReplayBuffer(config["buffer_capacity"])
+
+    if variant == "nstep":
+        n_step_collector = NStepCollector(
+            replay_buffer, n_step=TREATMENT_DEFAULTS["nstep"]["n_step"], gamma=gamma
+        )
+    if variant == "averaged":
         avg_defaults = TREATMENT_DEFAULTS["averaged"]
         target_ensemble = AveragedTargetEnsemble(
             ensemble_size=avg_defaults["ensemble_size"],
@@ -108,9 +110,7 @@ def train_individual(
             print("    Approaching SLURM time limit — stopping mid-individual for resume.")
             break
 
-        memory_len = len(per_buffer) if variant == "per" else len(uniform_buffer)
-
-        if random.random() < epsilon or memory_len < replay_start_size:
+        if random.random() < epsilon or len(replay_buffer) < replay_start_size:
             action = random.randrange(num_actions)
         else:
             with torch.no_grad():
@@ -122,10 +122,8 @@ def train_individual(
 
         if variant == "nstep":
             n_step_collector.push(state, action, reward, next_state, done)
-        elif variant == "per":
-            per_buffer.push(state, action, reward, next_state, done)
         else:
-            uniform_buffer.push(state, action, reward, next_state, done)
+            replay_buffer.push(state, action, reward, next_state, done)
 
         state = next_state
         if done:
@@ -133,23 +131,23 @@ def train_individual(
                 n_step_collector.flush_episode()
             state, _ = train_env.reset()
 
-        if memory_len >= replay_start_size:
+        if len(replay_buffer) >= replay_start_size:
             epsilon = max(epsilon_min, epsilon - epsilon_decay)
 
             batch_size = config["batch_size"]
-            can_train = memory_len > batch_size
+            can_train = len(replay_buffer) > batch_size
 
             if can_train:
                 is_weights = None
                 per_indices = None
 
                 if variant == "per":
-                    per_buffer.set_beta(frame, total_frames)
+                    replay_buffer.set_beta(frame, total_frames)
                     per_indices, states, actions, rewards, next_states, dones, is_weights = (
-                        per_buffer.sample(batch_size)
+                        replay_buffer.sample(batch_size)
                     )
                 else:
-                    states, actions, rewards, next_states, dones = uniform_buffer.sample(batch_size)
+                    states, actions, rewards, next_states, dones = replay_buffer.sample(batch_size)
 
                 states = torch.FloatTensor(states).to(DEVICE)
                 actions = torch.LongTensor(actions).unsqueeze(1).to(DEVICE)
@@ -188,7 +186,7 @@ def train_individual(
                 if variant == "per" and is_weights is not None:
                     weight_tensor = torch.FloatTensor(is_weights).unsqueeze(1).to(DEVICE)
                     loss = (elementwise_loss * weight_tensor).mean()
-                    per_buffer.update_priorities(per_indices, td_errors.squeeze(1).cpu().numpy())
+                    replay_buffer.update_priorities(per_indices, td_errors.squeeze(1).cpu().numpy())
                 else:
                     loss = elementwise_loss.mean()
 

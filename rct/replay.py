@@ -105,7 +105,7 @@ class PrioritizedReplayBuffer:
         probs = np.array(priorities, dtype=np.float64) / total
         min_prob = self.min_tree.min() / total
         min_prob = max(min_prob, 1e-12)
-        max_weight = (min_prob * self.size) ** (-self.beta)
+        max_weight = (min_prob * self.size) ** (-self.beta) if min_prob > 0 else 1.0
         weights = (probs * self.size) ** (-self.beta)
         weights /= max_weight
 

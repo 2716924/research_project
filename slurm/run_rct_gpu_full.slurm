@@ -19,7 +19,9 @@
 #SBATCH --job-name=rct-gpu-full
 #SBATCH --partition=biggpu
 #SBATCH --array=0-14
-#SBATCH --gres=gpu:1
+# GPU resource requests are cluster-specific. Comment this out or replace it with
+# whatever your cluster expects if it does not define a generic resource named "gpu".
+# SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=3-00:00:00
@@ -36,6 +38,8 @@ else
 fi
 
 rct_cd_submit_dir
+PROJECT_ROOT="$(cd "${SLURM_SUBMIT_DIR:-$PWD}"/.. && pwd)"
+cd "$PROJECT_ROOT"
 mkdir -p logs/rct-gpu-full
 
 sleep 20
