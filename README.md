@@ -11,7 +11,7 @@ run_rct.py              Main CLI — run one algorithmic arm
 analyze_rct.py          Paired t-tests + Bonferroni (Phase 4)
 verify_arms.py          Automated checks for all five algorithmic arms
 check_env.py            Cluster environment check
-slurm/                  Wits HPC GPU job scripts (biggpu partition)
+slurm/                  Wits HPC job scripts
 docs/EXPLAINER.md       Non-technical project guide
 docs/REFERENCES.md      Trusted implementation sources
 results/                JSON outputs (gitignored)
@@ -29,7 +29,7 @@ wandb/                  Local wandb runs (gitignored)
 | `nstep` | n-step learning — Hernandez-Garcia & Sutton 2019 |
 | `averaged` | Averaged DQN — Anschel et al. 2017 |
 
-## Cluster setup (Wits HPC — GPU only)
+## Cluster setup (Wits HPC — bigbatch CPU)
 
 ### 1. Sync code and install dependencies
 
@@ -59,46 +59,52 @@ Then run `source ~/.bashrc`.
 ~/.conda/envs/mltest/bin/python verify_arms.py
 ```
 
-### 4. Create log directories
-
-```bash
-mkdir -p logs/rct-gpu-test logs/rct-gpu-full results
-```
-
-### 5. GPU smoke test (run every variant before the full experiment)
+### 4. Create log directories (from project root)
 
 ```bash
 cd ~/research_project
-sbatch --export=RCT_VARIANT=control  slurm/run_rct_gpu_test.slurm
-sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_gpu_test.slurm
-sbatch --export=RCT_VARIANT=per      slurm/run_rct_gpu_test.slurm
-sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_gpu_test.slurm
-sbatch --export=RCT_VARIANT=averaged slurm/run_rct_gpu_test.slurm
+mkdir -p logs/rct-bigbatch-test logs/rct-bigbatch-variant results
+```
+
+### 5. CPU smoke test on bigbatch (run every variant first)
+
+Each submission launches **3 array tasks** (Breakout, Asterix, Freeway) for one variant:
+
+```bash
+cd ~/research_project
+sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_test.slurm
+sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_test.slurm
+sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_test.slurm
+sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_test.slurm
+sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_test.slurm
 ```
 
 Monitor:
 
 ```bash
 squeue -u $USER
-tail -f logs/rct-gpu-test/rct-gpu-test_<JOBID>_0.out
+tail -f logs/rct-bigbatch-test/rct-bigbatch-test_<JOBID>_0.out
 ```
 
-### 6. Full GPU experiment
-
-For the cluster’s submit limits, use the one-variant-at-a-time launcher instead of submitting all 15 tasks at once:
+### 6. Full CPU experiment (one variant at a time, 3 games in parallel)
 
 ```bash
-sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_variant.slurm
-sbatch --export=RCT_VARIANT=ddqn    slurm/run_rct_gpu_variant.slurm
-sbatch --export=RCT_VARIANT=per     slurm/run_rct_gpu_variant.slurm
-sbatch --export=RCT_VARIANT=nstep   slurm/run_rct_gpu_variant.slurm
-sbatch --export=RCT_VARIANT=averaged slurm/run_rct_gpu_variant.slurm
+cd ~/research_project
+sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_variant.slurm
+sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_variant.slurm
+sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_variant.slurm
+sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_variant.slurm
+sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_variant.slurm
 ```
 
-Each job runs the 3 games for that variant with a 3-day time limit. If a task is not finished, it saves progress and exits cleanly; auto-resubmission stays disabled by default to avoid hitting QOS limits.
+Each job uses the **bigbatch** partition (CPU, 3-day limit). Array tasks 0–2 run Breakout, Asterix, and Freeway simultaneously for the chosen variant. If a task hits the time limit, it saves progress and auto-resubmits.
 
 Results: `results/{variant}/{game}/`  
 W&B dashboard: https://wandb.ai/juniormatimu572-wits/DQN%20modifications
+
+### Optional: GPU runs on biggpu
+
+See `slurm/run_rct_gpu_test.slurm` and `slurm/run_rct_gpu_variant.slurm`.
 
 ## Analysis
 
@@ -109,4 +115,4 @@ python analyze_rct.py --results-root results --game-slug breakout
 ## Requirements
 
 - Python 3.10+
-- PyTorch with CUDA, Gymnasium, MinAtar ≥ 1.0.13, NumPy, SciPy, wandb
+- PyTorch, Gymnasium, MinAtar ≥ 1.0.13, NumPy, SciPy, wandb

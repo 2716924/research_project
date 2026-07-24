@@ -1,33 +1,32 @@
 """
-Run this once on the cluster (login node or a quick interactive job) after
-setting up your environment, BEFORE submitting the real SLURM jobs. It
-checks the three things that have actually broken so far: MinAtar's
-Gymnasium registration, and whether torch can see a GPU.
+Run this once on the cluster login node before submitting SLURM jobs.
+Checks MinAtar registration and CPU-only torch setup for bigbatch jobs.
 
     python check_env.py
 """
-import torch
+import os
+
+os.environ.setdefault("RCT_DEVICE", "cpu")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
+from rct.torch_setup import DEVICE
+
 import gymnasium as gym
 import minatar  # noqa: F401
 from minatar.gym import register_envs
 
 register_envs()
 
-print(f"torch version:      {torch.__version__}")
-print(f"CUDA available:     {torch.cuda.is_available()}")
-if torch.cuda.is_available():
-    print(f"GPU:                {torch.cuda.get_device_name(0)}")
-else:
-    print("No GPU visible -- if you expected one, check your --gres=gpu:N "
-          "request and that you loaded a CUDA-matched torch build.")
+print(f"Selected device:    {DEVICE}")
+print(f"RCT_DEVICE:         {os.environ.get('RCT_DEVICE')}")
+print(f"CUDA visible:       {os.environ.get('CUDA_VISIBLE_DEVICES', '<unset>')}")
 
 registered = sorted(k for k in gym.envs.registry.keys() if "MinAtar" in k)
 print(f"Registered MinAtar envs ({len(registered)}): {registered}")
 if not registered:
     raise SystemExit(
         "No MinAtar envs registered -- register_envs() did not work. "
-        "Check `pip show minatar` (need >= 1.0.13) and that you're not "
-        "shadowing the package with a local file/folder named minatar."
+        "Check `pip show minatar` (need >= 1.0.13)."
     )
 
 env = gym.make("MinAtar/Breakout-v1")

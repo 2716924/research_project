@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Shared setup helpers for Wits HPC SLURM GPU jobs (biggpu partition)
+# Shared setup helpers for Wits HPC SLURM jobs
 # =============================================================================
 
 rct_log_header() {
@@ -18,9 +18,44 @@ rct_log_header() {
     echo "========================================"
 }
 
-rct_cd_submit_dir() {
-    if [[ -n "${SLURM_SUBMIT_DIR:-}" ]]; then
-        cd "$SLURM_SUBMIT_DIR"
+# Find the repo root whether sbatch was run from ~/research_project or ~/research_project/slurm.
+rct_resolve_project_root() {
+    local submit_dir="${SLURM_SUBMIT_DIR:-$PWD}"
+
+    if [[ -f "${submit_dir}/run_rct.py" ]]; then
+        printf '%s\n' "${submit_dir}"
+        return 0
+    fi
+
+    if [[ -f "${submit_dir}/../run_rct.py" ]]; then
+        cd "${submit_dir}/.." && pwd
+        return 0
+    fi
+
+    echo "ERROR: cannot locate run_rct.py from submit dir: ${submit_dir}" >&2
+    exit 1
+}
+
+rct_cd_project_root() {
+    export PROJECT_ROOT="$(rct_resolve_project_root)"
+    cd "$PROJECT_ROOT"
+}
+
+rct_setup_cpu() {
+    source /etc/profile.d/lmod.sh 2>/dev/null || true
+    module purge 2>/dev/null || true
+    module load anaconda 2>/dev/null || true
+
+    export RCT_DEVICE=cpu
+    export CUDA_VISIBLE_DEVICES=""
+    export TORCH_CUDA_ARCH_LIST=""
+    export TORCH_CPP_LOG_LEVEL=ERROR
+
+    PYTHON="$HOME/.conda/envs/mltest/bin/python"
+    if [[ ! -x "$PYTHON" ]]; then
+        echo "ERROR: mltest environment not found at $PYTHON"
+        echo "Create it with: conda create -n mltest python=3.11 -y"
+        exit 1
     fi
 }
 
@@ -28,8 +63,6 @@ rct_setup_gpu() {
     source /etc/profile.d/lmod.sh 2>/dev/null || true
     module purge 2>/dev/null || true
 
-    # Try common module names on the cluster. Some systems do not expose an
-    # "anaconda" module at all, so we tolerate missing modules and fall back.
     if ! module load pytorch/2026-02-24 2>/dev/null; then
         module load python/3.11 2>/dev/null || true
         module load anaconda 2>/dev/null || true
@@ -49,10 +82,13 @@ rct_setup_gpu() {
         echo "ERROR: No usable Python with PyTorch found."
         exit 1
     fi
+}
 
-    if [[ -f "requirements.txt" ]]; then
+rct_install_python_deps() {
+    if [[ -f "${PROJECT_ROOT}/requirements.txt" ]]; then
         echo "Installing Python requirements from requirements.txt"
-        "$PYTHON" -m pip install --user --disable-pip-version-check -r requirements.txt >/dev/null 2>&1 || \
+        "$PYTHON" -m pip install --user --disable-pip-version-check \
+            -r "${PROJECT_ROOT}/requirements.txt" >/dev/null 2>&1 || \
             echo "WARNING: failed to install all requirements; continuing anyway"
     fi
 
@@ -117,22 +153,18 @@ print("Environment check passed.")
 print("Python:     ", sys.version.split()[0])
 print("Executable: ", sys.executable)
 print("Torch:      ", torch.__version__)
+print("RCT device: ", os.environ.get("RCT_DEVICE", "<auto>"))
 print("CUDA visible devices:", os.environ.get("CUDA_VISIBLE_DEVICES", "<unset>"))
-print("SLURM GPUs:", os.environ.get("SLURM_JOB_GPUS", "<unset>"))
-print("CUDA:       ", torch.cuda.is_available())
-if torch.cuda.is_available():
-    print("GPU:        ", torch.cuda.get_device_name(0))
+if os.environ.get("RCT_DEVICE", "").lower() == "cpu":
+    print("CUDA:       skipped (RCT_DEVICE=cpu)")
 else:
-    raise SystemExit("ERROR: PyTorch cannot see a GPU. Check that the job requested --gres=gpu:1 and that the node provides CUDA-capable hardware.")
+    print("CUDA:       ", torch.cuda.is_available())
+    if torch.cuda.is_available():
+        print("GPU:        ", torch.cuda.get_device_name(0))
 EOF
 }
 
 # Map array task ID (0-14) to variant + game
-#   tasks 0-2   -> control  × 3 games
-#   tasks 3-5   -> ddqn     × 3 games
-#   tasks 6-8   -> per      × 3 games
-#   tasks 9-11  -> nstep    × 3 games
-#   tasks 12-14 -> averaged × 3 games
 rct_map_array_task() {
     local VARIANTS=(control ddqn per nstep averaged)
     local GAMES=("MinAtar/Breakout-v1" "MinAtar/Asterix-v1" "MinAtar/Freeway-v1")
@@ -158,7 +190,6 @@ rct_map_game_only() {
     export RCT_VARIANT="${RCT_VARIANT:-control}"
 }
 
-# Return 0 when this array task still has unfinished individuals.
 rct_task_incomplete() {
     "$PYTHON" - <<'EOF'
 import os
@@ -177,7 +208,6 @@ sys.exit(0 if len(completed) < num_individuals else 1)
 EOF
 }
 
-# Resubmit the same array task when work remains (used after 3-day limit).
 rct_resubmit_if_incomplete() {
     local SLURM_SCRIPT="$1"
 
@@ -194,7 +224,7 @@ rct_resubmit_if_incomplete() {
             --dependency=afterany:"${SLURM_JOB_ID}" \
             --array="${SLURM_ARRAY_TASK_ID}" \
             --export=ALL \
-            "${SLURM_SUBMIT_DIR}/${SLURM_SCRIPT}"
+            "${PROJECT_ROOT}/${SLURM_SCRIPT}"
     else
         echo ""
         echo "All individuals complete for task ${SLURM_ARRAY_TASK_ID}."

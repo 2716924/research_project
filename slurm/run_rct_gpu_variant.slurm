@@ -40,9 +40,7 @@ else
     source "${SLURM_SUBMIT_DIR}/common.sh"
 fi
 
-rct_cd_submit_dir
-PROJECT_ROOT="$(cd "${SLURM_SUBMIT_DIR:-$PWD}"/.. && pwd)"
-cd "$PROJECT_ROOT"
+rct_cd_project_root
 mkdir -p logs/rct-gpu-variant
 
 if [[ -z "${RCT_VARIANT:-}" ]]; then
@@ -50,10 +48,13 @@ if [[ -z "${RCT_VARIANT:-}" ]]; then
     exit 1
 fi
 
+export RCT_AUTO_RESUBMIT="${RCT_AUTO_RESUBMIT:-1}"
+
 sleep 20
 rct_log_header
 rct_export_time_budget
 rct_setup_gpu
+rct_install_python_deps
 rct_setup_wandb
 rct_check_python
 rct_map_game_only

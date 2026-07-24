@@ -1,59 +1,59 @@
 #!/bin/bash
 # =============================================================================
-# RCT GPU VARIANT — one variant at a time, three games, full run
+# RCT BIGBATCH — one variant at a time, three games in parallel (CPU)
 # =============================================================================
 #
-# Submit one variant at a time to keep the job count lower and avoid QOS limits.
-# Use a GPU-capable partition here; the previous bigbatch queue is not suitable
-# for these jobs. The job is configured with SLURM requeueing so it will
-# automatically restart if the 3-day wall time is reached.
+# Partition: bigbatch (CPU-only, 3-day limit)
 #
-# EXAMPLE:
-#   sbatch --export=RCT_VARIANT=control slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=ddqn    slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=per     slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=nstep   slurm/run_rct_bigbatch_variant.slurm
+# BEFORE SUBMITTING (once, from project root):
+#   mkdir -p logs/rct-bigbatch-variant results
+#
+# SUBMIT one variant at a time (launches 3 array tasks: breakout/asterix/freeway):
+#   cd ~/research_project
+#   sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_variant.slurm
+#   sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_variant.slurm
+#   sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_variant.slurm
+#   sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_variant.slurm
 #   sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_variant.slurm
 #
 # =============================================================================
 
-#SBATCH --job-name=rct-gpu-variant
-#SBATCH --partition=biggpu
-# Some clusters reject explicit GRES requests; leave this commented and rely on
-# the GPU-capable partition selection instead.
-# SBATCH --gres=gpu:1
-# SBATCH --constraint=gpu
-# Run only 3 game tasks for one variant, with limited concurrency.
-#SBATCH --array=0-2%2
+#SBATCH --job-name=rct-bigbatch
+#SBATCH --partition=bigbatch
+#SBATCH --array=0-2
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=3-00:00:00
-#SBATCH --output=logs/rct-gpu-variant/%x_%A_%a.out
-#SBATCH --error=logs/rct-gpu-variant/%x_%A_%a.err
+#SBATCH --output=logs/rct-bigbatch-variant/%x_%A_%a.out
+#SBATCH --error=logs/rct-bigbatch-variant/%x_%A_%a.err
 #SBATCH --requeue
 
 set -euo pipefail
 
 if [[ -f "${SLURM_SUBMIT_DIR}/slurm/common.sh" ]]; then
     source "${SLURM_SUBMIT_DIR}/slurm/common.sh"
-else
+elif [[ -f "${SLURM_SUBMIT_DIR}/common.sh" ]]; then
     source "${SLURM_SUBMIT_DIR}/common.sh"
+else
+    echo "ERROR: slurm/common.sh not found"
+    exit 1
 fi
 
-rct_cd_submit_dir
-PROJECT_ROOT="$(cd "${SLURM_SUBMIT_DIR:-$PWD}"/.. && pwd)"
-cd "$PROJECT_ROOT"
-mkdir -p logs/rct-gpu-variant
+rct_cd_project_root
+mkdir -p logs/rct-bigbatch-variant results
 
 if [[ -z "${RCT_VARIANT:-}" ]]; then
     echo "ERROR: RCT_VARIANT must be set, e.g. control, ddqn, per, nstep, averaged"
     exit 1
 fi
 
+export RCT_AUTO_RESUBMIT="${RCT_AUTO_RESUBMIT:-1}"
+
 sleep 20
 rct_log_header
 rct_export_time_budget
-rct_setup_gpu
+rct_setup_cpu
+rct_install_python_deps
 rct_setup_wandb
 rct_check_python
 rct_map_game_only
@@ -64,13 +64,13 @@ export OUTPUT_DIR
 mkdir -p "$OUTPUT_DIR"
 
 echo ""
-echo "Variant:    $RCT_VARIANT"
-echo "Game:       $RCT_GAME"
-echo "Output dir: $OUTPUT_DIR"
-echo "Mode:       GPU full run (one variant at a time)"
-echo "Auto-resubmit: 1"
-echo "W&B entity: ${WANDB_ENTITY}"
-echo "W&B project:${WANDB_PROJECT}"
+echo "Variant:       $RCT_VARIANT"
+echo "Game:          $RCT_GAME"
+echo "Output dir:    $OUTPUT_DIR"
+echo "Mode:          CPU full run (bigbatch)"
+echo "Auto-resubmit: $RCT_AUTO_RESUBMIT"
+echo "W&B entity:    ${WANDB_ENTITY}"
+echo "W&B project:   ${WANDB_PROJECT}"
 echo ""
 
 set +e

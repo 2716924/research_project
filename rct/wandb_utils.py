@@ -70,7 +70,6 @@ def init_run(
             "pilot": pilot,
             **config,
         },
-        reinit=True,
     )
 
 

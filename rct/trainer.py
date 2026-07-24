@@ -53,7 +53,7 @@ def train_individual(
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
+    if DEVICE.type == "cuda":
         torch.cuda.manual_seed_all(seed)
 
     train_env = gym.make(game_id)
@@ -64,6 +64,7 @@ def train_individual(
     target_network = MinAtarQNetwork(
         in_channels, num_actions, num_layers=config["num_layers"]
     ).to(DEVICE)
+    q_network.train()
     target_network.load_state_dict(q_network.state_dict())
     target_network.eval()
 
