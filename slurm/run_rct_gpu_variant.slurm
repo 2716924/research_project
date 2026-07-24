@@ -4,6 +4,8 @@
 # =============================================================================
 #
 # Submit one variant at a time to keep the job count lower and avoid QOS limits.
+# Auto-resubmission is enabled by default for this launcher so interrupted runs
+# can continue without manual re-submission.
 #
 # EXAMPLE:
 #   sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_variant.slurm
@@ -61,7 +63,7 @@ echo "Variant:    $RCT_VARIANT"
 echo "Game:       $RCT_GAME"
 echo "Output dir: $OUTPUT_DIR"
 echo "Mode:       GPU full run (one variant at a time)"
-echo "Auto-resubmit: ${RCT_AUTO_RESUBMIT:-0}"
+echo "Auto-resubmit: 1"
 echo "W&B entity: ${WANDB_ENTITY}"
 echo "W&B project:${WANDB_PROJECT}"
 echo ""
