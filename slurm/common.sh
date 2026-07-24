@@ -107,6 +107,7 @@ rct_check_python() {
     "$PYTHON" --version
     echo ""
     "$PYTHON" - <<'EOF'
+import os
 import sys
 import torch
 import gymnasium
@@ -116,9 +117,13 @@ print("Environment check passed.")
 print("Python:     ", sys.version.split()[0])
 print("Executable: ", sys.executable)
 print("Torch:      ", torch.__version__)
+print("CUDA visible devices:", os.environ.get("CUDA_VISIBLE_DEVICES", "<unset>"))
+print("SLURM GPUs:", os.environ.get("SLURM_JOB_GPUS", "<unset>"))
 print("CUDA:       ", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("GPU:        ", torch.cuda.get_device_name(0))
+else:
+    raise SystemExit("ERROR: PyTorch cannot see a GPU. Check that the job requested --gres=gpu:1 and that the node provides CUDA-capable hardware.")
 EOF
 }
 

@@ -17,7 +17,9 @@
 # =============================================================================
 
 #SBATCH --job-name=rct-gpu-variant
+# Use the GPU-capable partition for these runs.
 #SBATCH --partition=biggpu
+#SBATCH --gres=gpu:1
 # Run only 3 game tasks for one variant, with limited concurrency.
 #SBATCH --array=0-2%2
 #SBATCH --cpus-per-task=4
