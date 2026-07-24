@@ -85,14 +85,17 @@ tail -f logs/rct-gpu-test/rct-gpu-test_<JOBID>_0.out
 
 ### 6. Full GPU experiment
 
-Submits 15 array tasks (5 variants × 3 games) on the `biggpu` partition:
+For the cluster’s submit limits, use the one-variant-at-a-time launcher instead of submitting all 15 tasks at once:
 
 ```bash
-sbatch slurm/run_rct_gpu_full.slurm
+sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_variant.slurm
+sbatch --export=RCT_VARIANT=ddqn    slurm/run_rct_gpu_variant.slurm
+sbatch --export=RCT_VARIANT=per     slurm/run_rct_gpu_variant.slurm
+sbatch --export=RCT_VARIANT=nstep   slurm/run_rct_gpu_variant.slurm
+sbatch --export=RCT_VARIANT=averaged slurm/run_rct_gpu_variant.slurm
 ```
 
-Each task has a 3-day time limit. If a task is not finished, it saves progress,
-exits cleanly, and **automatically resubmits** until all 30 individuals complete.
+Each job runs the 3 games for that variant with a 3-day time limit. If a task is not finished, it saves progress and exits cleanly; auto-resubmission stays disabled by default to avoid hitting QOS limits.
 
 Results: `results/{variant}/{game}/`  
 W&B dashboard: https://wandb.ai/juniormatimu572-wits/DQN%20modifications

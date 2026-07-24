@@ -11,14 +11,17 @@
 #   sbatch slurm/run_rct_gpu_full.slurm
 #
 # Each array task runs until all 30 individuals finish. If the 3-day SLURM
-# limit is reached, the job exits cleanly (saving progress) and resubmits
-# itself until the task is complete.
+# limit is reached, the job exits cleanly (saving progress). Auto-resubmit is
+# disabled by default to avoid hitting QOS submit limits; set
+# RCT_AUTO_RESUBMIT=1 when you want the job to resubmit itself.
 #
 # =============================================================================
 
 #SBATCH --job-name=rct-gpu-full
 #SBATCH --partition=biggpu
-#SBATCH --array=0-14
+# Use a lower concurrency by default to avoid hitting per-user QOS limits.
+# Increase or remove the "%4" suffix if your account allows more simultaneous tasks.
+#SBATCH --array=0-14%4
 # GPU resource requests are cluster-specific. Comment this out or replace it with
 # whatever your cluster expects if it does not define a generic resource named "gpu".
 # SBATCH --gres=gpu:1
@@ -59,7 +62,8 @@ echo ""
 echo "Variant:    $RCT_VARIANT"
 echo "Game:       $RCT_GAME"
 echo "Output dir: $OUTPUT_DIR"
-echo "Mode:       GPU full run (auto-resubmit on 3-day limit)"
+echo "Mode:       GPU full run"
+echo "Auto-resubmit: ${RCT_AUTO_RESUBMIT:-0}"
 echo "W&B entity: ${WANDB_ENTITY}"
 echo "W&B project:${WANDB_PROJECT}"
 echo ""

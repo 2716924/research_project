@@ -176,6 +176,12 @@ EOF
 rct_resubmit_if_incomplete() {
     local SLURM_SCRIPT="$1"
 
+    if [[ "${RCT_AUTO_RESUBMIT:-0}" != "1" ]]; then
+        echo ""
+        echo "Auto-resubmit disabled (RCT_AUTO_RESUBMIT=${RCT_AUTO_RESUBMIT:-0})."
+        return 0
+    fi
+
     if rct_task_incomplete; then
         echo ""
         echo "Work remains for task ${SLURM_ARRAY_TASK_ID} — resubmitting..."
