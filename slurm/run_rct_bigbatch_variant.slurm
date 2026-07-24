@@ -19,7 +19,10 @@
 
 #SBATCH --job-name=rct-gpu-variant
 #SBATCH --partition=biggpu
-#SBATCH --gres=gpu:1
+# Some clusters reject explicit GRES requests; leave this commented and rely on
+# the GPU-capable partition selection instead.
+# SBATCH --gres=gpu:1
+# SBATCH --constraint=gpu
 # Run only 3 game tasks for one variant, with limited concurrency.
 #SBATCH --array=0-2%2
 #SBATCH --cpus-per-task=4
