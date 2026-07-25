@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Shared setup helpers for Wits HPC SLURM jobs
+# Shared setup helpers for Wits HPC SLURM jobs (CPU-only, bigbatch partition)
 # =============================================================================
 
 rct_log_header() {
@@ -59,65 +59,12 @@ rct_setup_cpu() {
     fi
 }
 
-rct_setup_gpu() {
-    source /etc/profile.d/lmod.sh 2>/dev/null || true
-    module purge 2>/dev/null || true
-
-    if ! module load pytorch/2026-02-24 2>/dev/null; then
-        module load python/3.11 2>/dev/null || true
-        module load anaconda 2>/dev/null || true
-    fi
-
-    export TORCH_CPP_LOG_LEVEL=ERROR
-
-    if command -v python &>/dev/null && python -c "import torch" &>/dev/null; then
-        PYTHON="$(command -v python)"
-    elif [[ -x "$HOME/.conda/envs/mltest/bin/python" ]]; then
-        PYTHON="$HOME/.conda/envs/mltest/bin/python"
-    else
-        PYTHON="$(which python 2>/dev/null || true)"
-    fi
-
-    if [[ -z "${PYTHON:-}" || ! -x "$PYTHON" ]]; then
-        echo "ERROR: No usable Python with PyTorch found."
-        exit 1
-    fi
-}
-
 rct_install_python_deps() {
     if [[ -f "${PROJECT_ROOT}/requirements.txt" ]]; then
         echo "Installing Python requirements from requirements.txt"
         "$PYTHON" -m pip install --user --disable-pip-version-check \
             -r "${PROJECT_ROOT}/requirements.txt" >/dev/null 2>&1 || \
             echo "WARNING: failed to install all requirements; continuing anyway"
-    fi
-
-    if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
-import importlib.util
-print(importlib.util.find_spec("wandb") is not None)
-PY
-    then
-        echo "Installing wandb into ${PYTHON}"
-        "$PYTHON" -m pip install --user --disable-pip-version-check wandb >/dev/null 2>&1 || true
-
-        if ! "$PYTHON" - <<'PY' >/dev/null 2>&1
-import importlib.util
-print(importlib.util.find_spec("wandb") is not None)
-PY
-        then
-            echo "WARNING: wandb could not be installed; disabling W&B for this job."
-            export WANDB_DISABLED=1
-        fi
-    fi
-}
-
-rct_setup_wandb() {
-    export WANDB_ENTITY="${WANDB_ENTITY:-juniormatimu572-wits}"
-    export WANDB_PROJECT="${WANDB_PROJECT:-DQN modifications}"
-
-    if [[ -z "${WANDB_API_KEY:-}" ]]; then
-        echo "WARNING: WANDB_API_KEY is not set — wandb will run in offline mode."
-        export WANDB_MODE=offline
     fi
 }
 
@@ -153,30 +100,9 @@ print("Environment check passed.")
 print("Python:     ", sys.version.split()[0])
 print("Executable: ", sys.executable)
 print("Torch:      ", torch.__version__)
-print("RCT device: ", os.environ.get("RCT_DEVICE", "<auto>"))
+print("Device:      CPU (GPU disabled)")
 print("CUDA visible devices:", os.environ.get("CUDA_VISIBLE_DEVICES", "<unset>"))
-if os.environ.get("RCT_DEVICE", "").lower() == "cpu":
-    print("CUDA:       skipped (RCT_DEVICE=cpu)")
-else:
-    print("CUDA:       ", torch.cuda.is_available())
-    if torch.cuda.is_available():
-        print("GPU:        ", torch.cuda.get_device_name(0))
 EOF
-}
-
-# Map array task ID (0-14) to variant + game
-rct_map_array_task() {
-    local VARIANTS=(control ddqn per nstep averaged)
-    local GAMES=("MinAtar/Breakout-v1" "MinAtar/Asterix-v1" "MinAtar/Freeway-v1")
-    local GAME_SLUGS=(breakout asterix freeway)
-
-    local TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
-    VARIANT_IDX=$(( TASK_ID / 3 ))
-    GAME_IDX=$(( TASK_ID % 3 ))
-
-    export RCT_VARIANT="${VARIANTS[$VARIANT_IDX]}"
-    export RCT_GAME="${GAMES[$GAME_IDX]}"
-    export RCT_GAME_SLUG="${GAME_SLUGS[$GAME_IDX]}"
 }
 
 # Map array task ID (0-2) to game only (single variant passed via RCT_VARIANT)

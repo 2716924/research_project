@@ -7,14 +7,11 @@ or treatment) uses the same hyperparameter individuals and games, so
 results can be compared fairly later.
 
 Examples:
-    # Quick GPU smoke test
+    # Quick CPU smoke test
     python run_rct.py --variant control --pilot
 
     # Full treatment arm on one game
     python run_rct.py --variant ddqn --game MinAtar/Breakout-v1
-
-    # Disable wandb locally
-    WANDB_DISABLED=true python run_rct.py --variant control --pilot
 """
 
 import argparse
@@ -48,35 +45,10 @@ def main():
         help="Short smoke-test run instead of full proposal scale",
     )
     parser.add_argument(
-        "--wandb",
-        dest="use_wandb",
-        action="store_true",
-        default=True,
-        help="Log metrics to Weights & Biases",
-    )
-    parser.add_argument(
-        "--no-wandb",
-        dest="use_wandb",
-        action="store_false",
-        help="Disable Weights & Biases logging",
-    )
-    parser.add_argument(
-        "--wandb-entity",
-        type=str,
-        default=None,
-        help="wandb entity (defaults to WANDB_ENTITY env or project default)",
-    )
-    parser.add_argument(
-        "--wandb-project",
-        type=str,
-        default=None,
-        help="wandb project (defaults to WANDB_PROJECT env or project default)",
-    )
-    parser.add_argument(
         "--log-every",
         type=int,
         default=1000,
-        help="Log training loss to wandb every N frames",
+        help="Log training loss every N frames",
     )
     args = parser.parse_args()
 
@@ -93,9 +65,6 @@ def main():
             output_dir=args.output_dir,
             games=games,
             pilot=True,
-            use_wandb=args.use_wandb,
-            wandb_entity=args.wandb_entity,
-            wandb_project=args.wandb_project,
             log_every=args.log_every,
         )
     else:
@@ -108,9 +77,6 @@ def main():
             output_dir=args.output_dir,
             games=games,
             pilot=False,
-            use_wandb=args.use_wandb,
-            wandb_entity=args.wandb_entity,
-            wandb_project=args.wandb_project,
             log_every=args.log_every,
         )
 

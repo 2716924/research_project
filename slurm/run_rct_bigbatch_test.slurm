@@ -33,7 +33,7 @@ else
 fi
 
 rct_cd_project_root
-mkdir -p logs/rct-bigbatch-test results
+mkdir -p logs/rct-bigbatch-test results 2>/dev/null
 
 if [[ -z "${RCT_VARIANT:-}" ]]; then
     echo "ERROR: RCT_VARIANT must be set, e.g. control, ddqn, per, nstep, averaged"
@@ -45,14 +45,13 @@ rct_log_header
 rct_export_time_budget
 rct_setup_cpu
 rct_install_python_deps
-rct_setup_wandb
 rct_check_python
 rct_map_game_only
 
 export RCT_NUM_INDIVIDUALS=3
 OUTPUT_DIR="results/${RCT_VARIANT}/${RCT_GAME_SLUG}-pilot"
 export OUTPUT_DIR
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" 2>/dev/null
 
 echo ""
 echo "Variant:    $RCT_VARIANT"
@@ -66,9 +65,7 @@ set +e
     --variant "$RCT_VARIANT" \
     --game "$RCT_GAME" \
     --pilot \
-    --output-dir "$OUTPUT_DIR" \
-    --wandb-entity "$WANDB_ENTITY" \
-    --wandb-project "$WANDB_PROJECT"
+    --output-dir "$OUTPUT_DIR"
 RUN_EXIT=$?
 set -e
 

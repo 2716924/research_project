@@ -30,7 +30,15 @@ from rct.targets import (
 )
 from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
-from rct.wandb_utils import log_eval_metrics, log_training_metrics
+
+# Check the SLURM time limit every N frames to avoid per-frame syscall overhead.
+_TIME_CHECK_INTERVAL = 10_000
+
+
+def _np_to_tensor(arr, dtype=torch.float32):
+    """Zero-copy numpy → torch conversion when dtypes already match."""
+    t = torch.from_numpy(np.ascontiguousarray(arr))
+    return t if t.dtype == dtype else t.to(dtype)
 
 
 def train_individual(
@@ -43,7 +51,6 @@ def train_individual(
     eval_frequency,
     num_eval_episodes,
     gamma=0.99,
-    wandb_run=None,
     log_every=1000,
 ):
     """Train a single hyperparameter individual and return its eval trajectory."""
@@ -53,8 +60,6 @@ def train_individual(
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    if DEVICE.type == "cuda":
-        torch.cuda.manual_seed_all(seed)
 
     train_env = gym.make(game_id)
 
@@ -106,17 +111,22 @@ def train_individual(
     epsilon_decay = (1.0 - epsilon_min) / config["epsilon_decay_steps"]
     replay_start_size = config["replay_start_size"]
 
+    # Pre-allocate a reusable tensor for single-state action selection.
+    # MinAtar obs shape is fixed for a given game, so this is safe.
+    _state_buf = torch.empty(1, *state.shape, dtype=torch.float32)
+
     for frame in range(total_frames):
-        if should_stop_for_time_limit():
+        # Check SLURM time limit periodically, not every frame.
+        if frame % _TIME_CHECK_INTERVAL == 0 and should_stop_for_time_limit():
             print("    Approaching SLURM time limit — stopping mid-individual for resume.")
             break
 
         if random.random() < epsilon or len(replay_buffer) < replay_start_size:
             action = random.randrange(num_actions)
         else:
-            with torch.no_grad():
-                state_tensor = torch.FloatTensor(state).unsqueeze(0).to(DEVICE)
-                action = q_network(state_tensor).argmax(dim=1).item()
+            with torch.inference_mode():
+                _state_buf[0] = torch.from_numpy(np.ascontiguousarray(state))
+                action = q_network(_state_buf).argmax(dim=1).item()
 
         next_state, reward, terminated, truncated, _ = train_env.step(action)
         done = terminated or truncated
@@ -150,27 +160,28 @@ def train_individual(
                 else:
                     states, actions, rewards, next_states, dones = replay_buffer.sample(batch_size)
 
-                states = torch.FloatTensor(states).to(DEVICE)
-                actions = torch.LongTensor(actions).unsqueeze(1).to(DEVICE)
-                rewards = torch.FloatTensor(rewards).unsqueeze(1).to(DEVICE)
-                next_states = torch.FloatTensor(next_states).to(DEVICE)
-                dones = torch.FloatTensor(dones).unsqueeze(1).to(DEVICE)
+                # Zero-copy numpy→tensor (buffer stores float32/int64 natively).
+                states_t = _np_to_tensor(states)
+                actions_t = _np_to_tensor(actions, dtype=torch.long).unsqueeze(1)
+                rewards_t = _np_to_tensor(rewards).unsqueeze(1)
+                next_states_t = _np_to_tensor(next_states)
+                dones_t = _np_to_tensor(dones).unsqueeze(1)
 
-                current_q_values = q_network(states).gather(1, actions)
+                current_q_values = q_network(states_t).gather(1, actions_t)
 
                 if variant == "ddqn":
                     target_q_values = double_dqn_target(
-                        next_states, rewards, dones, q_network, target_network, gamma
+                        next_states_t, rewards_t, dones_t, q_network, target_network, gamma
                     )
                 elif variant == "averaged":
                     target_q_values = target_ensemble.compute_target(
-                        next_states, rewards, dones, target_network, gamma
+                        next_states_t, rewards_t, dones_t, target_network, gamma
                     )
                 elif variant == "nstep":
                     target_q_values = nstep_target(
-                        next_states,
-                        rewards,
-                        dones,
+                        next_states_t,
+                        rewards_t,
+                        dones_t,
                         target_network,
                         gamma,
                         TREATMENT_DEFAULTS["nstep"]["n_step"],
@@ -178,30 +189,30 @@ def train_individual(
                 else:
                     # control and per: uniform 1-step max-Q bootstrap
                     target_q_values = control_target(
-                        next_states, rewards, dones, target_network, gamma
+                        next_states_t, rewards_t, dones_t, target_network, gamma
                     )
 
                 td_errors = (current_q_values - target_q_values).detach()
                 elementwise_loss = F.mse_loss(current_q_values, target_q_values, reduction="none")
 
                 if variant == "per" and is_weights is not None:
-                    weight_tensor = torch.FloatTensor(is_weights).unsqueeze(1).to(DEVICE)
+                    weight_tensor = _np_to_tensor(is_weights).unsqueeze(1)
                     loss = (elementwise_loss * weight_tensor).mean()
-                    replay_buffer.update_priorities(per_indices, td_errors.squeeze(1).cpu().numpy())
+                    # .numpy() works directly on detached CPU tensors.
+                    replay_buffer.update_priorities(
+                        per_indices, td_errors.squeeze(1).numpy()
+                    )
                 else:
                     loss = elementwise_loss.mean()
 
-                optimizer.zero_grad()
+                optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 optimizer.step()
 
-                if wandb_run is not None and (frame + 1) % log_every == 0:
-                    log_training_metrics(
-                        wandb_run,
-                        frame=frame + 1,
-                        loss=loss.item(),
-                        epsilon=epsilon,
-                        variant=variant,
+                if (frame + 1) % log_every == 0:
+                    print(
+                        f"    [{variant}] frame {frame + 1}/{total_frames} | "
+                        f"loss: {loss.item():.6f} | epsilon: {epsilon:.4f}"
                     )
 
             if (frame + 1) % config["target_update_freq"] == 0:
@@ -215,12 +226,6 @@ def train_individual(
             print(
                 f"    [{variant}] frame {frame + 1}/{total_frames} | "
                 f"eval mean return: {mean_score:.3f}"
-            )
-            log_eval_metrics(
-                wandb_run,
-                frame=frame + 1,
-                mean_return=mean_score,
-                variant=variant,
             )
 
     train_env.close()

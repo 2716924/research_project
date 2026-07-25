@@ -40,7 +40,7 @@ else
 fi
 
 rct_cd_project_root
-mkdir -p logs/rct-bigbatch-variant results
+mkdir -p logs/rct-bigbatch-variant results 2>/dev/null
 
 if [[ -z "${RCT_VARIANT:-}" ]]; then
     echo "ERROR: RCT_VARIANT must be set, e.g. control, ddqn, per, nstep, averaged"
@@ -54,14 +54,13 @@ rct_log_header
 rct_export_time_budget
 rct_setup_cpu
 rct_install_python_deps
-rct_setup_wandb
 rct_check_python
 rct_map_game_only
 
 export RCT_NUM_INDIVIDUALS=30
 OUTPUT_DIR="results/${RCT_VARIANT}/${RCT_GAME_SLUG}"
 export OUTPUT_DIR
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" 2>/dev/null
 
 echo ""
 echo "Variant:       $RCT_VARIANT"
@@ -69,8 +68,6 @@ echo "Game:          $RCT_GAME"
 echo "Output dir:    $OUTPUT_DIR"
 echo "Mode:          CPU full run (bigbatch)"
 echo "Auto-resubmit: $RCT_AUTO_RESUBMIT"
-echo "W&B entity:    ${WANDB_ENTITY}"
-echo "W&B project:   ${WANDB_PROJECT}"
 echo ""
 
 set +e
@@ -81,9 +78,7 @@ set +e
     --total-frames 5000000 \
     --eval-frequency 50000 \
     --num-eval-episodes 10 \
-    --output-dir "$OUTPUT_DIR" \
-    --wandb-entity "$WANDB_ENTITY" \
-    --wandb-project "$WANDB_PROJECT"
+    --output-dir "$OUTPUT_DIR"
 RUN_EXIT=$?
 set -e
 

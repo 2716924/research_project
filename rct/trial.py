@@ -9,7 +9,6 @@ from rct.sampling import sample_individuals
 from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
 from rct.trainer import train_individual
-from rct.wandb_utils import finish_run, init_run, log_individual_summary
 
 
 def execute_rct_trial(
@@ -21,16 +20,13 @@ def execute_rct_trial(
     output_dir=".",
     games=None,
     pilot=False,
-    use_wandb=True,
-    wandb_entity=None,
-    wandb_project=None,
     log_every=1000,
 ):
     """
     Train one RCT arm (control or treatment) across games and individuals.
 
     Results are written to JSON files and can be resumed if a cluster job
-    is interrupted.
+    is interrupted. All logging goes to stdout (captured by SLURM .out files).
     """
     import os
 
@@ -40,10 +36,6 @@ def execute_rct_trial(
 
     print(f"Variant: {VARIANT_LABELS[variant]}")
     print(f"Using device: {DEVICE}")
-    if use_wandb:
-        print("Weights & Biases logging: enabled")
-    else:
-        print("Weights & Biases logging: disabled")
 
     stopped_early = False
 
@@ -92,19 +84,6 @@ def execute_rct_trial(
             print(f"\n--- Individual {j + 1}/{num_individuals} ---")
             print(f"Seed: {individual['seed']} | Settings: {individual['config']}")
 
-            wandb_run = None
-            if use_wandb:
-                wandb_run = init_run(
-                    variant=variant,
-                    game_id=game_id,
-                    individual_id=j,
-                    seed=individual["seed"],
-                    config=individual["config"],
-                    pilot=pilot,
-                    entity=wandb_entity,
-                    project=wandb_project,
-                )
-
             eval_trajectory, finished = train_individual(
                 variant=variant,
                 game_id=game_id,
@@ -114,7 +93,6 @@ def execute_rct_trial(
                 total_frames=total_frames,
                 eval_frequency=eval_frequency,
                 num_eval_episodes=num_eval_episodes,
-                wandb_run=wandb_run,
                 log_every=log_every,
             )
 
@@ -123,7 +101,6 @@ def execute_rct_trial(
                     f"Individual {j + 1} incomplete (time limit) — "
                     "progress saved only for completed individuals."
                 )
-                finish_run(wandb_run, exit_code=2)
                 stopped_early = True
                 break
 
@@ -137,13 +114,6 @@ def execute_rct_trial(
             })
             completed_ids.add(j)
             print(f"Completed {variant}. AUC: {computed_auc:.4f}")
-
-            if use_wandb:
-                log_individual_summary(
-                    wandb_run,
-                    auc=computed_auc,
-                    num_eval_points=len(eval_trajectory),
-                )
 
             save_results(out_path, metadata, game_results)
 
