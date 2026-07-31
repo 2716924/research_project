@@ -148,9 +148,10 @@ def test_averaged_ensemble():
     gamma = 0.99
 
     out = ensemble.compute_target(next_states, rewards, dones, fallback, gamma)
-    max_qs = [net(next_states).max(1)[0].item() for net in nets]
-    expected_next_q = sum(max_qs) / len(max_qs)
-    assert_close("averaged max-Q", out.item(), gamma * expected_next_q)
+    q_sum = sum(net(next_states) for net in nets)
+    avg_q = q_sum / len(nets)
+    expected_next_q = avg_q.max(1)[0].item()
+    assert_close("averaged max-of-avg-Q", out.item(), gamma * expected_next_q)
 
 
 def test_trainer_variant_isolation():

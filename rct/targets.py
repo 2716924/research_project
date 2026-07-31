@@ -74,10 +74,11 @@ class AveragedTargetEnsemble:
             if not self.snapshots:
                 next_q = fallback_target_network(next_states).max(1)[0].unsqueeze(1)
             else:
-                averaged = None
+                q_sum = None
                 for state_dict in self.snapshots:
                     self._eval_network.load_state_dict(state_dict)
-                    max_q = self._eval_network(next_states).max(1)[0].unsqueeze(1)
-                    averaged = max_q if averaged is None else averaged + max_q
-                next_q = averaged / len(self.snapshots)
+                    q_all = self._eval_network(next_states)
+                    q_sum = q_all if q_sum is None else q_sum + q_all
+                avg_q = q_sum / len(self.snapshots)
+                next_q = avg_q.max(1)[0].unsqueeze(1)
             return rewards + (gamma * next_q * (1 - dones))

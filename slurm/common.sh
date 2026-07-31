@@ -3,19 +3,51 @@
 # Shared setup helpers for Wits HPC SLURM jobs (CPU-only, bigbatch partition)
 # =============================================================================
 
+# Timestamp used consistently across all log functions
+_RCT_START_EPOCH=$(date +%s)
+
 rct_log_header() {
-    echo "========================================"
-    echo "Date:              $(date)"
-    echo "User:              $USER"
-    echo "Job ID:            ${SLURM_JOB_ID:-local}"
-    echo "Job Name:          ${SLURM_JOB_NAME:-local}"
-    echo "Array Task ID:     ${SLURM_ARRAY_TASK_ID:-0}"
-    echo "Node:              $(hostname)"
-    echo "Working Directory: $PWD"
-    echo "Submit Directory:  ${SLURM_SUBMIT_DIR:-$PWD}"
-    echo "CPUs per task:     ${SLURM_CPUS_PER_TASK:-1}"
-    echo "End time:          ${SLURM_JOB_END_TIME:-n/a}"
-    echo "========================================"
+    local variant="${RCT_VARIANT:-unknown}"
+    local game="${RCT_GAME_SLUG:-unknown}"
+    echo ""
+    echo "############################################################"
+    echo "#  RCT JOB — ${variant} / ${game}"
+    echo "############################################################"
+    echo "#  Started:       $(date '+%Y-%m-%d %H:%M:%S %Z')"
+    echo "#  User:          ${USER:-unknown}"
+    echo "#  Job ID:        ${SLURM_JOB_ID:-local}"
+    echo "#  Job name:      ${SLURM_JOB_NAME:-local}"
+    echo "#  Array task:    ${SLURM_ARRAY_TASK_ID:-0}  (0=breakout 1=asterix 2=freeway)"
+    echo "#  Node:          $(hostname)"
+    echo "#  CPUs/task:     ${SLURM_CPUS_PER_TASK:-1}"
+    echo "#  Mem limit:     ${SLURM_MEM_PER_NODE:-n/a} MB"
+    echo "#  Wall limit:    ${SLURM_JOB_END_TIME:-n/a}"
+    echo "#  Working dir:   ${PWD}"
+    echo "############################################################"
+    echo ""
+}
+
+rct_log_footer() {
+    local exit_code="${1:-0}"
+    local end_epoch
+    end_epoch=$(date +%s)
+    local elapsed=$(( end_epoch - _RCT_START_EPOCH ))
+    local hh=$(( elapsed / 3600 ))
+    local mm=$(( (elapsed % 3600) / 60 ))
+    local ss=$(( elapsed % 60 ))
+    local status_label
+    if   [[ "$exit_code" -eq 0 ]]; then status_label="SUCCESS"
+    elif [[ "$exit_code" -eq 2 ]]; then status_label="PARTIAL (resubmitting)"
+    else                                  status_label="FAILED"
+    fi
+    echo ""
+    echo "############################################################"
+    echo "#  JOB COMPLETE — ${RCT_VARIANT:-unknown} / ${RCT_GAME_SLUG:-unknown}"
+    echo "#  Status:        ${status_label}  (exit ${exit_code})"
+    echo "#  Finished:      $(date '+%Y-%m-%d %H:%M:%S %Z')"
+    echo "#  Wall elapsed:  ${hh}h ${mm}m ${ss}s"
+    echo "############################################################"
+    echo ""
 }
 
 # Find the repo root whether sbatch was run from ~/research_project or ~/research_project/slurm.
