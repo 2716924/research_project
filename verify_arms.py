@@ -182,20 +182,22 @@ def test_paired_population():
 def test_slurm_array_mapping():
     variants = ["control", "ddqn", "per", "nstep", "averaged"]
     games = GAMES
+    num_games = len(games)
+    num_tasks = len(variants) * num_games
     mapped = []
-    for task_id in range(15):
-        variant = variants[task_id // 3]
-        game = games[task_id % 3]
+    for task_id in range(num_tasks):
+        variant = variants[task_id // num_games]
+        game = games[task_id % num_games]
         mapped.append((variant, game))
 
-    if len(mapped) != 15:
-        raise AssertionError("Expected 15 array tasks")
-    if len(set(mapped)) != 15:
+    if len(mapped) != num_tasks:
+        raise AssertionError(f"Expected {num_tasks} array tasks")
+    if len(set(mapped)) != num_tasks:
         raise AssertionError("Array mapping has collisions")
     if mapped[0] != ("control", games[0]):
         raise AssertionError("Task 0 should be control × first game")
-    if mapped[14] != ("averaged", games[2]):
-        raise AssertionError("Task 14 should be averaged × last game")
+    if mapped[-1] != ("averaged", games[-1]):
+        raise AssertionError("Last task should be averaged × last game")
 
 
 def test_constants_coverage():

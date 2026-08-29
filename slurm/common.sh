@@ -17,7 +17,7 @@ rct_log_header() {
     echo "#  User:          ${USER:-unknown}"
     echo "#  Job ID:        ${SLURM_JOB_ID:-local}"
     echo "#  Job name:      ${SLURM_JOB_NAME:-local}"
-    echo "#  Array task:    ${SLURM_ARRAY_TASK_ID:-0}  (0=breakout 1=asterix 2=freeway)"
+    echo "#  Array task:    ${SLURM_ARRAY_TASK_ID:-0}  (0=seaquest 1=spaceinvaders)"
     echo "#  Node:          $(hostname)"
     echo "#  CPUs/task:     ${SLURM_CPUS_PER_TASK:-1}"
     echo "#  Mem limit:     ${SLURM_MEM_PER_NODE:-n/a} MB"
@@ -139,8 +139,8 @@ EOF
 
 # Map array task ID (0-2) to game only (single variant passed via RCT_VARIANT)
 rct_map_game_only() {
-    local GAMES=("MinAtar/Breakout-v1" "MinAtar/Asterix-v1" "MinAtar/Freeway-v1")
-    local GAME_SLUGS=(breakout asterix freeway)
+    local GAMES=("MinAtar/Seaquest-v1" "MinAtar/SpaceInvaders-v1")
+    local GAME_SLUGS=(seaquest spaceinvaders)
 
     local TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
     export RCT_GAME="${GAMES[$TASK_ID]}"

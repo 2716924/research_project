@@ -1,10 +1,6 @@
 """Shared experiment constants from the research proposal."""
 
-GAMES = ["MinAtar/Breakout-v1", 
-        "MinAtar/Asterix-v1",
-        "MinAtar/Freeway-v1",
-        "MinAtar/Seaquest-v1",
-        "MinAtar/SpaceInvaders-v1",]
+GAMES = ["MinAtar/Seaquest-v1", "MinAtar/SpaceInvaders-v1",]
 
 # Table 4.1 in the proposal: shared hyperparameter population space.
 POPULATION_SPACE = {

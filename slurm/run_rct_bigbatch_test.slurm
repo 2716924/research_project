@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# RCT BIGBATCH TEST — one variant, three games, short CPU pilot
+# RCT BIGBATCH TEST — one variant, two games, short CPU pilot
 # =============================================================================
 #
 # BEFORE SUBMITTING (once, from project root):
@@ -14,7 +14,7 @@
 
 #SBATCH --job-name=rct-bigbatch-test
 #SBATCH --partition=bigbatch
-#SBATCH --array=0-2
+#SBATCH --array=0-1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=02:00:00

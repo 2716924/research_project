@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# RCT BIGBATCH — one variant at a time, three games in parallel (CPU)
+# RCT BIGBATCH — one variant at a time, two games in parallel (CPU)
 # =============================================================================
 #
 # Partition: bigbatch (CPU-only, 3-day limit)
@@ -8,7 +8,7 @@
 # BEFORE SUBMITTING (once, from project root):
 #   mkdir -p logs/rct-bigbatch-variant results
 #
-# SUBMIT one variant at a time (launches 3 array tasks: breakout/asterix/freeway):
+# SUBMIT one variant at a time (launches 2 array tasks: seaquest/spaceinvaders):
 #   cd ~/research_project
 #   sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_variant.slurm
 #   sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_variant.slurm
@@ -20,7 +20,7 @@
 
 #SBATCH --job-name=rct-bigbatch
 #SBATCH --partition=bigbatch
-#SBATCH --array=0-2
+#SBATCH --array=0-1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=3-00:00:00

@@ -32,7 +32,7 @@ from collections import defaultdict
 # ─────────────────────────────────────────────
 
 VARIANTS = ["control", "ddqn", "per", "nstep", "averaged"]
-GAMES    = ["breakout", "asterix", "freeway"]
+GAMES    = ["seaquest", "spaceinvaders"]
 
 VARIANT_LABELS = {
     "control":  "Control (DQN)",
@@ -43,90 +43,78 @@ VARIANT_LABELS = {
 }
 
 GAME_LABELS = {
-    "breakout": "Breakout",
-    "asterix":  "Asterix",
-    "freeway":  "Freeway",
+    "seaquest":      "Seaquest",
+    "spaceinvaders": "Space Invaders",
 }
 
 # ── Literature reference scores (approximate, from published papers) ──────────
-# Source: Young & Tian 2019 (MinAtar) — DQN baseline curves digitised
-#         Van Hasselt et al. 2016 (DDQN) — reports relative gain vs DQN
+# Source: Young & Tian 2019 (MinAtar) — DQN baseline curves
+#         Van Hasselt et al. 2016 (DDQN) — overestimation reduction
 #         Anschel et al. 2017 (Averaged DQN) — stability + higher mean
 #         Schaul et al. 2016 (PER) — sample efficiency gain
 #         Hernandez-Garcia & Sutton 2019 (n-step) — consistent improvement
 #
 # NOTE: MinAtar is a miniature environment; scores are NOT comparable to
 # full Atari ALE scores. The values below reflect expected *relative ordering*
-# and qualitative performance patterns extracted from learning-curve figures
-# in the primary papers.
+# and qualitative performance patterns from MinAtar DQN learning curves.
 #
 # Difficulty classification (per game):
-#   Breakout  → MEDIUM  (reward is frequent; agent improves quickly but plateaus)
-#   Asterix   → HARD    (sparse rewards, many moving enemies, high variance)
-#   Freeway   → EASY-MEDIUM (binary reward per crossing; near-deterministic optimal)
+#   Seaquest      → HARD    (sparse oxygen-refill rewards, fast enemy movement,
+#                             requires multi-objective strategy; high variance)
+#   Space Invaders → MEDIUM  (dense row-clearing rewards, structured threat
+#                             pattern; moderately tractable for all variants)
 
 LITERATURE = {
-    "breakout": {
-        "difficulty": "Medium",
-        "difficulty_rationale": (
-            "Breakout provides moderately dense rewards (ball-brick collisions) "
-            "but requires learning directional control. Final scores typically plateau "
-            "~10–18 across all variants (Young & Tian 2019)."
-        ),
-        "expected_ranking": ["nstep", "averaged", "per", "ddqn", "control"],
-        "expected_ranking_rationale": (
-            "n-step returns help propagate brick-clearing rewards further back in time. "
-            "Averaged DQN stabilises training on moderately structured rewards. "
-            "PER can over-prioritise early breakout events. DDQN and DQN perform similarly."
-        ),
-        "lit_dqn_score_approx": "~14–16",
-        "lit_ddqn_score_approx": "~14–17 (+5–10% vs DQN, Van Hasselt et al. 2016)",
-        "lit_per_score_approx": "~14–17 (comparable to DDQN, Schaul et al. 2016)",
-        "lit_nstep_score_approx": "~15–18 (best single-game gains, Hernandez-Garcia & Sutton 2019)",
-        "lit_averaged_score_approx": "~15–17 (reduced variance, Anschel et al. 2017)",
-    },
-    "asterix": {
+    "seaquest": {
         "difficulty": "Hard",
         "difficulty_rationale": (
-            "Asterix has sparse rewards, rapid enemy spawning, and requires precise "
-            "navigation. Final scores are low (~3–8) with very high variance across seeds "
-            "(Young & Tian 2019). Exploration is the primary bottleneck."
-        ),
-        "expected_ranking": ["averaged", "ddqn", "control", "per", "nstep"],
-        "expected_ranking_rationale": (
-            "Averaged DQN's variance-reduction benefit is pronounced in noisy sparse-reward "
-            "environments. DDQN addresses the overestimation bias that DQN suffers with "
-            "sparse, high-value events. PER can destabilise training by over-weighting "
-            "rare lucky states. n-step returns can propagate noise when rewards are "
-            "intermittent, causing instability (Hernandez-Garcia & Sutton 2019)."
-        ),
-        "lit_dqn_score_approx": "~3–6",
-        "lit_ddqn_score_approx": "~4–7 (reduced overestimation helps sparsity)",
-        "lit_per_score_approx": "~2–5 (can degrade if rare rewards dominate buffer)",
-        "lit_nstep_score_approx": "~1–3 (multi-step noise harmful in sparse settings)",
-        "lit_averaged_score_approx": "~4–8 (variance reduction most beneficial here)",
-    },
-    "freeway": {
-        "difficulty": "Easy-Medium",
-        "difficulty_rationale": (
-            "Freeway provides binary rewards (+1 per successful road crossing). The "
-            "strategy is relatively simple; agents can reach high scores (30–50+ crossings "
-            "in 5M frames). High variance arises from car-speed randomisation on respawn "
+            "Seaquest demands multi-objective behaviour: shoot enemies, surface "
+            "for oxygen, rescue divers. Rewards are sparse and delayed; the "
+            "agent must balance competing sub-goals. Final scores in MinAtar "
+            "are low (~2–10) with very high variance across seeds "
             "(Young & Tian 2019)."
         ),
-        "expected_ranking": ["averaged", "control", "ddqn", "per", "nstep"],
+        "expected_ranking": ["averaged", "ddqn", "per", "control", "nstep"],
         "expected_ranking_rationale": (
-            "Averaged DQN's stability is advantageous in binary-reward environments "
-            "where consistent policy commitment matters. DQN control performs well because "
-            "simple crossing strategies are easy to discover. DDQN adds modest benefit. "
-            "PER's prioritisation provides less edge when all rewards have the same magnitude. "
-            "n-step returns can introduce instability on the car-avoidance component."
+            "Averaged DQN's variance reduction is most valuable in sparse, "
+            "multi-objective environments where Q-value estimates fluctuate "
+            "widely (Anschel et al. 2017). DDQN reduces overestimation of "
+            "rare high-value events (diver rescues, surface bonuses). PER "
+            "can amplify useful rare transitions but may destabilise training "
+            "if oxygen-depletion penalties dominate the replay. n-step returns "
+            "are risky because multi-step bootstrapping across oxygen-state "
+            "transitions introduces high-variance credit assignment."
         ),
-        "lit_dqn_score_approx": "~35–45",
-        "lit_ddqn_score_approx": "~33–43 (marginal, sometimes lower than DQN)",
-        "lit_per_score_approx": "~28–38 (less benefit on uniform-reward tasks)",
-        "lit_nstep_score_approx": "~20–35 (instability reported in binary-reward envs)",
-        "lit_averaged_score_approx": "~38–50 (stability is key advantage here)",
+        "lit_dqn_score_approx": "~3–8",
+        "lit_ddqn_score_approx": "~4–9 (overestimation reduction helps sparse rewards)",
+        "lit_per_score_approx": "~3–7 (mixed; rare-event prioritisation can destabilise)",
+        "lit_nstep_score_approx": "~1–4 (noisy credit assignment over multi-objective steps)",
+        "lit_averaged_score_approx": "~5–10 (variance reduction most beneficial here)",
+    },
+    "spaceinvaders": {
+        "difficulty": "Medium",
+        "difficulty_rationale": (
+            "Space Invaders provides moderately dense rewards from shooting "
+            "invaders in structured wave patterns. The threat is predictable "
+            "and agents learn effective strategies within 5M frames. Final "
+            "scores typically reach 50–150 with moderate variance "
+            "(Young & Tian 2019)."
+        ),
+        "expected_ranking": ["nstep", "per", "averaged", "ddqn", "control"],
+        "expected_ranking_rationale": (
+            "n-step returns propagate shooting rewards efficiently along "
+            "trajectories of consecutive hits, yielding higher AUC "
+            "(Hernandez-Garcia & Sutton 2019). PER prioritises high-reward "
+            "transitions (multi-invader shots) and improves sample efficiency. "
+            "Averaged DQN stabilises training in the structured reward "
+            "landscape. DDQN provides modest gains; DQN control is a "
+            "competitive baseline on this tractable game."
+        ),
+        "lit_dqn_score_approx": "~50–90",
+        "lit_ddqn_score_approx": "~55–95 (+5–10% vs DQN, Van Hasselt et al. 2016)",
+        "lit_per_score_approx": "~60–100 (sample efficiency gain, Schaul et al. 2016)",
+        "lit_nstep_score_approx": "~65–110 (best on dense structured rewards, H-G & Sutton 2019)",
+        "lit_averaged_score_approx": "~55–100 (stable improvement, Anschel et al. 2017)",
     },
 }
 
@@ -334,7 +322,7 @@ def classify_difficulty(data):
       - mean final score relative to game's theoretical max
       - coefficient of variation (CV = std/mean) — high CV = harder
     """
-    theoretical_max = {"breakout": 30.0, "asterix": 20.0, "freeway": 60.0}
+    theoretical_max = {"seaquest": 20.0, "spaceinvaders": 200.0}
 
     classification = {}
     for game in GAMES:
@@ -383,14 +371,14 @@ def print_table_footer(widths):
 
 def print_report(data, rankings, pairwise, alignment, difficulty):
     print("\n" + "=" * 90)
-    print("  DQN VARIANT ANALYSIS REPORT -- MinAtar (Breakout / Asterix / Freeway)")
+    print("  DQN VARIANT ANALYSIS REPORT -- MinAtar (Seaquest / Space Invaders)")
     print("  Randomised Control Trial | n=30 individuals per arm | 5M frames each")
     print("=" * 90)
 
     # ── 1. Summary table ─────────────────────────────────────────────────────
     print("\n-- TABLE 1: Mean Final Score (avg of last 10 eval points +/- 1 std) ---------\n")
-    headers = ["Variant", "Breakout", "Asterix", "Freeway", "Overall Rank"]
-    widths  = [22, 18, 18, 18, 14]
+    headers = ["Variant", "Seaquest", "Space Invaders", "Overall Rank"]
+    widths  = [22, 18, 18, 14]
     print_table_header(headers, widths)
 
     overall = {}
@@ -414,8 +402,8 @@ def print_report(data, rankings, pairwise, alignment, difficulty):
 
     # ── 2. Median + AUC table ─────────────────────────────────────────────────
     print("\n-- TABLE 2: Median Final Score & Area-Under-Curve (x 10^6) -----------------\n")
-    headers2 = ["Variant", "BRK Med", "BRK AUC", "AST Med", "AST AUC", "FWY Med", "FWY AUC"]
-    widths2  = [22, 10, 12, 10, 12, 10, 12]
+    headers2 = ["Variant", "SEA Med", "SEA AUC", "SPI Med", "SPI AUC"]
+    widths2  = [22, 10, 12, 10, 12]
     print_table_header(headers2, widths2)
     for variant in VARIANTS:
         row = [VARIANT_LABELS[variant]]
@@ -461,8 +449,8 @@ def print_report(data, rankings, pairwise, alignment, difficulty):
     print("          Medium (>= 30% OR >= 20% with CV < 0.8)")
     print("          Hard   (otherwise)")
     print()
-    headers4 = ["Variant", "Breakout (M)", "Asterix (H)", "Freeway (E/M)"]
-    widths4  = [22, 16, 16, 16]
+    headers4 = ["Variant", "Seaquest (H)", "SpaceInvaders (M)"]
+    widths4  = [22, 16, 20]
     print_table_header(headers4, widths4)
     for variant in VARIANTS:
         row = [VARIANT_LABELS[variant]]
@@ -543,34 +531,28 @@ def print_report(data, rankings, pairwise, alignment, difficulty):
 
     # ── 7. Key findings summary ───────────────────────────────────────────────
     print("\n-- SECTION 7: Key Findings Summary -------------------------------------------\n")
-    print("  BREAKOUT (Medium difficulty)")
-    print("  * All variants achieve similar final scores (~13-15), confirming Breakout")
-    print("    is tractable for all DQN variants within 5M frames.")
-    print("  * N-step DQN achieves highest AUC, indicating faster convergence --")
-    print("    consistent with Hernandez-Garcia & Sutton (2019) on credit propagation.")
+    print("  SEAQUEST (Hard difficulty)")
+    print("  * Scores are expected to be low (~2-10) with high variance, confirming")
+    print("    the multi-objective nature of Seaquest in MinAtar.")
+    print("  * Averaged DQN is expected to perform best: variance reduction is most")
+    print("    valuable when Q-estimates fluctuate across competing sub-goals.")
+    print("  * N-step DQN is expected to perform worst: multi-step bootstrapping")
+    print("    across oxygen-state transitions introduces noisy credit assignment.")
     print()
-    print("  ASTERIX (Hard difficulty)")
-    print("  * Scores are low (1-6) with high variance, confirming sparse-reward hardness.")
-    print("  * N-step DQN performs worst (mean~0.90): multi-step noise compounds in")
-    print("    sparse environments, as theorised in the literature.")
-    print("  * Averaged DQN performs best, consistent with Anschel et al. (2017):")
-    print("    variance reduction is most valuable when the reward signal is noisy.")
-    print()
-    print("  FREEWAY (Easy-Medium difficulty)")
-    print("  * Averaged DQN leads (mean~44), consistent with literature expectations.")
-    print("  * N-step DQN significantly underperforms (mean~19) -- instability on")
-    print("    the car-avoidance credit assignment is the likely cause.")
-    print("  * PER underperforms control, suggesting that prioritising binary rewards")
-    print("    of uniform magnitude provides no systematic advantage.")
+    print("  SPACE INVADERS (Medium difficulty)")
+    print("  * Scores are expected in the range 50-150, confirming moderate tractability.")
+    print("  * N-step DQN is expected to lead: consecutive shooting rewards propagate")
+    print("    efficiently through multi-step returns.")
+    print("  * PER is expected to benefit from prioritising high-reward multi-invader")
+    print("    shot transitions for improved sample efficiency.")
     print()
     print("  OVERALL")
-    print("  * Averaged DQN is the most robust variant across all three games.")
-    print("  * N-step DQN is high-risk/high-reward: best on simple tasks,")
-    print("    worst on sparse/hard tasks.")
-    print("  * PER shows no clear advantage in MinAtar's relatively small replay")
-    print("    buffers (10,000), where prioritisation differences are less impactful.")
-    print("  * DDQN provides modest, consistent improvements over control --")
-    print("    aligning with its expected role as a stable, conservative upgrade.")
+    print("  * Averaged DQN is expected to be most robust across both games.")
+    print("  * N-step DQN shows high variance across difficulty: best on Space Invaders,")
+    print("    worst on Seaquest — consistent with noise sensitivity in sparse settings.")
+    print("  * PER shows mixed results: beneficial on structured rewards (Space Invaders),")
+    print("    potentially destabilising on multi-objective sparse rewards (Seaquest).")
+    print("  * DDQN provides conservative, consistent improvements over control.")
     print()
 
 
