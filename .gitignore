@@ -1,7 +1,4 @@
-__pycache__/
-*.pyc
-.DS_Store
-.venv/
-wandb/
-results/
-logs/
+/docs   
+/archive/*
+/new_logs
+/slurm/logs 

@@ -6,13 +6,11 @@ Reads saved JSON results, computes paired AUC differences, runs Shapiro-Wilk
 normality checks, paired t-tests, and Bonferroni correction.
 
 Usage:
-    python analyze_rct.py --results-dir results/control/breakout
     python analyze_rct.py --results-root results --game-slug breakout
 """
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -76,8 +74,8 @@ def paired_analysis(control_aucs, treatment_aucs):
 def main():
     parser = argparse.ArgumentParser(description="RCT statistical analysis")
     parser.add_argument("--results-root", type=str, default="results")
-    parser.add_argument("--game-slug", type=str, default="seaquest",
-                        help="Game folder name: seaquest or spaceinvaders")
+    parser.add_argument("--game-slug", type=str, default="breakout",
+                        help="Game folder name, e.g. breakout, asterix, freeway, spaceinvaders")
     parser.add_argument("--output", type=str, default=None,
                         help="Write JSON summary to this path")
     args = parser.parse_args()

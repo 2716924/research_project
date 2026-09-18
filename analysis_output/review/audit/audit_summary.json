@@ -1,0 +1,23 @@
+{
+  "result_files": 20,
+  "completed_result_runs": 600,
+  "out_logs": 68,
+  "err_logs": 57,
+  "unique_stdout_files": 57,
+  "duplicate_stdout_files": 11,
+  "log_attempts": 626,
+  "completed_log_attempts": 590,
+  "matching_log_attempts": 590,
+  "selected_unique_attempts": 587,
+  "logged_loss_samples": 3026992,
+  "logged_eval_samples": 60576,
+  "incomplete_attempts": 36,
+  "failed_shapiro_checks": 4,
+  "bootstrap_replicates": 3000,
+  "bootstrap_seed": 20260917,
+  "versions": {
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "matplotlib": "3.9.4"
+  }
+}
