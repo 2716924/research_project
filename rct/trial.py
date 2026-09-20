@@ -9,6 +9,7 @@ from rct.sampling import sample_individuals
 from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
 from rct.trainer import train_individual
+from rct.tracking import AttemptTracker, TrackingSettings
 
 
 def execute_rct_trial(
@@ -21,15 +22,28 @@ def execute_rct_trial(
     games=None,
     pilot=False,
     log_every=1000,
+    tracking=None,
 ):
     """
     Train one RCT arm (control or treatment) across games and individuals.
 
     Results are written to JSON files and can be resumed if a cluster job
-    is interrupted. All logging goes to stdout (captured by SLURM .out files).
+    is interrupted. Text logging goes to stdout (captured by SLURM .out files),
+    with optional W&B/JSONL metrics in a separate tracking directory.
     """
     import os
 
+    if variant not in VARIANT_LABELS:
+        raise ValueError(f"Unknown variant: {variant}")
+    if num_individuals < 1 or total_frames < 1 or eval_frequency < 1 or log_every < 1:
+        raise ValueError("Individual count, frame budget and logging/evaluation intervals must be positive")
+    if total_frames % eval_frequency:
+        raise ValueError("total_frames must be divisible by eval_frequency so the final policy is evaluated")
+    from rct.constants import EVAL_SEEDS
+    if not 1 <= num_eval_episodes <= len(EVAL_SEEDS):
+        raise ValueError("num_eval_episodes must be between 1 and the number of fixed evaluation seeds")
+    tracking = tracking or TrackingSettings()
+    tracking.validate()
     os.makedirs(output_dir, exist_ok=True)
     games = games if games is not None else GAMES
     individuals = sample_individuals(num_individuals)
@@ -58,7 +72,7 @@ def execute_rct_trial(
         metadata = build_metadata(
             variant, game_id, total_frames, eval_frequency, num_eval_episodes
         )
-        game_results, completed_ids = load_existing_results(out_path)
+        game_results, completed_ids = load_existing_results(out_path, metadata, individuals)
 
         if completed_ids:
             print(
@@ -84,38 +98,54 @@ def execute_rct_trial(
             print(f"\n--- Individual {j + 1}/{num_individuals} ---")
             print(f"Seed: {individual['seed']} | Settings: {individual['config']}")
 
-            eval_trajectory, finished = train_individual(
-                variant=variant,
-                game_id=game_id,
-                individual=individual,
-                in_channels=in_channels,
-                num_actions=num_actions,
-                total_frames=total_frames,
-                eval_frequency=eval_frequency,
-                num_eval_episodes=num_eval_episodes,
-                log_every=log_every,
-            )
-
-            if not finished:
-                print(
-                    f"Individual {j + 1} incomplete (time limit) — "
-                    "progress saved only for completed individuals."
+            tracker = AttemptTracker(tracking, metadata, individual, pilot=pilot)
+            try:
+                eval_trajectory, finished = train_individual(
+                    variant=variant,
+                    game_id=game_id,
+                    individual=individual,
+                    in_channels=in_channels,
+                    num_actions=num_actions,
+                    total_frames=total_frames,
+                    eval_frequency=eval_frequency,
+                    num_eval_episodes=num_eval_episodes,
+                    log_every=log_every,
+                    metrics_callback=tracker.log if tracking.mode != "disabled" else None,
                 )
-                stopped_early = True
-                break
+                if not finished:
+                    tracker.finish("interrupted")
+                    print(
+                        f"Individual {j + 1} incomplete (time limit) — "
+                        "progress saved only for completed individuals."
+                    )
+                    stopped_early = True
+                    break
 
-            computed_auc = compute_auc(eval_trajectory, eval_frequency)
-            game_results.append({
-                "individual_id": j,
-                "seed": individual["seed"],
-                "config": individual["config"],
-                "eval_trajectory": eval_trajectory,
-                "auc": computed_auc,
-            })
-            completed_ids.add(j)
-            print(f"Completed {variant}. AUC: {computed_auc:.4f}")
-
-            save_results(out_path, metadata, game_results)
+                computed_auc = compute_auc(eval_trajectory, eval_frequency)
+                game_results.append({
+                    "individual_id": j,
+                    "seed": individual["seed"],
+                    "config": individual["config"],
+                    "eval_trajectory": eval_trajectory,
+                    "auc": computed_auc,
+                    "final_return": eval_trajectory[-1],
+                    "attempt_id": tracker.attempt_id,
+                })
+                # Only mark W&B complete after the authoritative result is saved.
+                save_results(out_path, metadata, game_results)
+                completed_ids.add(j)
+                tracker.finish("completed", {
+                    "auc": computed_auc, "final_return": eval_trajectory[-1],
+                    "last_10_mean_return": sum(eval_trajectory[-10:]) / len(eval_trajectory[-10:]),
+                    "completed_frames": total_frames,
+                })
+                print(f"Completed {variant}. AUC: {computed_auc:.4f}")
+            except BaseException:
+                try:
+                    tracker.finish("failed")
+                except Exception:
+                    print("W&B could not finalize the failed attempt; inspect its local journal.")
+                raise
 
         print(f"\nSaved results to {out_path}")
         if stopped_early:

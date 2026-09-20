@@ -1,4 +1,12 @@
-/docs   
+/docs
 /archive/*
 /new_logs
-/slurm/logs 
+/slurm/logs
+
+# Generated cluster experiments and local W&B data (never credentials).
+/experiments/
+/tracking/
+wandb/
+.env
+.env.*
+*.wandb

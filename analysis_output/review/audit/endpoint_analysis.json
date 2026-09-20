@@ -1,0 +1,31 @@
+{
+  "bootstrap_seed": 20260920,
+  "bootstrap_replicates": 20000,
+  "bootstrap_interval": "95% percentile, paired differences; descriptive sensitivity only",
+  "final_return": "Mean of 10 fixed-seed episodes at frame 5000000",
+  "last_10_return": "Mean of 10 checkpoint means at frames 4550000 through 5000000",
+  "variance": "Across configuration\u2013seed individuals, not seed-only variance",
+  "multiplicity": "4 per game/endpoint; 16 across games/endpoint; 32 across AUC + final return. Last-10 exploratory.",
+  "result_sha256": {
+    "results/averaged/asterix/averaged_results_MinAtar_Asterix-v1.json": "b2b70495d96dd099ed3abd386b6a1f4a10f9d50d87e339629aacfabc4793621b",
+    "results/averaged/breakout/averaged_results_MinAtar_Breakout-v1.json": "6f371b8d97ae420925a1857e02d42ae187e10c3c5a51b6c653a9cc65d4a55c05",
+    "results/averaged/freeway/averaged_results_MinAtar_Freeway-v1.json": "f0ae97128e559b9df0bcd5d9dcb8b9a45e22c60e3ab46720e0f0c70bf619bb8c",
+    "results/averaged/spaceinvaders/averaged_results_MinAtar_SpaceInvaders-v1.json": "915276b6cf685ff6181fc152700d65039e156c53737a985d29f927c1c974db4a",
+    "results/control/asterix/control_results_MinAtar_Asterix-v1.json": "a8cc3f0d35d697cded61e15d94cec67b48b42feef4a360278b60bd289b14b887",
+    "results/control/breakout/control_results_MinAtar_Breakout-v1.json": "70c8de8e69e86ae0a27879633a8eeb3fcec13623539698b4815ec4be73737b8c",
+    "results/control/freeway/control_results_MinAtar_Freeway-v1.json": "7743acf3ac33b24d5c01985969a49000be05a502ff0fbccc851e25b6f46acbf2",
+    "results/control/spaceinvaders/control_results_MinAtar_SpaceInvaders-v1.json": "67a4c00da2630399a83d84fa2e953e9d444648a16754c469f0b26b9ba1227384",
+    "results/ddqn/asterix/ddqn_results_MinAtar_Asterix-v1.json": "c2b08adcc287a0e8cdb007bfd258ec23e6987b7ae5b3d9189db29ea7ee3a0d9c",
+    "results/ddqn/breakout/ddqn_results_MinAtar_Breakout-v1.json": "2e46480370c918f7ae1a2120b2a00fa3efb83d4b14f5bbccccc0e4e7048ebac5",
+    "results/ddqn/freeway/ddqn_results_MinAtar_Freeway-v1.json": "875978489077c2f44debb9d6ab79a1a77bd8c91baad82fac62f7d0fce9b738c3",
+    "results/ddqn/spaceinvaders/ddqn_results_MinAtar_SpaceInvaders-v1.json": "17067f1b6b1dafb5568e033b8cf30bb1b8eb7062bc7b6ebd241f541c682ef696",
+    "results/nstep/asterix/nstep_results_MinAtar_Asterix-v1.json": "5a4861a1a29fa456bb2471b9386fdf1ba09e3d32071bc68468d23afd8003239a",
+    "results/nstep/breakout/nstep_results_MinAtar_Breakout-v1.json": "12d4790b1246ae1a846ba2af451e35d87bf3afce3adcbacff3cad2d8de521eb8",
+    "results/nstep/freeway/nstep_results_MinAtar_Freeway-v1.json": "fa021d52d641bbfb2da63482d439fa2fef405e5b1b62fc9191424c480de2a18e",
+    "results/nstep/spaceinvaders/nstep_results_MinAtar_SpaceInvaders-v1.json": "003b708ab7bfb9fa1f396debaecc355b77021615beb9b86649a941b76da3af53",
+    "results/per/asterix/per_results_MinAtar_Asterix-v1.json": "fef743773a2a7d1842879031dc1e299c45bf744c6c6f53b18a08b27f1bd7409f",
+    "results/per/breakout/per_results_MinAtar_Breakout-v1.json": "b5957f46d63b89495f1d497dc62bbfe71466fe39ae5019a4113db0243107806a",
+    "results/per/freeway/per_results_MinAtar_Freeway-v1.json": "896546670521c7bbc0924f595cec20974ca05df5adde1eb789fc9bf5160b1c02",
+    "results/per/spaceinvaders/per_results_MinAtar_SpaceInvaders-v1.json": "4a31ec17bb3611f1dd3ee42bb12423e33dfe9f9f0c80293fe34903d991f9ec6e"
+  }
+}

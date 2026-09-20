@@ -1,26 +1,14 @@
 #!/bin/bash
-# =============================================================================
-# RCT BIGBATCH — one variant at a time, two games in parallel (CPU)
-# =============================================================================
-#
-# Partition: bigbatch (CPU-only, 3-day limit)
-#
-# BEFORE SUBMITTING (once, from project root):
-#   mkdir -p logs/rct-bigbatch-variant results
-#
-# SUBMIT one variant at a time (launches 2 array tasks: seaquest/spaceinvaders):
-#   cd ~/research_project
-#   sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_variant.slurm
-#   sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_variant.slurm
-#
-# =============================================================================
+# All five variants x five games; see CLUSTER_RUN_GUIDE.md.
+# Create logs/rct-bigbatch-test and logs/rct-bigbatch-variant before sbatch.
+# Task ID = variant index * 5 + game index (python -m rct.tasks ID).
 
-#SBATCH --job-name=rct-bigbatch
+#SBATCH --job-name=rct-five-games
 #SBATCH --partition=bigbatch
-#SBATCH --array=0-1
+#SBATCH --array=0-24%5
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --exclusive
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=3-00:00:00
@@ -40,27 +28,16 @@ else
 fi
 
 rct_cd_project_root
-mkdir -p logs/rct-bigbatch-variant results 2>/dev/null
-
-if [[ -z "${RCT_VARIANT:-}" ]]; then
-    echo "ERROR: RCT_VARIANT must be set, e.g. control, ddqn, per, nstep, averaged"
-    exit 1
-fi
-
-export RCT_AUTO_RESUBMIT="${RCT_AUTO_RESUBMIT:-1}"
-
-sleep 20
+rct_setup_cpu
+rct_map_task
+rct_setup_experiment full
 rct_log_header
 rct_export_time_budget
-rct_setup_cpu
-rct_install_python_deps
 rct_check_python
-rct_map_game_only
+rct_lock_task
 
 export RCT_NUM_INDIVIDUALS=30
-OUTPUT_DIR="results/${RCT_VARIANT}/${RCT_GAME_SLUG}"
-export OUTPUT_DIR
-mkdir -p "$OUTPUT_DIR" 2>/dev/null
+export RCT_AUTO_RESUBMIT="${RCT_AUTO_RESUBMIT:-1}"
 
 echo ""
 echo "Variant:       $RCT_VARIANT"
@@ -78,7 +55,12 @@ set +e
     --total-frames 5000000 \
     --eval-frequency 50000 \
     --num-eval-episodes 10 \
-    --output-dir "$OUTPUT_DIR"
+    --output-dir "$OUTPUT_DIR" \
+    --wandb-mode "$WANDB_MODE" \
+    --wandb-project "$WANDB_PROJECT" \
+    --wandb-entity "$WANDB_ENTITY" \
+    --tracking-dir "$RCT_TRACKING_DIR" \
+    --experiment-id "${RCT_EXPERIMENT_ID}/full"
 RUN_EXIT=$?
 set -e
 
@@ -90,4 +72,5 @@ if [[ "${RUN_EXIT}" -eq 0 || "${RUN_EXIT}" -eq 2 ]]; then
     rct_resubmit_if_incomplete "slurm/run_rct_bigbatch_variant.slurm"
 fi
 
+rct_log_footer "$RUN_EXIT"
 exit "${RUN_EXIT}"

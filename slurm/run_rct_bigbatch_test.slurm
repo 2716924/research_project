@@ -1,20 +1,14 @@
 #!/bin/bash
-# =============================================================================
-# RCT BIGBATCH TEST — one variant, two games, short CPU pilot
-# =============================================================================
-#
-# BEFORE SUBMITTING (once, from project root):
-#   mkdir -p logs/rct-bigbatch-test results
-#
-# SUBMIT:
-#   cd ~/research_project
-#   sbatch --export=RCT_VARIANT=control slurm/run_rct_bigbatch_test.slurm
-#
-# =============================================================================
+# All five variants x five games; see CLUSTER_RUN_GUIDE.md.
+# Create logs/rct-bigbatch-test and logs/rct-bigbatch-variant before sbatch.
+# Task ID = variant index * 5 + game index (python -m rct.tasks ID).
 
-#SBATCH --job-name=rct-bigbatch-test
+#SBATCH --job-name=rct-five-games-test
 #SBATCH --partition=bigbatch
-#SBATCH --array=0-1
+#SBATCH --array=0-24%5
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --exclusive
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=02:00:00
@@ -33,25 +27,15 @@ else
 fi
 
 rct_cd_project_root
-mkdir -p logs/rct-bigbatch-test results 2>/dev/null
-
-if [[ -z "${RCT_VARIANT:-}" ]]; then
-    echo "ERROR: RCT_VARIANT must be set, e.g. control, ddqn, per, nstep, averaged"
-    exit 1
-fi
-
-sleep 5
+rct_setup_cpu
+rct_map_task
+rct_setup_experiment pilot
 rct_log_header
 rct_export_time_budget
-rct_setup_cpu
-rct_install_python_deps
 rct_check_python
-rct_map_game_only
+rct_lock_task
 
 export RCT_NUM_INDIVIDUALS=3
-OUTPUT_DIR="results/${RCT_VARIANT}/${RCT_GAME_SLUG}-pilot"
-export OUTPUT_DIR
-mkdir -p "$OUTPUT_DIR" 2>/dev/null
 
 echo ""
 echo "Variant:    $RCT_VARIANT"
@@ -65,10 +49,16 @@ set +e
     --variant "$RCT_VARIANT" \
     --game "$RCT_GAME" \
     --pilot \
-    --output-dir "$OUTPUT_DIR"
+    --output-dir "$OUTPUT_DIR" \
+    --wandb-mode "$WANDB_MODE" \
+    --wandb-project "$WANDB_PROJECT" \
+    --wandb-entity "$WANDB_ENTITY" \
+    --tracking-dir "$RCT_TRACKING_DIR" \
+    --experiment-id "${RCT_EXPERIMENT_ID}/pilot"
 RUN_EXIT=$?
 set -e
 
 echo ""
 echo "Task ${SLURM_ARRAY_TASK_ID} finished at $(date) with exit code ${RUN_EXIT}"
+rct_log_footer "$RUN_EXIT"
 exit "${RUN_EXIT}"

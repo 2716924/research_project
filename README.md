@@ -10,6 +10,20 @@ primary outcome is area under the evaluation learning curve (AUC).
 Start with the [results and methodology review](docs/RESULTS_REVIEW.md) or the
 [figure index](analysis_output/review/README.md).
 
+The [n-step/PER audit and final-return analysis](RESEARCH_AUDIT.md) documents a
+confirmed PER priority-initialization fix, implementation checks, published
+hyperparameter comparisons, and DQN variability. The analysis now also produces
+paired final-return tests and figures, plus a last-ten-evaluations sensitivity
+analysis. Saved results describe the original training code; corrected PER
+performance requires separate reruns.
+
+The [follow-up design and implementation audit](DESIGN_AND_IMPLEMENTATION_AUDIT.md)
+explains how the shared hyperparameter population relates to published tuned
+results and checks all five arms. The training CLI now runs algorithm/integrity
+preflight checks. New results include source/dependency fingerprints, and
+training refuses incompatible or legacy resumes; use a fresh output directory
+for corrected experiments. Historical results remain readable for analysis.
+
 ```sh
 python -m pip install -r requirements-analysis.txt
 python -m analysis.review
@@ -60,32 +74,21 @@ missing loss histories explicitly; result coverage and log coverage differ.
 
 ## Training on the Wits CPU cluster
 
-Current SLURM scripts use **bigbatch**, launching **two array tasks**:
-Seaquest (0) and Space Invaders (1). The proposal's Breakout, Asterix, and Freeway
-results came from earlier runs. Current training CLI choices follow
-`rct/constants.py`; changing the games is a separate experiment configuration.
+The SLURM scripts cover **five variants × five games × 30 paired individuals**
+(750 full training runs). W&B defaults to **offline**, project `dqn-rct` under
+`2716924-wits`, while retaining local result JSONs and SLURM text logs. No API key
+is needed on compute nodes; authenticate only when syncing later.
 
-Set up the `mltest` environment with a suitable PyTorch build and dependencies
-from `requirements.txt`. From the project root:
+Follow the [cluster launch, storage and sync guide](CLUSTER_RUN_GUIDE.md) for
+one-time setup, the 25-task pilot, full submission and continuation. New runs use
+`experiments/<experiment-id>/` to keep corrected data separate from historical
+results. The original three proposal games are retained; Space Invaders and
+Seaquest are documented extensions. AUC remains primary and final return secondary.
 
-```sh
-module load anaconda
-~/.conda/envs/mltest/bin/python check_env.py
-~/.conda/envs/mltest/bin/python verify_arms.py
-mkdir -p logs/rct-bigbatch-test logs/rct-bigbatch-variant results
-
-# Short pilot, then full experiment. Repeat for each variant.
-sbatch --export=RCT_VARIANT=control slurm/run_rct_bigbatch_test.slurm
-sbatch --export=RCT_VARIANT=control slurm/run_rct_bigbatch_variant.slurm
-```
-
-Variant names: `control`, `ddqn`, `per`, `nstep`, `averaged`.
-Monitor with `squeue -u "$USER"` and stdout/stderr files in `logs/`.
-The current code logs to stdout; no W&B setup is required.
-
-Full experiments train each individual for 5 million frames, evaluating every
-50,000 frames over 10 fixed-seed greedy episodes. Resubmission skips completed
-individuals; a partial individual's training restarts from the beginning.
+The guide also records the methodology qualifications: independent uniform
+sampling rather than Pretorius's balanced sampling, the MinAtar network adaptation,
+and Seaquest's nonterminating greedy-episode guard. W&B logging does not retune
+algorithms or change the paired cohort.
 
 ## Validation
 

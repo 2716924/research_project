@@ -354,7 +354,10 @@ def main():
     data = load_results()
     comparisons = result_figures(data)
     density_figures(data)
+    from analysis.endpoints import analyze as analyze_endpoints, loss_diagnostics
+    analyze_endpoints(data)
     attempts, bins, jobs = parse_logs(data)
+    loss_diagnostics(bins)
     loss_figures(attempts, bins)
     summary = dict(result_files=len(data), completed_result_runs=sum(map(len,data.values())),
                    out_logs=len(jobs), err_logs=len({p for root in LOG_ROOTS for p in root.rglob("*.err")}),
