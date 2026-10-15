@@ -1,0 +1,201 @@
+............................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 12.049s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261008_223710-bffa396a3d4e45d59a5b553c331fb801
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▅▃▄▅▄▃▃▄▇▅▂▆▄▂▅▅▄▄▄▃▃▅▅▆▆▆▇▆▄▅▄▃▇▂█▄█▅
+wandb:               frames ▁▁▁▁▁▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇▇██
+wandb:        train/epsilon █▆▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂█▃▂▂▁▁▂▁▂█▂▁▁▁▂▁▃▁▁▁▄▂▂▂▁▁▃▁▆▅▆▁▁▁▅▁▁▁▁
+wandb: train/sampled_abs_td ▁▂▂▄▆▅▇▅▃▄█▃▃▄▃▃▂▃▄▃▄▃▄▅▃▃▃▃▇▆▆▄▆▂▂▃▂▂█▇
+wandb:    train/sampled_mse ▂▂▂▂▁█▅▂▄▇▃▃▆▁▁▁▂▄▁▁▂▆▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▂▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 37080000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 8.3
+wandb:        final_return 8.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 8.48
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.11526
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261008_223710-bffa396a3d4e45d59a5b553c331fb801
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261008_223710-bffa396a3d4e45d59a5b553c331fb801/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_083300-6aa46c190af44054b811002712da345d
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▃▄▅▃▂▅▆▆▅█▆██▆█▆██▅▇▇▇▅▆▆▆▇▇▄▇█▅▄▅▇▇▅▇
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▄▄▄▅▅▅▅▆▆▇▇▇▇▇▇██
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄▁▁▁▂▃▁▁▁▁▁▁▁█▁▄▁▁▁▃▁▄▁▇
+wandb: train/sampled_abs_td ▁▂▂▂▂▂▂▄▄▃▃▃▇▅▂▃▃▃▆▂▄▆▅▅▅▃▄▄▆▇▇▄▃▃▄█▂▃▅▁
+wandb:    train/sampled_mse ▁▁▁▂▁▂▁▁▁▁▁▁▁▄▄▁▁▁▃▁▂▂▂▂█▂▂▃▃▁▃▁▄▁▂▇▁▁▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 63625000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 18.5
+wandb:        final_return 18.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 14.18
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.04469
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_083300-6aa46c190af44054b811002712da345d
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_083300-6aa46c190af44054b811002712da345d/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_182815-0b81e5ba5a9c4c37862b06700dcaa2bf
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▃█▆▆▆▇▅▅▄▅▄▇▄▃▇▅▄▇▅▃▄▄▄▆▅▅▄▆▃▃▄▄▆▄▆▅▄▇
+wandb:               frames ▁▁▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▅▁▁▁▁▁▁▁▁▁▁▆▁▁█▂▁▁▁▅▁▁▃▁▁▁▁▁▁▂▂▁▁▁
+wandb: train/sampled_abs_td ▁▃▃▂▁▁▂▄▂▂▂▂▃▃▃▂▂█▁▁▃▁▃█▂▂▇▅▆▂▄▄▅▂▃▃▁▃▁▂
+wandb:    train/sampled_mse ▁▁▁█▆▁▁▁▂▁▃▂▁▃▁▁▁▁▁▁▂▂▂▁▁▁▁▁▂▄▁▂▁▁▁▂▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 73617500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 18.8
+wandb:        final_return 18.8
+wandb:              frames 5000000
+wandb: last_10_mean_return 13.51
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.0774
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_182815-0b81e5ba5a9c4c37862b06700dcaa2bf
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261009_182815-0b81e5ba5a9c4c37862b06700dcaa2bf/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_033707-6ad4a04c304e419e9620b2c46a9b4e5f
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▂▃▃▂▃▃▄▃▄▅▄█▅▇▆▇▆▇▇▅▅▆▆▅▆▅▆▆▆▅▆▆▅▅▅█▆
+wandb:               frames ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇████
+wandb:        train/epsilon █▃▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▃▁▁▁▂▁▁▁▂▂█▁▂▂▁▂▁▁▂▂▁▁▂▁▂▂▁▁▁▂▁▁▂▁▂
+wandb: train/sampled_abs_td ▂▂▂▁▂▂▃▂▃▄▄▅▃▃▇▆█▄▃▅▄▅▃▄▄▅▂▃▃▃▃▂▃▆▄▆▄▅▄▅
+wandb:    train/sampled_mse ▁▁▁▁▂▁▁▁▁▁▁▄▁▂▂▂▂▄▂▂▂▁▁▃▂▁▃▁█▁▁▃▁▁▃▁▄▁▂▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 76185000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 24.2
+wandb:        final_return 24.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 18.53
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 1.16433
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_033707-6ad4a04c304e419e9620b2c46a9b4e5f
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_033707-6ad4a04c304e419e9620b2c46a9b4e5f/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_120211-9fccea6a051a4c6faec7d21e32d13d60
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▁▇▅▆▅▇▆▂▅▄█▇▅▇▃▂▅▄▄▄▃▇▆▁█▃▅▇▂▅▄▄▅▄▄▃▅▅
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▂▃▁▁▁▇▁▁▁▁▁▂▂▁▁█▄▁▁▂█▂▁▂▂▁▁▂▁▁▁▁▆▁▅▁▁▁
+wandb: train/sampled_abs_td ▁▂▂▂▂▃▃▃▃▂▂▂▂▁▄▃▅▃▃▃▁▃▁▁▂█▅▁▂▅▃▂▂▄▇▃▄▃██
+wandb:    train/sampled_mse ▁▁▁▁▁▂▁▁▁▁▁▁▂▁▁▁▇▅▁▁▅▁▁█▂▁▁▂▁▁▁▇▁▂▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 69047500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 7
+wandb:        final_return 7
+wandb:              frames 5000000
+wandb: last_10_mean_return 11.31
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.07111
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_120211-9fccea6a051a4c6faec7d21e32d13d60
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_120211-9fccea6a051a4c6faec7d21e32d13d60/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_211244-77c43c67c98e49588ff14598d8732986
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▂▂▂▂▂▂▃▂▃▃▃▄▃▃▃▃▄▅▃▃▄▆▆▅▄▅█▅▆▅▄▅▅▆▆▄▅▆▇
+wandb:               frames ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▇▇█
+wandb:        train/epsilon █▅▅▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▁▁▁▁▁▂▅▁▁▂▁▂▁▁▂█▁▁▂▁▁▁▁▇▂▂▂▂▂▁▂▃▁▁
+wandb: train/sampled_abs_td ▁▁▂▄▃▅▃▄▄▄▃▄▂▂▅▃▆▆▅██▃▃▃▂▇▄▄▃▃▃▅▃▃▄▄▄▄▄▃
+wandb:    train/sampled_mse ▁▁▁▁▁▅▇▁▁▁▁▁█▁▂▁▁▂▂▆▁▂▁▂▁▁▁▄▁▁▁▁▁▁▁▂▁▁▂▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 118795000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 35.5
+wandb:        final_return 35.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 34.23
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.04834
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_211244-77c43c67c98e49588ff14598d8732986
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261010_211244-77c43c67c98e49588ff14598d8732986/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261011_053613-83ba4ab1d82843e78964d580a54da600
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▂▄▂▃▂▃▃▂▃▂▁▃▂▂▃▃▃▂▁▃▂▃▃▃▃▃▂▂▂▃▃▂▃▄▃▄█▁
+wandb:               frames ▁▁▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▂▂▁▁▁▂▁▁▂▂▁▂▅▂▆▂▁▂▁▅▄▁▆▃▆▂▃▄▂▂▂▁█▆▂▄▇
+wandb: train/sampled_abs_td ▁▁▂▂▂▄▂▃▃▄▂▃▃▅▄▆▄▅▄▇▄▅▅▃▆▇▄▇▇▇▄█▅▅▆▆▅█▄▇
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▄▃▁▂▃▂▁▁▁▆▂▂▁▂▆▄▁▂▇▂▂▃▅▅▁▁▂▂▂█▂▇▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 41015000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 9.9
+wandb:        final_return 9.9
+wandb:              frames 5000000
+wandb: last_10_mean_return 10.85
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.06038
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261011_053613-83ba4ab1d82843e78964d580a54da600
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/breakout/wandb/offline-run-20261011_053613-83ba4ab1d82843e78964d580a54da600/logs

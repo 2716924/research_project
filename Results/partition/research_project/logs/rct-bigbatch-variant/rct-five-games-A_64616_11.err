@@ -1,0 +1,102 @@
+...../home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+.......................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 8.864s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261005_234505-17f2a14ad4af4a44b8fcb200bf820112
+/home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▁▁▁▁▁▂▂▁▃▁▃▄▄▇▇▆▆▄▃▃▅██▅▅▄▄▅▇▄▇▄▃█▆▄▆▄
+wandb:               frames ▁▁▂▂▂▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▇▇▇▇██
+wandb:           train/beta ▁▁▁▁▂▂▂▂▂▂▂▂▂▃▃▄▄▄▄▄▄▄▄▄▄▅▅▆▆▆▇▇▇▇▇▇▇▇██
+wandb:        train/epsilon █▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ▅▂▇█▆▂▂▂▂▂▁▁▁▄▁▄▁▁▁▃▄▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▆▁▁▇█▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▁█▂▂▁▂▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    train/sampled_mse ▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 22067500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 6
+wandb:        final_return 6
+wandb:              frames 5000000
+wandb: last_10_mean_return 5.95
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261005_234505-17f2a14ad4af4a44b8fcb200bf820112
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261005_234505-17f2a14ad4af4a44b8fcb200bf820112/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_044834-53ca3b3c9ab64030a7f479bd01694358
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▂▃▂▁▁▂▂▂▃▃▄▃▄▅▃▄▃▅▄▃▂▅▃▃▄▇▃▅▇▅▅▄▃▇▄██▇▆
+wandb:               frames ▁▁▁▁▂▃▃▃▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇█████
+wandb:           train/beta ▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▄▄▄▄▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇█████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▅▅▆▃▄▄▃▂▂▂▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▅▅▃▃▂▄▂▂▂▃▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▃▄█▅▄▃▃▂▃▂▂▂▂▂▂▂▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▁▄▅▅▇█▇▇▆██▆▆▅▆▃▃▄▃▂▂▃▂▃▂▃▂▃▂▂▃▃▄▂▂▂▂▂▃
+wandb:    train/sampled_mse ▁▂▅▃███▆▃▇▂▂▄▂▃▂▂▂▁▂▁▁▁▂▁▂▁▂▂▂▂▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 30242500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 13.8
+wandb:        final_return 13.8
+wandb:              frames 5000000
+wandb: last_10_mean_return 9.85
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_044834-53ca3b3c9ab64030a7f479bd01694358
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_044834-53ca3b3c9ab64030a7f479bd01694358/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_101240-f325a89f56d44d9c94cd575a8d5c2863
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▁▂▂▃▂▂▅▃█▁▅█▆▂▄▆▅▄▄▄▅▁▃▅▅▂▃▁▂▁▄▆▅▂▆▄▆
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▇▇▇▇▇█
+wandb:           train/beta ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇█
+wandb:        train/epsilon █▇▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ██▇▇▅▅▄▄▄▃▄▂▄▃▂▂▃▂▂▂▂▂▂▁▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▇▆▇▇█▄▃▂▂▁▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▂▂▂▂▂▂▃▂▂▃▂▅▃▁▃█▃▇▃▃▅▅▂▃▇▄▁▄▃▃▂▃▃▁▁
+wandb: train/sampled_abs_td ▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▂▃▃▃▃▃▃▃▄▃▆▃▇▃▅▄▅▄█▇
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▂▂▃▁▃▃▄▁█
+wandb: 
+wandb: Run summary:
+wandb:                 auc 15452500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 3.7
+wandb:        final_return 3.7
+wandb:              frames 5000000
+wandb: last_10_mean_return 3.81
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_101240-f325a89f56d44d9c94cd575a8d5c2863
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/asterix/wandb/offline-run-20261006_101240-f325a89f56d44d9c94cd575a8d5c2863/logs

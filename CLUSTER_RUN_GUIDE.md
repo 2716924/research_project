@@ -5,6 +5,17 @@ The cluster scripts now cover **5 variants × 5 games × 30 paired individuals =
 to **offline**, project `dqn-rct`, entity `2716924-wits`. Nothing is uploaded by
 training. Result JSON and SLURM text logs remain local and authoritative.
 
+## Transfer only the runtime files
+
+On the laptop, run `python3 prepare_cluster.py` and transfer only
+`dist/rct-cluster.tar.gz`. Extract it on the cluster with
+`tar -xzf rct-cluster.tar.gz`, then `cd research_project`. Extract into a fresh
+directory so old files from a previous transfer do not remain alongside it.
+The archive includes the tests required by training preflight. It excludes
+`.venv`, `.git`, historical results/logs/figures, and research documents.
+Proposal and audit links below refer to documents retained in the full laptop
+repository. Rebuild the archive whenever you change the training code.
+
 ## Install once, then pilot
 
 Run these commands on the cluster from the project root. The scripts retain the

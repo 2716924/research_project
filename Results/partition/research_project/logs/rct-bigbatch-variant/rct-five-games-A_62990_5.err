@@ -1,0 +1,61 @@
+............................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 11.117s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261002_223925-a5f81c2a88414887b4ddf21f78657551
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▁▂▂▂▄▄▆▃▂▄▆▅▇▆▇▆▃▃▅▄▅▅▇▇▅▂▆█▃▄▂▂▃█▅▅▃█
+wandb:               frames ▁▁▁▁▁▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▁▅█▁▁▃▁▂▂▁▁▁▁▁▁▂▁▁▁▁▁▁▆▁▁▁▁▁▁▁▅▁▂▁▂▂▁▁
+wandb: train/sampled_abs_td ▁▁▂▂▃▅▅▅▄▃▃▄▃▄▆▄▄▄▄▄▆▄▄▃▃▆▃▃▃▄▅▅▃▃█▃▂▃▃▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▇▂▁▂▁▁▂▁▁█▂▂▂▁▁▂▁▂▁▁▂▁▁▁▂▂▁▂▁▁▁▄
+wandb: 
+wandb: Run summary:
+wandb:                 auc 113652500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 41.9
+wandb:        final_return 41.9
+wandb:              frames 5000000
+wandb: last_10_mean_return 28.77
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.15605
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261002_223925-a5f81c2a88414887b4ddf21f78657551
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261002_223925-a5f81c2a88414887b4ddf21f78657551/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261003_022348-404d7ed179164c5786291e2b6648e3ff
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▃▅▃▃▄▄▇▇█▅▇▆▄▆▅▇▆▇▅▅▅▆▆▅▄▆▅▇▅▆█▆▇▆▅▆█▆█
+wandb:               frames ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▃▂▂▁█▂▁▄▂▇▂▂▃▂▃▁▅▂▁▁▂▂▁▂▃▂▇▂▁▁▄▂▅▁▂▅▁▂
+wandb: train/sampled_abs_td ▁▁▂▄▃▆▆▄▃▄▄▃█▆▃▃▅▂▅▅▅▆▃▇▂▃▆▅▃▃▃▃▆▄▇▆▇▄▄▅
+wandb:    train/sampled_mse ▁▁▂▁▅▁▃▁▁▂▁█▃▅▂▁▂▆▂▁▂▂▆▂▄▄▂▃▂▁▁▁▁▁▁▅▁▂▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 55225000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 14.3
+wandb:        final_return 14.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 13.59
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.16625
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261003_022348-404d7ed179164c5786291e2b6648e3ff
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/breakout/wandb/offline-run-20261003_022348-404d7ed179164c5786291e2b6648e3ff/logs

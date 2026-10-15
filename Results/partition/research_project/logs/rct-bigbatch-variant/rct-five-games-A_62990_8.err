@@ -1,0 +1,373 @@
+...../home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+.......................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 21.868s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261002_224046-8a73c3a320e14729b1d6ab6d61a8bab6
+/home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▃▁▂▅▃▂▆▄▄▅▇▅▅▄▅▃▁▄▅▅▃▄▁▃▄▄▇▇▃██▅▅▂▃▄▆▅
+wandb:               frames ▁▁▁▁▂▂▂▂▃▃▃▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▆▇▇███
+wandb:        train/epsilon ██▆▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▂▂▁▁▁▁▁▁▂▁▁▁▁▁▁▁▂
+wandb: train/sampled_abs_td ▁▁▁▃▄▅▃▄▃▄▄▄▄▆▄▇▅▄█▆▅▅▃▄▃▅▃▄▄▄▅▄█▅▆▃▃▃▅▄
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▂█▁▁▁▃▂▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▂▁▁█▂▃▁▁▁▂▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 228972500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 65.5
+wandb:        final_return 65.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 57.75
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.5728
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261002_224046-8a73c3a320e14729b1d6ab6d61a8bab6
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261002_224046-8a73c3a320e14729b1d6ab6d61a8bab6/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_025003-31c8855ba8dc4180b043d415d656cb40
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▂▁▁▃▂▂▂▁▃▄▃▃▂▄▅▅▅▆▇▅▂▅▇▆▅▄▆▅▄▅▅▄▄▄▄▅█▅▂
+wandb:               frames ▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▆▆▇▇▇▇▇▇▇▇▇▇█
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▂▁▁▁▂▁▁▁▁▁▁▁▅▁▁▁▁▂▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▂▂▄▄▆▆▅▃▂▅▅▁▃▄▄█▃▆▆▃▄▄▆▂▄▅▄▄▂█▃▃▃▄▄▆▄▅▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▂▁▁▁▂▁▁▁▁▂█▁▂▂▁▁▂▁▂▂▁▁▁▁▁▁▃▂▁▁▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 338812500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 36.1
+wandb:        final_return 36.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 83.46
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.06188
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_025003-31c8855ba8dc4180b043d415d656cb40
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_025003-31c8855ba8dc4180b043d415d656cb40/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_063303-0ddd109a06a04df6b3a8199e8bbbe246
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▃▄▅▄▅▄▅▃▃▃▇▂▅▂▃▄▂▄▂▆▅▄▅▇█▇▄▆▆▅▅▂▂▁▆▅▄▅▁▆
+wandb:               frames ▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▄▄▄▄▄▅▅▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇██
+wandb:        train/epsilon █▆▅▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▃▂▂▁▁▁▂▁▁▁▂▁▁▂▄█▂▁▂▁▄▂▁▂▁▁▂▁▂▂▁▁▁▂▂▁▁▁
+wandb: train/sampled_abs_td ▄▅▇▃▂▃▂▆▃▃▂▄▄▃▂▄▁▃▂▃▄▅▂▂▂▅▅▄▂▃▃▅▄▃▂▄█▁▂▂
+wandb:    train/sampled_mse ▁▃▂▂▁▁▁▂▂▂█▁▂▁▁▁▂▁▂▁▁▁▁▁▁▂▁▁▁▁▂▁▁▄▁▁▁▂▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 106300000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 20.4
+wandb:        final_return 20.4
+wandb:              frames 5000000
+wandb: last_10_mean_return 22.52
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.16842
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_063303-0ddd109a06a04df6b3a8199e8bbbe246
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_063303-0ddd109a06a04df6b3a8199e8bbbe246/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_102835-1dc03bcb178e42ae95923d89e2fa8001
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▁▁▃▂▃▃▃▄▂▆▃▅▃▆▄▇▃▅▄▅▇▃▂▆▅▆▄▅▇▂▃▄▅▅▄█▂▃
+wandb:               frames ▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇▇██
+wandb:        train/epsilon █▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▂▂▄▂▁▄▂▂█▁▃▁▃▂▂▂▄▁▂▁▃█▃▂▂▂▁▂▂▁▂▂▂▁▁▂▃▁
+wandb: train/sampled_abs_td ▁▂▃▃▅▃▃▃▆▄▃▃▃▃▂▃▃▃▅▃▅▃▂▅▂▄▂▃▃▄▃▂▃▃▄█▂▄▆▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▂▂▂▂▂▁▁▁▂▁▁▂▁▂▂▁▁▁▂█▂▁▁▁▁▁▁▁▁▁▂▂▃▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 288232500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 78.1
+wandb:        final_return 78.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 68.39
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.0409
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_102835-1dc03bcb178e42ae95923d89e2fa8001
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_102835-1dc03bcb178e42ae95923d89e2fa8001/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_141819-dfa23886892c49f5b1aa3255d491b5bd
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return █▅▄▆▆▆▇▅▁▅▅▁▆▅▄▁▆▅▇▁▆▇▆▅▅▁▅▁▁▇▅▇▅▅▁▁▅▅▆▄
+wandb:               frames ▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▂▂▄▂▁▂▁▂▂▁▂▁▂▁▁▃▂▁▂█▅▆▁▁▁▃▄▂▂▁▂▂▂▃█▂▂▁
+wandb: train/sampled_abs_td ▁▄▄▃▆▃▃▁▄▁▁█▅▃▇▃▅▄▂▂▃▄▂▂▃▃▂▃▅▂▅▆▄▄▃▃▂▁▁▂
+wandb:    train/sampled_mse ▂▂▂▁▁▂▄▂▂▂▃▁▆▂▃▁▇▁▂█▁▂▃▁▂▁▂▁▂▂▄▂▁▂▁▂▃▂▃▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 50992500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 0.6
+wandb:        final_return 0.6
+wandb:              frames 5000000
+wandb: last_10_mean_return 10.65
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.14941
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_141819-dfa23886892c49f5b1aa3255d491b5bd
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_141819-dfa23886892c49f5b1aa3255d491b5bd/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_190625-94f188b21b8b4eb78c441730f4856d77
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▂▁▁▁▁▂▂▃▂▂▂▃▃▂▃▆▃▅▅▆▄▅▄▅▆▃▇▄▄▅▅▄▅▂▆▆█▆▄
+wandb:               frames ▁▁▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇██
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▂▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▄▃▄▂▄▄▃▂▅▄▅▃▅▃▃▅█▅▄▄▄▅▅▄▆▅▆▆▄▃▃▄▂▄▄▃█▃▄
+wandb:    train/sampled_mse ▁▁▂▁▁▁▁▁▁▁▁▁▁▆▁█▁▁▂▁▁▂▁▁▁▁▁▁▁▁▂▁▂▁▁▂▇▂▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 282162500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 47.3
+wandb:        final_return 47.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 67.25
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.11657
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_190625-94f188b21b8b4eb78c441730f4856d77
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_190625-94f188b21b8b4eb78c441730f4856d77/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_225503-2d6d9c4f80384324824d4ac783d68f27
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return █▄▄▆▆▄▅▃▃▄▄▄▄▁▅▄▁▅▃▄▄▄▄▄▄▄▄▄▄▄▄▄▆▃▄▄▄▄▄▄
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▇▇▇██
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▂▄▄▄▂▁▃▁▄▃▃▂▁▂█▂▂▂▂▂▂▂▂▁▂▂▂▂▁▁▂▇▂▂▂▂▃▁
+wandb: train/sampled_abs_td ▄▇▇▇█▅▃▃▁▃▂▂▂▁▄▁▂▃▅▂▂▂▂▂▂▃▃▄▂▁▄▁▁▃▃▆▂▁▆▃
+wandb:    train/sampled_mse ▁▂▅▄▂▆▂▄▂▁▁▃▂▁█▂▁▅▂▄▂▅▁▁▁▁▅▂▁▁▄▁▇▂▁▂▂▂▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 54137500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 10.4
+wandb:        final_return 10.4
+wandb:              frames 5000000
+wandb: last_10_mean_return 6.69
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.16286
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_225503-2d6d9c4f80384324824d4ac783d68f27
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261003_225503-2d6d9c4f80384324824d4ac783d68f27/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_033926-710e4f732b20435cad5e75f48cee7fd7
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▅▅▅▇█▆▇▆▆▇▄▅▅▄▅▅▅▇▄▄▆▆▅▇▆▅▅▆█▁▇▅▆▂▄▆▆▆▇▆
+wandb:               frames ▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▆▇▇▇▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▂▂▂█▂▃▁▂▁▅▂▂▃▂▂▃▇▂▂▃▃▂▇▂▃▂▁▂▄▁▂▅▂▂▃▂▂▂▃
+wandb: train/sampled_abs_td ▃▃▂▆▄▃▂▂▃▃▂▄▁▄▄▂▁▁▂▄▃▂▃▂▃▆█▂▃▄▁▃▃▂▂▂▃▂▁▃
+wandb:    train/sampled_mse ▁▅█▂▁▂▁▁▁▁▁▃▁▁▁▁▁▁▂▁▆▁▁▁█▂▁▁▁▁▃▁▁▁▁▁▁▁▃▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 80507500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 19.5
+wandb:        final_return 19.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 16.28
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.07109
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_033926-710e4f732b20435cad5e75f48cee7fd7
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_033926-710e4f732b20435cad5e75f48cee7fd7/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_082325-d99fc2d599dd4013940ad57674ccec05
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▃▄▄▂▄▃▅▅▅▃▅▅▄▄▅▄▆▃▄▅▆▆▃▃▃▄▂▄▃▂▄▂▂▁█▃▅▄▅
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▆▁▁▁▂▁▁▃▁▁▂▁▅█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▂▁
+wandb: train/sampled_abs_td ▄▃▄▂▅█▄▂▃▄▁▂▁▁▃█▇▂▃▃▄▅▃▂▂▂▃▂▃▁▄▂▁▄▂▃▃▃▂▁
+wandb:    train/sampled_mse ▂▅▁▇█▁▂█▁▂▂▅▂▁▂▁▃▅▂▇▂▁▃▂▃▁▁▃▂▃▂▁▅▂▂▁▁▂▂▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 201660000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 49.2
+wandb:        final_return 49.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 48.27
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.42731
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_082325-d99fc2d599dd4013940ad57674ccec05
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_082325-d99fc2d599dd4013940ad57674ccec05/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_123600-951785f42cc8437d9ea1e87d24b39d3d
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▁▂▂▃▃▅▂▄▄▅▄▆▃▅▅▆▅▄▆▃▇█▅▇▅▃▅▇▇▅▆▆█▇▅▇▅
+wandb:               frames ▁▁▁▂▂▃▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▃▅▁▁▁▁▂▁▂▂▁▃▄▁▂▁▁▂▁▂▁▃▃▁▁▁▅▁▁▁▂▁█▁▁▁
+wandb: train/sampled_abs_td ▂▂▁▂▁▂▃▄▂▂▁▃▃▂▂▂▃▃▄▅▃▁▂▃▂█▃▃▂▂▁▂▂▃▃▂▃▃▄▁
+wandb:    train/sampled_mse ▁▁▁▁▂▁▁▄▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▂▁▁▁▁▁▁▁▁▂▂▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 291690000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 62
+wandb:        final_return 62
+wandb:              frames 5000000
+wandb: last_10_mean_return 74.15
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.13222
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_123600-951785f42cc8437d9ea1e87d24b39d3d
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_123600-951785f42cc8437d9ea1e87d24b39d3d/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_164233-aeecb8e660884e09be5f896d2cc87bef
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▂▂▂▁▃▃▂▃▂▃▁▂▄▅▃▂▃▄▃▄▄▃▄▅█▅▄▄▃▃▅▅▃▄▄▄▃▆
+wandb:               frames ▁▁▁▂▂▃▃▃▃▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇█████
+wandb:        train/epsilon █▇▆▆▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▂▁▂▂▁▂▁▂▃▄▂▆█▁▁▁▁▁▂▁▁▁▁█▂▁▁▁▁▁▃▆▂▆▁▁▁▃
+wandb: train/sampled_abs_td ▂▄▁▅▅▆▅▂▄▄▂▂▂▅▂▂▅▄▅▂▂▂▆▅▁█▁▁▄▃▃▃█▃▂▄▅▂▁▁
+wandb:    train/sampled_mse ▂▃▂▁▂▂▁▁▁▆▁▂▂▁▂▁▂▃▁▁█▁▂▂▁▂▂▁▂▁▃▁▂▁▁▁▁▂▆▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 257985000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 89.3
+wandb:        final_return 89.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 66.24
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.03811
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_164233-aeecb8e660884e09be5f896d2cc87bef
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_164233-aeecb8e660884e09be5f896d2cc87bef/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_205751-a5294241d38d4b598aea66430df86d59
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▃▄▂▃▁▃▆▅▆▄▄▇▆▄▄▅▆▄▅▅█▅▇▅▃▇▅▅▄▂▄▃▁▄▅▇▅▇
+wandb:               frames ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▃▃▄▄▅▅▅▅▅▅▆▆▆▇▇▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▄▁▂▂▂▃▁▁▂▂▁▂▂▂▁▁▁▁▂▁▁▁▂▄▁▁█▁▂▃▂▁▂▁▂▁▁
+wandb: train/sampled_abs_td ▅▂▁▁▃█▄▇▅█▅▄▅▄▆▆▆▂▁▄▃▂▆▂▄▁▄▅▄▂▄▅▅▂▂▄▅▃▃▁
+wandb:    train/sampled_mse ▁▁▁▂▁▁▂▂▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▃▂▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 450120000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 144.1
+wandb:        final_return 144.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 97.49
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.42946
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_205751-a5294241d38d4b598aea66430df86d59
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261004_205751-a5294241d38d4b598aea66430df86d59/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261005_005205-77e40daaf5484a8ba13f48669e2055ca
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▆▅▃▇▃▅▅▄▃▅▆▄▄▅▃▃▅▄▆▅▇█▅▅▄▄▅▆▅▆▇▂▄▂▁▃▃▄▄▄
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▇▇▇▇████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▂▂▂▂▂▁▁▂▁▁▂▃▂▂▃▂█▁▁▁▂▃▃▇▂▂█▂▁▂▂▂▂▁▂▇▁▁
+wandb: train/sampled_abs_td ▃▃▃▄▄▅▄▃▄▁▄▂▄▃▃▃▂▃▂▃▃▃▂▆▃▆█▁▂█▃█▅▄▂▁▅▁▄▁
+wandb:    train/sampled_mse ▁▁▁▁▁▂▂▂▂▂▂▁▁▂▂▂▁▂▁▃▁▁▁▃▂▇▂▆▁▄█▂▂▁▂▂▁▆▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 118775000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 19.5
+wandb:        final_return 19.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 16.61
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.05218
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261005_005205-77e40daaf5484a8ba13f48669e2055ca
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/ddqn/spaceinvaders/wandb/offline-run-20261005_005205-77e40daaf5484a8ba13f48669e2055ca/logs

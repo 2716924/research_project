@@ -1,0 +1,439 @@
+............................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 12.187s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_062204-9600a2b0c9ca4ef6bed75f79c6efe79b
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▅▆▃▃▁▂▁▂▂▁▃▁▁▃▂▁▃▂▁▁▁▂▂▄▂▅▄▂▂▂▃▃▂▄▅▄▅▇█▄
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▆▇▇▇████
+wandb:           train/beta ▁▁▁▁▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▇▇▇▇████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▇▆▆▆▅▄▅▅▄▄▄▃▄▃▃▂▃▂▂▂▂▂▂▂▂▁▂▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▅▅█▅▆▄▄▃▃▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▅▇▃█▃▄▄▂▄▃▂▂▂▂▂▅▂▃▁▄▁▃▃▁▁▁▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▄▄▃▆▆▄▅▃▃▄▇▄▇▂▄▅▄▃▄▅▄▄▂▃▃▂▅▆▅▄▄▆█▅▇▇▇▇▇
+wandb:    train/sampled_mse ▁▂▁▂▂▁▂▆▂▃▂▁▆▆▂▂▃▂▁▁▃▂▄▃▆▂▃▃█▃▂▅▃▄▁▂▂▃▅▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 28467500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 7.1
+wandb:        final_return 7.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 12.66
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_062204-9600a2b0c9ca4ef6bed75f79c6efe79b
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_062204-9600a2b0c9ca4ef6bed75f79c6efe79b/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_112742-ff0cdafae2a44e7c9850480730bbff80
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▇▂▃▅▂▃▂▂▂▂▂▅▂▂▃▂▂▂▃▂▁▄▄▅▄▆▃▁▅▂▄█▆▅▇▃▆▃▅▇
+wandb:               frames ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇▇█
+wandb:           train/beta ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▇▅▆▅▅▄▅▄▄▄▄▅▄▄▄▃▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▄▄▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▄▄▄▅█▂▂▁▁▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▄▆▆▄▄▅▆▃▆▄▂▁▂▃▅▃▃▅▃▃▃▂▄▁▃▄▄▄▄▃▃▆▅▅▅▅█▄▄█
+wandb:    train/sampled_mse ▂▂▁▂▂▁▁▁▂▁▂▁▂▁▁▂▁▁▁▂▂▁▂▁▂▂▂▂▃▂▃▂▂▂█▂▂▃▃▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 32292500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 13.2
+wandb:        final_return 13.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 9.74
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_112742-ff0cdafae2a44e7c9850480730bbff80
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_112742-ff0cdafae2a44e7c9850480730bbff80/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_171541-58f29cf976ab4a94809d9e998683ba67
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▃▂▆▂▆▅▄▅▅▁▃▅▆▄▅▆▄▇▆▄▅▅▆▇▆▆█▆▃▇▄▅▆▄▄▅▇▅▅
+wandb:               frames ▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇██
+wandb:           train/beta ▁▁▁▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▇▇▇▇▇██
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▅▄▅▄▄▃▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▇▆▄▄▃▂▂▂▂▅▂▂▄▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▄███▅▃▃▂▂▂▂▂▃▂▁▂▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▂▃▂▄▂█▆▇▁▁▃▂▂▃▃▂▄▃▂▃▄▄▆▂▄▄▃▃▅▄▃▂▂▁▃▃▂▂▃▁
+wandb:    train/sampled_mse ▁▂█▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 78642500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 18.2
+wandb:        final_return 18.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 18.81
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_171541-58f29cf976ab4a94809d9e998683ba67
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_171541-58f29cf976ab4a94809d9e998683ba67/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_233309-e74ae2c432604edda84d0f47f0bec503
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▁▂▆▂▁▂▁▂▂▄▃▂▃▄▄▃▃▄▃▄▅▇▆▆▇▇▇▇▇▇▇█████▇█
+wandb:               frames ▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇▇▇▇▇███
+wandb:           train/beta ▁▁▁▁▁▂▂▂▃▃▃▃▃▃▃▃▃▃▃▄▄▄▅▅▅▆▆▆▆▆▆▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▇▆█▅▅▅▅▄▄▄▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▆█▆▅▅▅▄▄▃▃▄▄▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▂▂▄▄█▂▂▂▁▂▂▂▁▂▁▁▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▃▅▂▃▂▃▄▄▆▅▅▄▃▄▅▄▄▄▄▃▃▄▄▅▄▄▄▄█▄▃▄▅▄▆▄▄▄▅
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▁▂▃▂█▂█▁▁▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 155332500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 59.8
+wandb:        final_return 59.8
+wandb:              frames 5000000
+wandb: last_10_mean_return 57.5
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_233309-e74ae2c432604edda84d0f47f0bec503
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261003_233309-e74ae2c432604edda84d0f47f0bec503/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_040411-c19c12cf64474ca1a68d316537e0eff7
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▄▄▃▄▂▄▅▃▄▅▁▃▅▆▆▇▆█▆▅▅▅▅▅▁▅▅▃▅▃▄▆▂▅▅▅▅▅▅▆
+wandb:               frames ▁▁▁▁▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇██
+wandb:           train/beta ▁▁▁▁▁▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇▇███
+wandb:        train/epsilon █▅▅▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▆▆▆▄▄▄▄▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▆▅█▅▃▂▂▂▂▄▃▂▂▂▂▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▁▁▁▁▁▂▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▂▁▆▄▅▂▄▄▄▂▄▁▂▆▆▃▄▄▃▃▄▄▃▄▄▅█▄▆▄▄▃▃▄▄▇▄▃▅▂
+wandb:    train/sampled_mse ▁▂▁▁▁▁▂▂▁▆▁▂▄▁▂▁▁▁▁▂█▁▂▁▁▁▁▃▆▁▂▁▁▁▁▁▃▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 116257500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 30.1
+wandb:        final_return 30.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 26.11
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_040411-c19c12cf64474ca1a68d316537e0eff7
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_040411-c19c12cf64474ca1a68d316537e0eff7/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_091540-0e00c24edcb6480e8cd8c3773c1c9c67
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▂▃▁▁▁▁▁▂▆▄▄▆▆▅▆▆▇▆█▇▇▆▇▆▇▆▇▇▇██▇███▇███
+wandb:               frames ▁▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇█████
+wandb:           train/beta ▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▇▇▇▇██████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ██▆▇▆▇▆▆▅▅▆▆▆▄▄▄▃▂▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ██▆▅▄▄▂▂▂▄▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▃▃█▃▂▂▅▂▂▂▂▂▂▃▂▂▁▂▂▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▃▂▃▁▃▃▃▄▄▄▃▄▆▁▅▂▇▄▃▄▂▂▂▃▂▄▃▂▅▁▄▃▂█▄▃▂▁▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▂▁▁▁▁▁▁▂▁▁▁▁▁▁▃▁▁▁▁▄▁▁▁▁▁▂▁▁▃█▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 200277500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 54
+wandb:        final_return 54
+wandb:              frames 5000000
+wandb: last_10_mean_return 55.6
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_091540-0e00c24edcb6480e8cd8c3773c1c9c67
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_091540-0e00c24edcb6480e8cd8c3773c1c9c67/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_135137-8e88cfe5afa84be38ca55589ad8e3552
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▁▄▁▄▂▂▁▂▃▃▁▁▄▂▅▄▃▄▅█▂▄▂▄▂▂▄▃▃▃▂▃▄▃▄▃▃▃▃
+wandb:               frames ▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇████
+wandb:           train/beta ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇█
+wandb:        train/epsilon █▆▅▄▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ██▇▆▇▇▅▄▄▄▄▃▃▃▂▂▂▂▂▂▂▂▂▂▁▂▁▁▁▁▁▁▁▂▁▁▁▁▁▁
+wandb:  train/is_weight_min █▄▃▃▃▅▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂█▂▂▂▂▂▁▂▂▁▂▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▃▃▃▄▃▄▄▅▄▄▃▅▃▇▅▆▆▅▅█▇▄▂▅▃▄▄▄▆█▇▅▄▆▅▅▄▄▄
+wandb:    train/sampled_mse ▅▁▁▁▃▁▁▁▁▁▁▄▁▁▁▆▂█▁▆▁▁▂▁▂▂▁▂▂▁▂▁▁▂▂▄▃▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 68690000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 13.2
+wandb:        final_return 13.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 11.42
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_135137-8e88cfe5afa84be38ca55589ad8e3552
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_135137-8e88cfe5afa84be38ca55589ad8e3552/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_182201-87ce81e0b37245549519259fd10dc00f
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▁▁▂▃▅▅▅▆▆▆▆▆▅▆▆▆▇▆▇▇▇▇▇▇▆▇████▇▇▇▇▇█▇
+wandb:               frames ▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▅▆▆▆▆▆▆▇▇███
+wandb:           train/beta ▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇█
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ██▆▇▆▆▄▅▆▄▆▃▃▃▂▃▃▂▃▂▁▁▂▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▇▆▅▅▄▄▄▂▃▂▂▂▂▂▂▂▁▃▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▃▄▇▅▂▄▄▅▅▄▅▃▅▃▃▃▂▃▂█▃▂▂▂▅▂▁▂▂▁▁▁▁▁▂▂▁▁▁▁
+wandb: train/sampled_abs_td ▁▂▃▃▂▂▂▃▃▂▃▃▃▃▃▄▃▃▃▅▃▃▃▃█▃▃▃▃▄▃▅▃▃▃▃▃▃▃▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▁▁▂▃▂▁▁▁▁▂▆▁▁▁▁▁▁▁▂▂█▁▁▁▁▁▂▁▂▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 198947500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 52.8
+wandb:        final_return 52.8
+wandb:              frames 5000000
+wandb: last_10_mean_return 50.15
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_182201-87ce81e0b37245549519259fd10dc00f
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_182201-87ce81e0b37245549519259fd10dc00f/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_225545-3f05476db9734a21ba76cf7b9f7e9ade
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▇▃▄▂▇▂▂▄▇▇▃▇▄▄▂▅▇▂▄▅▄▆▅▄▅▅▅█▅▇▄███▅▆▄▆▂
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇███
+wandb:           train/beta ▁▁▁▁▂▂▂▃▃▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇▇▇▇█████
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▅▅▅▄▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▁▂▂▂▁▂▂▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ▇▆▆█▄▄▃▃▂▂▄▂▂▅▂▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▄▅▃█▆▅▅▃▃▃▄▃▅▄▂▁▂▂▁▂▂▂▂▂▁▂▂▅▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▃▃▅▃▃▅▅▆▅▄▄▃▄▃▁▃▄▄▂▄▄▇▄▅▄▄▃▄▄█▆▄▄▄▅▅▄▅▃▆
+wandb:    train/sampled_mse ▂▁▃▂▂▄▃▆▁▂▃▃▃▁▂▂▃▄▃▂▂▃▅▅▃▂▃▅▃▄▄▄▅█▆▂▃▅▅▄
+wandb: 
+wandb: Run summary:
+wandb:                 auc 52405000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 8.1
+wandb:        final_return 8.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 11.2
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_225545-3f05476db9734a21ba76cf7b9f7e9ade
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261004_225545-3f05476db9734a21ba76cf7b9f7e9ade/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_045930-e0b5fdf6495e4765b1b6307f78e6eb57
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▂▂▁▁▁▁▂▄▅▆▄▅▅▅▇▇▇▆▆▇▇▇▇▆▇▆▇▆▇▇▇██▇▇▇▇█▇
+wandb:               frames ▁▁▁▁▁▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇██
+wandb:           train/beta ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▇▆▅▆▅▄▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min ██▇▅▅▃▃▃▃▃▃▆▃▂▂▂▂▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▆▅▄▃▃▃▆▂▄▃▃▃█▄▃▂▃▃▂▂▂▂▂▂▁▁▁▃▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▅▃▂▂▂▄▃▄▄▃▄▅▅▂▇▄▄▄▃▄▅▃▃▃▄▆▃▃█▃▄▄▅▂▂▃▄▃█
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▁▁▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▇▁▁▁▁▁▅
+wandb: 
+wandb: Run summary:
+wandb:                 auc 195335000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 48.3
+wandb:        final_return 48.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 55.07
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_045930-e0b5fdf6495e4765b1b6307f78e6eb57
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_045930-e0b5fdf6495e4765b1b6307f78e6eb57/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_092933-20141b9eeca640229935033602417232
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▄▄▅▃▇█▃▁▇▆▁▁▅▁▁▅▁▅▁▅▁▅▅▅▅▅▁▁▅▅▁▅▅▅▅▅▅▅▅▅
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇▇▇█
+wandb:           train/beta ▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▆▆▇▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▆▇▅▆▄▅▄▄▄▅▄▆▆▆▄▄▅▅▄▄▃▃▃▃▂▂▃▂▂▁▂▂▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▇▆▆▆▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁█▄▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▁▁▂▂▄█▂▂▁▂▂▁▁▁▁▁▂▁▂▁▁▂▁▁▂▂▂▂▂▂▂▂▂▂▃▂▂▃▂
+wandb:    train/sampled_mse ▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 34932500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 11.2
+wandb:        final_return 11.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 10.08
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_092933-20141b9eeca640229935033602417232
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_092933-20141b9eeca640229935033602417232/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_153540-ab02874e225546efa4a59ba8a265768f
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▃▇▅▂▃▄█▇█▂▄▇▆█▇▅▄▆▆▆▇▁▇▄▆▅▃▄▅▄▅▁▄▂▄▆▄▇▄▅
+wandb:               frames ▁▁▁▁▁▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▇▇▇▇▇▇███
+wandb:           train/beta ▁▁▁▁▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▄▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▅▄▃▃▃▄▄▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▄▄▆▅▆█▇▄▆▄▄▄█▃▄▃▃▅▂▂▂▂▂▂▂▁▂▁▁▁▂▂▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▂▂▃▃▄▆▂▂▃▁▃▂▁▃▄▅▅▂▄▄▂▂▂▂▆▁▆▃▁▃▆▂▃▃▄▂▂█▃▇
+wandb:    train/sampled_mse ▁▁▂▂▂▃▄▂▃▂▃▂▆▂▃▂▄▄▂▂▂▃▄▃▅▂▃▂▅▃▃▂▃█▂▆▃▃▂▃
+wandb: 
+wandb: Run summary:
+wandb:                 auc 63382500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 17.1
+wandb:        final_return 17.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 12.72
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_153540-ab02874e225546efa4a59ba8a265768f
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_153540-ab02874e225546efa4a59ba8a265768f/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_214458-f6b3493e64a4480ab62be539337b00f4
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▄█▇▇▁▄▁▅▃▇▅▆▅▅▄▆▅▅█▇▆▃▄▄▅▆▄▅▅▅▄▅▃▄▄▃▄▅▄▆
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▇▇▇▇▇▇▇▇███████
+wandb:           train/beta ▁▁▂▂▂▂▂▂▂▂▃▄▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇▇▇▇█
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean █▇▇▇▇▅▆▅▆▅▄▄▄▄▄▄▄▄▄▃▃▃▃▂▃▂▂▂▂▂▁▂▁▁▁▁▁▁▁▁
+wandb:  train/is_weight_min █▅▅▅▄▃▂▂▂▂▁▁▁▁▁▁▁▃▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▇▁▂▁█▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▁▁▃▃▂▆▃▄▃▄▂▃█▄▂▃▂▂▂▁▂▂▅▂▃▃▃▄▄▂▂▂▂▂▃▂▂▂▂
+wandb:    train/sampled_mse ▁▂▁▁▁▄▂█▂▂▁▁▁▂▁▂▁▁▂▂▁▁▂▁▁▁▁▁▁▂▂▁▁▁▁▂▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 67747500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 17
+wandb:        final_return 17
+wandb:              frames 5000000
+wandb: last_10_mean_return 13.29
+wandb:              status completed
+wandb:          train/beta 1.0
+wandb:       train/epsilon 0.1
+wandb:                  +5 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_214458-f6b3493e64a4480ab62be539337b00f4
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261005_214458-f6b3493e64a4480ab62be539337b00f4/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261006_025853-189bac846c6c472daed6ee9d3d3d3841
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▁▁▁▁▁▂▂▃▂▃▄▂▂▂▂▂▂▂▄▅▆▇▇▆▇▆▇▇▇▇▅▆▇▇▇▇█
+wandb:               frames ▁▂▂▂▂▂▂▃▃▃▃▃▃▃▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇██████
+wandb:           train/beta ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▆▆▇▇▇▇▇▇▇▇████
+wandb:        train/epsilon ██▇▆▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ▇▆▇█▇▇▆▆▆▅▄▄▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▁▂▁▁▁▁
+wandb:  train/is_weight_min █▄▄▆▃▃▃▃▃▅▂▃▃▂▂▂▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▅▅▄▂▃▆▃▂▃▄▃▄▄▇▅▃▂▃▂▃█▆▃█▂▃▃▇▂▂▃▄▄▂▂▂▂▂▂
+wandb: train/sampled_abs_td ▃▅▄▃▂▃▂▁▂▁▃▃▄▂▃▄▃▅▃▄▄▄█▃▅▇▄▄▅▅▅▄▄▄▇█▅▄▅▄
+wandb:    train/sampled_mse ▁▁▃▁▁▁▁▁▁▂▁▁▁▁▁▄▃▃▁▂▁▁▂▁▁▂▁█▁▂▂▁▂▂▃▂▃▂▁▁
+wandb: 
+wandb: Run summary:
+wandb:            completed False
+wandb:     eval/mean_return 53
+wandb:               frames 2830000
+wandb:               status interrupted
+wandb:           train/beta 0.7396
+wandb:        train/epsilon 0.1
+wandb: train/is_weight_mean 0.01272
+wandb:  train/is_weight_min 0.00204
+wandb:           train/loss 0.00012
+wandb: train/sampled_abs_td 0.0962
+wandb:                   +1 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261006_025853-189bac846c6c472daed6ee9d3d3d3841
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/freeway/wandb/offline-run-20261006_025853-189bac846c6c472daed6ee9d3d3d3841/logs

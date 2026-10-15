@@ -1,0 +1,304 @@
+mkdir -p failed for path /home-mscluster/tmhizha/.config/matplotlib: [Errno 17] File exists: '/home-mscluster/tmhizha/.config'
+Matplotlib created a temporary cache directory at /tmp/matplotlib-e0osjy75 because there was an issue with the default path (/home-mscluster/tmhizha/.config/matplotlib); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+............................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 21.718s
+
+OK (skipped=2)
+2026/10/02 23:07:19 ERROR main: failed to get logger path error="error creating log directory: mkdir /home-mscluster/tmhizha/.cache/wandb: file exists"
+2026/10/02 23:07:19 INFO server: accepting connections addr=/tmp/wandb-816832-816996-3516929272/socket
+2026/10/02 23:07:19 INFO server: will exit if parent process dies ppid=816832
+2026/10/02 23:07:19 INFO connection: ManageConnectionData: new connection created id=1(@)
+2026/10/02 23:07:19 INFO handleInformInit: received streamId=cb22d173f94641499706e4a593907b3f id=1(@)
+2026/10/02 23:07:19 INFO handleInformInit: stream started streamId=cb22d173f94641499706e4a593907b3f id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261002_230716-cb22d173f94641499706e4a593907b3f
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▅█▆▇▃▅▄▇▃▂▃▄▁▂▁▂▂▁▂▄▂▃▂▃▂▂▂▃▃▂▂▃▂▂▂▂▃▇▄▁
+wandb:               frames ▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▇▇▇▇███
+wandb:        train/epsilon █▆▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▁▁▁▂█▂▁▄▂▅▁▁▃▁▁▁▁▁▂▁▁▁▁▁▁▁▂▁▁▂▂▂▁▁▁▁▁▂
+wandb: train/sampled_abs_td ▁▂▂▂▂▆▄█▄▅▃▂▃▂▂▂▂▁▁▂▁▂▂▂▁▃▂▂▁▁▁▁▁▁▁▁▁▃▂▂
+wandb:    train/sampled_mse ▄▄▅▃▂█▄▃▂▆▂▄▂▁▁▁▁▁▆▂▂▁▁▁▂▁▁▂▁▂▃▁▃▁▁▁▂▁▄▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 3417500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 0.2
+wandb:        final_return 0.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 0.73
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.03421
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261002_230716-cb22d173f94641499706e4a593907b3f
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261002_230716-cb22d173f94641499706e4a593907b3f/logs
+2026/10/03 08:13:46 INFO handleInformFinish: finish message received streamId=cb22d173f94641499706e4a593907b3f id=1(@)
+2026/10/03 08:13:46 INFO handleInformFinish: stream closed streamId=cb22d173f94641499706e4a593907b3f id=1(@)
+2026/10/03 08:13:46 INFO handleInformInit: received streamId=5205755a8c06410d8c7deab9a019120b id=1(@)
+2026/10/03 08:13:46 INFO handleInformInit: stream started streamId=5205755a8c06410d8c7deab9a019120b id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_081346-5205755a8c06410d8c7deab9a019120b
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▂▂▃▁▁▅▂▂▆▁▄▂▂▁▂▃▃▃▄▂▁▂▃▆▂▇▇▃▁▄▂▆▁▅▄▂█▃▁
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇███
+wandb:        train/epsilon ██▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▅▂▂▂▅▃▂▄▂▅▂▄▂▂▂▃▂▁▂▃▃▂▄▃▃▃▄▇▄▄▄▃▇▆▃█
+wandb: train/sampled_abs_td ▁▃▄▄▃▅▇▄▅▅▄▄▃▆▂▄▂▅▅▃▄▂▅▅▅▄▆▇▅█▆▇█▅█▄▅▇▅▄
+wandb:    train/sampled_mse ▁▁▂▁▂▁▁▃▁▂▂▂▂▄▂▃▁▂▃▂▄▁▃█▅▅▂▁▄▃▃▂▁▃▂▂▁▂▃▄
+wandb: 
+wandb: Run summary:
+wandb:                 auc 7275000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 0.6
+wandb:        final_return 0.6
+wandb:              frames 5000000
+wandb: last_10_mean_return 1.99
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.06973
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_081346-5205755a8c06410d8c7deab9a019120b
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_081346-5205755a8c06410d8c7deab9a019120b/logs
+2026/10/03 16:47:14 INFO handleInformFinish: finish message received streamId=5205755a8c06410d8c7deab9a019120b id=1(@)
+2026/10/03 16:47:14 INFO handleInformFinish: stream closed streamId=5205755a8c06410d8c7deab9a019120b id=1(@)
+2026/10/03 16:47:14 INFO handleInformInit: received streamId=2335429ab2414a4f8299a795fd2bbeb5 id=1(@)
+2026/10/03 16:47:15 INFO handleInformInit: stream started streamId=2335429ab2414a4f8299a795fd2bbeb5 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_164714-2335429ab2414a4f8299a795fd2bbeb5
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▄▂▅▃▅▁▂▃▃█▇▆▇▃▄▄▁▃▂▃▂▃▃▄▃▇▄▃▃▂▃▁▅▃▃▆▃▅▃▇
+wandb:               frames ▁▁▁▂▂▃▃▃▃▃▃▄▄▄▄▄▄▄▄▄▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇█████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss █▃▅▅█▆▂▄▂█▂▂▂▂▂▁▁▂▂▁▁▁▁▁▂▁▂▁▂▂▁▃▁▂▂▅▁▂▁▁
+wandb: train/sampled_abs_td ▁▇▅█▅▇▅▃▄▂▂▁▃▃▂▃▃▃▁▂▁▁▃▄▂▃▂▂▂▃▂▂▃▂▄▃▄▃▂▁
+wandb:    train/sampled_mse ▁▂▂▃█▂▁▁▁▁▁▁▁▂▂▁▁▁▁▂▂▃▁▁▁▂▁▁▂▁▁▁▁▁▂▂▂▁▁▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 2870000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 0.9
+wandb:        final_return 0.9
+wandb:              frames 5000000
+wandb: last_10_mean_return 0.61
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.00471
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_164714-2335429ab2414a4f8299a795fd2bbeb5
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261003_164714-2335429ab2414a4f8299a795fd2bbeb5/logs
+2026/10/04 01:44:25 INFO handleInformFinish: finish message received streamId=2335429ab2414a4f8299a795fd2bbeb5 id=1(@)
+2026/10/04 01:44:25 INFO handleInformFinish: stream closed streamId=2335429ab2414a4f8299a795fd2bbeb5 id=1(@)
+2026/10/04 01:44:25 INFO handleInformInit: received streamId=b23caf16f1014ec38e258cf8b55c3cb2 id=1(@)
+2026/10/04 01:44:25 INFO handleInformInit: stream started streamId=b23caf16f1014ec38e258cf8b55c3cb2 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_014425-b23caf16f1014ec38e258cf8b55c3cb2
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▂▂▂▂▂▂▂▂▂▁▂▁▁▁▁▂▁▁▂▂▂▁▃▃▁▄▃▂▁▂▃▅▇▆▃▆▄█▄▆
+wandb:               frames ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▃▃▃▃▃▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇█████
+wandb:        train/epsilon ██▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▂▄▆▅▅▃▃█▄▃▂▃▁▁▁▂▂▁▂▁▂▂▁▁▁▁▂▂▁▂▅▁▂▂▂▂▁▂▂
+wandb: train/sampled_abs_td ▁▂▃▅█▅▅▄▄▄▃▃▂▂▂▂▂▁▂▁▂▂▃▂▃▃▂▂▃▃▂▃▃▄▃▂▃▄▅▃
+wandb:    train/sampled_mse ▂▆▇█▄█▅▅▂▁▁▁▁▁▁▁▂▁▃▁▁▁▂▂▂▁▂▁▁▁▁▂▂▁▁▃▂▂▂▃
+wandb: 
+wandb: Run summary:
+wandb:                 auc 6127500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 2.5
+wandb:        final_return 2.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 4.19
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.01906
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_014425-b23caf16f1014ec38e258cf8b55c3cb2
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_014425-b23caf16f1014ec38e258cf8b55c3cb2/logs
+2026/10/04 11:27:19 INFO handleInformFinish: finish message received streamId=b23caf16f1014ec38e258cf8b55c3cb2 id=1(@)
+2026/10/04 11:27:19 INFO handleInformFinish: stream closed streamId=b23caf16f1014ec38e258cf8b55c3cb2 id=1(@)
+2026/10/04 11:27:19 INFO handleInformInit: received streamId=8d19981537bb49f6930bd25e3b066b47 id=1(@)
+2026/10/04 11:27:19 INFO handleInformInit: stream started streamId=8d19981537bb49f6930bd25e3b066b47 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_112719-8d19981537bb49f6930bd25e3b066b47
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▁▂▁▃▄▆▂▃▇▇▅▃▄▃▃▇▄▃▄▃▂▃▄▄▂▃█▃▅▃▃▅▄▄▃▃▄▃
+wandb:               frames ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▁▃▁▄▆▄▂▃▂▁▂▆▂▂▂▁▂▂█▁▂▁▂▂▂▁▂▂▁▁▇▁▂▂▁▁▂▂▂
+wandb: train/sampled_abs_td ▁▂▂▃▃▂▃█▃▃▄▂▃▂▄▄▃▄▃▄▃▄▂▂▄▂▃▂▂▂▃▂▃▃▂▂▃▆▃▂
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▁▁▁▁▂▂▁▅▁▁▂▇▃▁▃▅▁▂▁▁▁▁▁▁▁▁▁▁▅█▂▄
+wandb: 
+wandb: Run summary:
+wandb:                 auc 30370000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 5.1
+wandb:        final_return 5.1
+wandb:              frames 5000000
+wandb: last_10_mean_return 4.43
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.07097
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_112719-8d19981537bb49f6930bd25e3b066b47
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_112719-8d19981537bb49f6930bd25e3b066b47/logs
+2026/10/04 19:15:31 INFO handleInformFinish: finish message received streamId=8d19981537bb49f6930bd25e3b066b47 id=1(@)
+2026/10/04 19:15:31 INFO handleInformFinish: stream closed streamId=8d19981537bb49f6930bd25e3b066b47 id=1(@)
+2026/10/04 19:15:31 INFO handleInformInit: received streamId=63ff361c8f894ef59d8e82b0e3057477 id=1(@)
+2026/10/04 19:15:31 INFO handleInformInit: stream started streamId=63ff361c8f894ef59d8e82b0e3057477 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_191531-63ff361c8f894ef59d8e82b0e3057477
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▂▃▂▂▂▃▃▅▄▃▄▅▃▄▃▂▄▅▂▅▃▃▅▄▃▇█▃▅▅▅▅▄▂▃▅▆▇
+wandb:               frames ▁▁▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇▇██
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▁▁▁▃▁▂▁█▁▁█▂▁▃▂▂▂▂▂▂▂▂▂▁▂▁▂▂▂▁▁▁▁▁▁▁▁▂
+wandb: train/sampled_abs_td ▂▁▃▂▁▂▂▁▁▃▂▂▃▁▃▅▂▃▃▂▂▃▃▂▄▃▃▃█▂▁▅▇▂▂▂▂▁▃▂
+wandb:    train/sampled_mse ▁▁▁▁▁▄▁▂▁▂▁▁▂▂▁▁▁▁▂▂▂▂▁▄▂▂▂▂█▃▂▂▁▁▂▇▁▁▂▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 47987500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 11.7
+wandb:        final_return 11.7
+wandb:              frames 5000000
+wandb: last_10_mean_return 14.23
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.03391
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_191531-63ff361c8f894ef59d8e82b0e3057477
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261004_191531-63ff361c8f894ef59d8e82b0e3057477/logs
+2026/10/05 02:57:52 INFO handleInformFinish: finish message received streamId=63ff361c8f894ef59d8e82b0e3057477 id=1(@)
+2026/10/05 02:57:52 INFO handleInformFinish: stream closed streamId=63ff361c8f894ef59d8e82b0e3057477 id=1(@)
+2026/10/05 02:57:52 INFO handleInformInit: received streamId=2ff1750d8f754363a02b3380ce4e5c34 id=1(@)
+2026/10/05 02:57:53 INFO handleInformInit: stream started streamId=2ff1750d8f754363a02b3380ce4e5c34 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_025752-2ff1750d8f754363a02b3380ce4e5c34
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▁▁▁▁▂▂▄▃▂▃▄▇▃▃▆▄▆▆▆▃▃▅▅▆█▅▇▆▆▄▃▄▄▂▆▅▄▄
+wandb:               frames ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▆▇███
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▂▁▂▁▁▂▁▂▁▁▁▃▂▁▂▁▁▁▁▁▁▁▁▁▂▁▁▁█▁▅▂▁▁▂▁▂█▁
+wandb: train/sampled_abs_td ▁▃▄▃▄▄▆▃▅▄▃▄▅▄▃▄▄▇▆▂▄▄▄▄▃▄▄▅█▃▅▄▄▄▇▆▄▅▄▃
+wandb:    train/sampled_mse ▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁█▂▁▂▂▁▁▂▁▁▁▂▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 54465000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 11
+wandb:        final_return 11
+wandb:              frames 5000000
+wandb: last_10_mean_return 14.62
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.03053
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_025752-2ff1750d8f754363a02b3380ce4e5c34
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_025752-2ff1750d8f754363a02b3380ce4e5c34/logs
+2026/10/05 12:05:03 INFO handleInformFinish: finish message received streamId=2ff1750d8f754363a02b3380ce4e5c34 id=1(@)
+2026/10/05 12:05:03 INFO handleInformFinish: stream closed streamId=2ff1750d8f754363a02b3380ce4e5c34 id=1(@)
+2026/10/05 12:05:03 INFO handleInformInit: received streamId=592010cda00b4f8eb09ec43ec58d4e73 id=1(@)
+2026/10/05 12:05:04 INFO handleInformInit: stream started streamId=592010cda00b4f8eb09ec43ec58d4e73 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_120503-592010cda00b4f8eb09ec43ec58d4e73
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▂▂▃▃▁▄▆▇▄▂▄▄█
+wandb:               frames ▁▁▁▁▁▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▇▇▇████
+wandb:        train/epsilon █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▂▂▂▂▂▄▂▂▂▁▃▂▂▁▁▁▂▂▂▁▁▂▁▄▂▁▃▁▃▃▃▂▃▂▄▃█▂▄▃
+wandb: train/sampled_abs_td ▂▁▅▃▃▂▄▂▃▁▁▂▁▁▁▁▃▃▁▁▄▄▄▄▄▅▄▅▄▄▆▄▆▄▄█▆▅▆▆
+wandb:    train/sampled_mse ▁▁▁▁▂▁▂▁▁▂▁▁▂▂▁▁▂▁▁▁▂▂▃▁▂▂▂▂▂▂▄▂▂▂▂▂██▃▆
+wandb: 
+wandb: Run summary:
+wandb:                 auc 19505000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 25.2
+wandb:        final_return 25.2
+wandb:              frames 5000000
+wandb: last_10_mean_return 10.2
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.11774
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_120503-592010cda00b4f8eb09ec43ec58d4e73
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_120503-592010cda00b4f8eb09ec43ec58d4e73/logs
+2026/10/05 20:30:19 INFO handleInformFinish: finish message received streamId=592010cda00b4f8eb09ec43ec58d4e73 id=1(@)
+2026/10/05 20:30:19 INFO handleInformFinish: stream closed streamId=592010cda00b4f8eb09ec43ec58d4e73 id=1(@)
+2026/10/05 20:30:19 INFO handleInformInit: received streamId=0e2db3832f8a4404a6ac68e00a7d9810 id=1(@)
+2026/10/05 20:30:20 INFO handleInformInit: stream started streamId=0e2db3832f8a4404a6ac68e00a7d9810 id=1(@)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_203019-0e2db3832f8a4404a6ac68e00a7d9810
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▃▆▄▄▄▁▆▆▇▇▅▃▆▆▆▆█▂▃▃▆▄▄▂
+wandb:               frames ▁▁▁▂▂▂▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▄▅▅▅▆▆▆▆▆▆▇▇▇▇████
+wandb:        train/epsilon █▇▇▅▅▄▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▂▄▅▃▃▄▇▂▃▂█▄▄▂▅▂▃▂▂▁▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▂▂▄▃▄▇█▇▅█▆▄▇▅▄▄▅▃▄▄▂▃▂▂▂▁▁▁▂▁▁▁▁▁▁▁▁▁▁
+wandb:    train/sampled_mse ▁▁▁▁▁▃▄▂█▄▅▄▃▄█▅▄▄▃▂▂▂▃▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:            completed False
+wandb:     eval/mean_return 0.2
+wandb:               frames 1230000
+wandb:               status interrupted
+wandb:        train/epsilon 0.1
+wandb:           train/loss 0.0066
+wandb: train/sampled_abs_td 0.04196
+wandb:    train/sampled_mse 0.0066
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_203019-0e2db3832f8a4404a6ac68e00a7d9810
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/asterix/wandb/offline-run-20261005_203019-0e2db3832f8a4404a6ac68e00a7d9810/logs
+2026/10/05 22:50:39 INFO handleInformFinish: finish message received streamId=0e2db3832f8a4404a6ac68e00a7d9810 id=1(@)
+2026/10/05 22:50:39 INFO connection: closing id=1(@)
+2026/10/05 22:50:39 INFO connection: closed successfully id=1(@)
+2026/10/05 22:50:39 INFO handleInformFinish: stream closed streamId=0e2db3832f8a4404a6ac68e00a7d9810 id=1(@)
+2026/10/05 22:50:39 INFO handleInformTeardown: server teardown initiated id=1(@)
+2026/10/05 22:50:39 INFO handleInformTeardown: server shutdown complete id=1(@)
+2026/10/05 22:50:39 INFO connection: ManageConnectionData: connection closed id=1(@)
+2026/10/05 22:50:39 INFO server is shutting down
+2026/10/05 22:50:39 INFO server: listener closed addr=/tmp/wandb-816832-816996-3516929272/socket
+2026/10/05 22:50:39 INFO server is closed

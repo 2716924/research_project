@@ -1,0 +1,16 @@
+variant,variant_label,game,game_label,n,mean_final,std_final,median_final,min_final,max_final,mean_auc,std_auc,difficulty,score_pct,cv,rank,delta_vs_ctrl,pct_vs_ctrl,t_stat,p_value,sig_p05
+control,Control (DQN),breakout,Breakout,30,13.8557,6.2778,12.04,5.75,38.34,65213417.0,16649235.0,Medium,46.19,0.4531,3,0,0,0,1,False
+control,Control (DQN),asterix,Asterix,30,3.802,3.6599,2.145,0.47,12.16,16768667.0,14123496.0,Hard,19.01,0.9626,3,0,0,0,1,False
+control,Control (DQN),freeway,Freeway,30,38.3943,16.4604,44.66,11.23,57.57,159812167.0,58886592.0,Easy,63.99,0.4287,2,0,0,0,1,False
+ddqn,Double DQN (DDQN),breakout,Breakout,30,13.7447,5.0354,13.065,6.7,28.77,65306417.0,16876365.0,Medium,45.82,0.3664,4,-0.111,-0.8,-0.0755,0.939708,False
+ddqn,Double DQN (DDQN),asterix,Asterix,30,5.851,6.0118,2.22,0.38,17.35,21494500.0,21714028.0,Hard,29.25,1.0275,2,2.049,53.89,1.5946,0.117387,False
+ddqn,Double DQN (DDQN),freeway,Freeway,30,37.0897,17.3432,41.83,9.05,57.53,146176333.0,64829115.0,Easy,61.82,0.4676,3,-1.3047,-3.4,-0.2989,0.76612,False
+per,Prioritised ER (PER),breakout,Breakout,30,15.4553,5.5096,16.135,5.8,28.36,65291417.0,19728085.0,Medium,51.52,0.3565,1,1.5997,11.55,1.049,0.298612,False
+per,Prioritised ER (PER),asterix,Asterix,30,2.8527,2.1951,2.565,0.52,8.9,14120750.0,8269017.0,Hard,14.26,0.7695,4,-0.9493,-24.97,-1.2184,0.229097,False
+per,Prioritised ER (PER),freeway,Freeway,30,29.953,17.9927,26.55,7.99,55.79,114111250.0,64519313.0,Medium,49.92,0.6007,4,-8.4413,-21.99,-1.896,0.06299,False
+nstep,N-step DQN,breakout,Breakout,30,13.214,4.7194,13.15,1.35,26.96,68127750.0,19981737.0,Medium,44.05,0.3572,5,-0.6417,-4.63,-0.4475,0.656317,False
+nstep,N-step DQN,asterix,Asterix,30,0.899,1.5042,0.6,0.46,8.84,3349833.0,2418164.0,Hard,4.5,1.6731,5,-2.903,-76.35,-4.0184,0.000263,True
+nstep,N-step DQN,freeway,Freeway,30,18.9657,15.6526,12.785,1.93,55.94,64857417.0,54890991.0,Medium,31.61,0.8253,5,-19.4287,-50.6,-4.6849,1.7e-05,True
+averaged,Averaged DQN,breakout,Breakout,30,14.522,5.2692,13.27,6.75,34.23,65909750.0,17570643.0,Medium,48.41,0.3628,2,0.6663,4.81,0.4453,0.657814,False
+averaged,Averaged DQN,asterix,Asterix,30,6.176,6.1005,3.765,0.4,23.3,26413000.0,25127255.0,Medium,30.88,0.9878,1,2.374,62.44,1.8278,0.073871,False
+averaged,Averaged DQN,freeway,Freeway,30,44.0827,12.8507,49.32,12.52,58.46,193206000.0,52433574.0,Easy,73.47,0.2915,1,5.6883,14.82,1.492,0.141444,False
