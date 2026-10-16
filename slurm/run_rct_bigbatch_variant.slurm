@@ -36,7 +36,8 @@ rct_export_time_budget
 rct_check_python
 rct_lock_task
 
-export RCT_NUM_INDIVIDUALS=30
+# Individuals 0..N-1 are drawn in a fixed order, so a smaller N reruns a prefix of the cohort.
+export RCT_NUM_INDIVIDUALS="${RCT_NUM_INDIVIDUALS:-30}"
 export RCT_AUTO_RESUBMIT="${RCT_AUTO_RESUBMIT:-1}"
 
 echo ""
@@ -51,7 +52,7 @@ set +e
 "$PYTHON" -u run_rct.py \
     --variant "$RCT_VARIANT" \
     --game "$RCT_GAME" \
-    --num-individuals 30 \
+    --num-individuals "$RCT_NUM_INDIVIDUALS" \
     --total-frames 5000000 \
     --eval-frequency 50000 \
     --num-eval-episodes 10 \

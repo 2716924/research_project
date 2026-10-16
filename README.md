@@ -45,8 +45,25 @@ For paired AUC analysis of a completed new game:
 python analyze_rct.py --results-root experiments/corrected-rct-01/full/results --game-slug breakout
 ```
 
-The historical four-game review is still available as `python -m analysis.review`
-after restoring its old data and installing `requirements-analysis.txt`.
+The current analysis (corrected-rct-01; DQN from the original run) and its
+figures and tables in `analysis_output/corrected-rct-01/`:
+
+```sh
+.venv/bin/python -m analysis.corrected_rct01
+```
+
+`overview.tex` is the draft results overview built from those outputs.
+
+The September analysis pipeline (`analysis.review`, `analysis.endpoints`), the
+September cluster bundle and other unused files are in
+`archive/unused-2026-10-16.zip`. `ARCHIVE_MANIFEST.csv` inside it gives each
+file's original path, SHA-256 and the reason it was archived.
+
+## PER loss-history rerun
+
+`dist/per-rerun.zip` reruns PER individuals 0-12 with the regular
+`slurm/run_rct_bigbatch_variant.slurm` (`RCT_NUM_INDIVIDUALS=13`) to recover
+their training-loss logs. Its README has the commands and the checks.
 
 ## Validation
 

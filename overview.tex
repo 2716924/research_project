@@ -6,194 +6,278 @@
 \usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{caption}
-\usepackage{pdflscape}
 \usepackage[hidelinks]{hyperref}
 
-\graphicspath{{analysis_output/review/figures/}}
+\graphicspath{{analysis_output/corrected-rct-01/figures/}}
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 
-\title{Figures and tables for 4 games across the 5 variants}
+\title{DQN extensions in a paired randomised trial on MinAtar\\[2pt]
+\large Overview of current results --- draft}
 \author{}
-\date{}
+\date{Draft, 16 October 2026. PER training-loss histories are being regenerated.}
 
 \begin{document}
 \maketitle
 \vspace{-2em}
 
-The completed experiments cover Breakout, Asterix, Freeway, and Space Invaders,
-with five algorithmic variants and 30 matched configuration--seed individuals
-per variant and game (600 completed runs). Each run used five million training
-frames, with evaluation every 50,000 frames over ten fixed-seed greedy episodes.
-Space Invaders extends the three environments specified in the proposal.
+\section*{Summary}
+This draft reports the corrected trial (\texttt{corrected-rct-01}): four
+extensions of DQN, each compared with standard DQN on the same 30 sampled
+hyperparameter configurations, in four MinAtar games (600 completed runs).
+The primary outcome is the area under the evaluation learning curve (AUC).
 
+\begin{itemize}
+    \item \textbf{Averaged DQN} has a significantly higher AUC than DQN in
+    Asterix ($+57.5\%$), Freeway ($+20.9\%$) and Space Invaders ($+19.5\%$).
+    It does better on 24--26 of the 30 configurations in each of these games.
+    \item \textbf{Double DQN} is significantly better only in Space Invaders
+    ($+11.4\%$). Its other differences are not significant.
+    \item \textbf{PER} is significantly worse in Freeway ($-35.3\%$) and
+    Space Invaders ($-50.0\%$). Fixing the priority-bookkeeping bug barely
+    changed PER (see \hyperref[sec:per-fix]{\emph{Did the PER fix change PER?}}), so the bug did not cause the deficit.
+    \item \textbf{$n$-step DQN} is significantly worse in Asterix ($-80.0\%$),
+    Freeway ($-59.4\%$) and Space Invaders ($-21.0\%$). In Asterix it hardly
+    learns (Figure~\ref{fig:learning-curves}).
+    \item \textbf{Breakout} shows no significant difference for any extension.
+    All four 98.75\% intervals include zero. This does not show that the
+    extensions are equivalent there.
+    \item All nine significant results under the planned per-game threshold
+    remain significant with Bonferroni correction across all 16 comparisons,
+    and the Wilcoxon signed-rank test agrees with each of them.
+\end{itemize}
+
+\section*{Design}
+\textbf{Arms.} DQN (control), Double DQN, prioritised experience replay
+(PER; proportional, $\alpha=0.6$, $\beta_0=0.4$), $n$-step DQN ($n=3$) and
+Averaged DQN ($K=10$).
+
+\textbf{Individuals.} 30 individuals were drawn once from the shared
+hyperparameter space (learning rate, buffer size, batch size, target-update
+interval, $\varepsilon$-decay length, network depth). Each has its own
+training seed. Every arm trains the same 30 configuration--seed pairs, so the
+comparisons are paired. The statistical unit is the individual. The ten
+evaluation episodes and the 100 checkpoints are repeated measurements, not
+replicates.
+
+\textbf{Protocol.} Each run trains for 5 million frames. Every 50,000 frames
+the greedy policy is evaluated over ten episodes with fixed seeds. AUC is the
+trapezoidal integral of mean evaluation return from 50,000 to 5,000,000
+frames, reported in $10^6$ return\,$\times$\,frames.
+
+\textbf{Inference.} Each treatment is compared with DQN using a two-sided
+paired $t$-test on the 30 AUC differences. The proposal sets a Bonferroni
+threshold of $\alpha = 0.05/4 = 0.0125$ within each game, with matching
+98.75\% confidence intervals.
+
+\section*{Data and provenance}
+\begin{itemize}
+    \item Double DQN, PER, $n$-step and Averaged DQN results come from
+    \texttt{Results/corrected-rct-01}.
+    \item The corrected run did not include DQN, so the DQN results come from
+    the original run (\texttt{Results/original-run-2026-09}). This is valid
+    because the corrected run reproduced every Double DQN, $n$-step and
+    Averaged DQN trajectory bit for bit. Between the two runs, the only code
+    change that affects learning is the PER fix.
+    \item $n$-step Freeway individuals 18--29 also come from the original run,
+    because the corrected job failed at start-up. Individuals 0--17 match in
+    both runs. Restricted to individuals 0--17, the effect is $-53.3\%$
+    ($p = 2.4\times10^{-5}$), which supports the full-sample result.
+    \item Every stored AUC recomputes exactly from its trajectory. Each
+    individual has the same seed and configuration in every arm. Independent
+    recomputation reproduces all 16 paired tests.
+    \item Seaquest is excluded. In every arm, a greedy evaluation episode
+    stalled beyond the 100,000-step guard, which aborts the run on purpose.
+\end{itemize}
+
+\section*{Primary outcome}
 \begin{table}[htbp]
     \centering
-    \caption{Mean area under the evaluation learning curve (AUC), in
-    $10^6$ return $\times$ frames. Parentheses show the percentage change
-    relative to Standard DQN within each game.}
+    \caption{Mean AUC ($10^6$ return $\times$ frames, $n=30$ per cell).
+    Parentheses show the change relative to DQN, computed from unrounded
+    means. Bold marks the highest observed mean in each game. It does not
+    indicate significance.}
     \label{tab:mean-auc}
     \small
-    \setlength{\tabcolsep}{4pt}
-    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrr}
         \toprule
-        Variant & Breakout & Asterix & Freeway & Space Invaders \\
+        Arm & Breakout & Asterix & Freeway & Space Invaders \\
         \midrule
-        Standard DQN & 65.21 & 16.77 & 159.81 & 168.84 \\
+        DQN (control) & 65.21 & 16.77 & 159.81 & 168.84 \\
         Double DQN & 65.31 ($+0.1\%$) & 21.49 ($+28.2\%$) & 146.18 ($-8.5\%$) & 188.03 ($+11.4\%$) \\
-        PER & 65.29 ($+0.1\%$) & 14.12 ($-15.8\%$) & 114.11 ($-28.6\%$) & 80.97 ($-52.0\%$) \\
+        PER & 66.69 ($+2.3\%$) & 13.99 ($-16.5\%$) & 103.36 ($-35.3\%$) & 84.39 ($-50.0\%$) \\
         $n$-step DQN & \textbf{68.13 ($+4.5\%$)} & 3.35 ($-80.0\%$) & 64.86 ($-59.4\%$) & 133.38 ($-21.0\%$) \\
         Averaged DQN & 65.91 ($+1.1\%$) & \textbf{26.41 ($+57.5\%$)} & \textbf{193.21 ($+20.9\%$)} & \textbf{201.72 ($+19.5\%$)} \\
         \bottomrule
-    \end{tabular}%
-    }
+    \end{tabular}
 \end{table}
 
-Table~\ref{tab:mean-auc} reports the proposal's primary outcome, averaging
-each run's AUC across the 30 individuals. AUC integrates mean evaluation
-return over the observed interval from 50,000 to 5,000,000 frames; higher
-values indicate greater accumulated evaluation performance during training.
-Percentage changes are calculated from the unrounded variant and control
-means. Bold entries identify the highest observed mean in each game, not
-statistical significance. Averaged DQN has the highest mean in three games,
-while $n$-step DQN has the highest mean in Breakout.
+\begin{table}[htbp]
+    \centering
+    \caption{Paired comparisons with DQN on AUC. $\Delta$ is the mean
+    paired difference as a percentage of the DQN mean. The interval is the
+    98.75\% $t$ interval on the same scale. It is symmetric, so it can extend
+    below $-100\%$. $d_z$ is the mean difference divided by the SD of the
+    differences. ``Better'' counts individuals whose treatment AUC exceeds
+    their DQN AUC. Bold $p$-values are below 0.0125.}
+    \label{tab:paired}
+    \small
+    \begin{tabular}{llrrrrrr}
+        \toprule
+        Game & Arm & $\Delta$ (\%) & 98.75\% CI (\%) & $d_z$ & $t$-test $p$ & Wilcoxon $p$ & Better \\
+        \midrule
+        Breakout & Double DQN & $+0.1$ & $[-5.1, +5.4]$ & $+0.01$ & 0.943 & 0.919 & 14/30 \\
+         & PER & $+2.3$ & $[-8.5, +13.0]$ & $+0.10$ & 0.579 & 0.360 & 17/30 \\
+         & $n$-step DQN & $+4.5$ & $[-6.1, +15.1]$ & $+0.20$ & 0.271 & 0.245 & 19/30 \\
+         & Averaged DQN & $+1.1$ & $[-6.9, +9.1]$ & $+0.07$ & 0.724 & 0.715 & 17/30 \\
+        \midrule
+        Asterix & Double DQN & $+28.2$ & $[-8.2, +64.6]$ & $+0.38$ & 0.048 & 0.129 & 17/30 \\
+         & PER & $-16.5$ & $[-42.4, +9.4]$ & $-0.31$ & 0.100 & 0.271 & 14/30 \\
+         & $n$-step DQN & $-80.0$ & $[-122.4, -37.7]$ & $-0.92$ & $\mathbf{2.3\times10^{-5}}$ & $1.2\times10^{-6}$ & 2/30 \\
+         & Averaged DQN & $+57.5$ & $[+13.2, +101.8]$ & $+0.63$ & \textbf{0.0017} & 0.0004 & 25/30 \\
+        \midrule
+        Freeway & Double DQN & $-8.5$ & $[-17.2, +0.1]$ & $-0.48$ & 0.014 & 0.019 & 10/30 \\
+         & PER & $-35.3$ & $[-52.0, -18.7]$ & $-1.03$ & $\mathbf{4.1\times10^{-6}}$ & $1.0\times10^{-7}$ & 3/30 \\
+         & $n$-step DQN & $-59.4$ & $[-81.5, -37.4]$ & $-1.31$ & $\mathbf{6.7\times10^{-8}}$ & $1.9\times10^{-9}$ & 0/30 \\
+         & Averaged DQN & $+20.9$ & $[+10.6, +31.1]$ & $+0.99$ & $\mathbf{7.7\times10^{-6}}$ & $1.1\times10^{-5}$ & 24/30 \\
+        \midrule
+        Space Invaders & Double DQN & $+11.4$ & $[+2.1, +20.7]$ & $+0.59$ & \textbf{0.0029} & 0.012 & 21/30 \\
+         & PER & $-50.0$ & $[-64.8, -35.2]$ & $-1.64$ & $\mathbf{7.1\times10^{-10}}$ & $9.3\times10^{-9}$ & 1/30 \\
+         & $n$-step DQN & $-21.0$ & $[-35.2, -6.8]$ & $-0.72$ & \textbf{0.0005} & 0.0002 & 6/30 \\
+         & Averaged DQN & $+19.5$ & $[+10.3, +28.6]$ & $+1.03$ & $\mathbf{4.1\times10^{-6}}$ & $3.8\times10^{-6}$ & 26/30 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-\section*{Statistical overview}
-The analysis compares each treatment with its matched Standard DQN control
-using two-sided paired $t$-tests on individual AUC differences. Following the
-proposal, the Bonferroni threshold is $\alpha=0.05/4=0.0125$ for the four
-comparisons within each game. The corresponding 98.75\% confidence intervals
-are shown in Figure~\ref{fig:paired-effects}.
+Table~\ref{tab:paired} and Figure~\ref{fig:paired-effects} show the
+comparisons. Under the per-game threshold, nine of the 16 comparisons are
+significant: Averaged DQN in three games, Double DQN in one, PER in two and
+$n$-step DQN in three. Two comparisons are close but not significant:
+Double DQN in Asterix ($+28.2\%$, $p=0.048$) and Double DQN in Freeway
+($-8.5\%$, $p=0.014$). Their intervals include zero.
 
-In Breakout, none of the four comparisons reaches this threshold; the observed
-$4.5\%$ advantage of $n$-step DQN is not statistically significant
-($p=0.2715$). In Asterix, Averaged DQN has significantly higher mean AUC
-($+57.5\%$, $p=0.00170$), and $n$-step DQN has significantly lower mean AUC
-($-80.0\%$, $p<0.0001$). Double DQN and PER do not reach the threshold.
-In Freeway, Averaged DQN is significantly higher ($+20.9\%$, $p<0.0001$),
-while PER and $n$-step DQN are significantly lower ($-28.6\%$ and $-59.4\%$,
-respectively; both $p<0.001$). Double DQN's decrease does not reach the
-threshold ($p=0.0137$). In Space Invaders, both Double DQN and Averaged DQN
-are significantly higher ($+11.4\%$, $p=0.00290$, and $+19.5\%$,
-$p<0.0001$), while PER and $n$-step DQN are significantly lower
-($-52.0\%$ and $-21.0\%$; both $p<0.001$). These are unadjusted
-$p$-values assessed against the per-game threshold.
+In absolute terms, the differences between arms are largest in Freeway and
+Space Invaders. Breakout curves overlap almost entirely
+(Figure~\ref{fig:learning-curves}). The variation between individuals is
+large. In Asterix and Space Invaders, the spread of AUC within an arm is
+comparable to the differences between arms (Figure~\ref{fig:auc-distributions}).
+This is why the paired design matters.
 
-Shapiro--Wilk tests flag departures from normality in the paired differences
-for $n$-step DQN in Breakout, Asterix, and Freeway, and for Double DQN in
-Space Invaders ($p<0.05$; Figure~\ref{fig:normality}). The reported
-$t$-test results should therefore be read alongside these diagnostics.
-Comparisons are against Standard DQN; they do not establish significant
-differences between treatments.
+\section*{Robustness of the main results}
+\begin{itemize}
+    \item \textbf{Multiplicity.} The proposal fixes the family at four
+    comparisons per game. If the family is all 16 comparisons
+    ($\alpha = 0.003125$), all nine findings still hold. The closest is
+    Double DQN in Space Invaders ($p = 0.0029$).
+    \item \textbf{Normality.} Shapiro--Wilk flags the paired differences
+    ($p<0.05$) for $n$-step in Breakout, Asterix and Freeway, PER in Asterix
+    and Freeway, and Double DQN in Space Invaders. Each flagged significant
+    result is matched by the Wilcoxon signed-rank test. The flagged
+    non-significant comparisons stay non-significant under it.
+    \item \textbf{Other endpoints.} With mean return over the last ten
+    evaluations, eight of the nine findings remain significant, all in the
+    same direction. The exception is $n$-step in Space Invaders ($-12.1\%$,
+    $p=0.048$). Double DQN in Asterix also becomes significant ($+53.9\%$,
+    $p=0.007$). With return at the final checkpoint alone, which is a single
+    noisy evaluation, four of the nine remain significant. These are
+    exploratory secondary endpoints.
+\end{itemize}
 
-\section*{Observations from the figures}
-The Breakout learning curves overlap substantially. In Asterix and Freeway,
-the Averaged DQN mean curve generally lies above Standard DQN, while
-$n$-step DQN remains lower. In Space Invaders, Averaged DQN and Double DQN
-generally lie above Standard DQN, and PER remains below it
-(Figure~\ref{fig:learning-curves}). The individual AUC plots show substantial
-variation within variants, including a broad spread for Averaged DQN in
-Asterix and overlapping outcomes in Breakout
-(Figures~\ref{fig:auc-distributions} and~\ref{fig:auc-densities}).
+\section*{Did the PER fix change PER?}\label{sec:per-fix}
+The original run used a PER implementation with a bug in how maximum
+priorities were tracked. The corrected run retrained PER on the same 30
+individuals with the bug fixed and left all other code unchanged.
 
-The loss plots show different patterns across variants: PER's median logged
-loss declines markedly after its initial rise, while several other curves
-rise and then level off. In Space Invaders, this decreasing PER loss occurs
-alongside a $52.0\%$ lower mean AUC than Standard DQN. Loss magnitude alone
-therefore does not describe the observed policy performance; PER also uses
-an importance-weighted loss. Loss figures use only available completed logs
-matched to saved results, whereas all AUC summaries use the full 30 runs per
-variant. Missing loss histories affect Averaged DQN in Breakout and Freeway
-and PER in Asterix.
+\begin{table}[htbp]
+    \centering
+    \caption{PER mean AUC ($10^6$) before and after the fix, with the paired
+    $t$-test between the two runs on the same individuals.}
+    \label{tab:per-fix}
+    \small
+    \begin{tabular}{lrrrr}
+        \toprule
+        Game & Before fix & After fix & Change & Paired $p$ \\
+        \midrule
+        Breakout & 65.29 & 66.69 & $+2.1\%$ & 0.58 \\
+        Asterix & 14.12 & 13.99 & $-0.9\%$ & 0.89 \\
+        Freeway & 114.11 & 103.36 & $-9.4\%$ & 0.27 \\
+        Space Invaders & 80.97 & 84.39 & $+4.2\%$ & 0.43 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-\begin{figure}[htbp]
+None of the changes is significant (Table~\ref{tab:per-fix}), and the
+conclusions about PER versus DQN are the same before and after the fix. So
+the PER deficit in Freeway and Space Invaders comes from something other
+than the bug. Candidates include the interaction with the shared training
+recipe (MSE loss, RMSprop) and the importance weights. The Space Invaders curve drops in the first few hundred thousand
+frames and stays at about half of DQN's level
+(Figure~\ref{fig:learning-curves}). The loss histories being regenerated
+are needed to examine this.
+
+\section*{Limitations and open items}
+\begin{itemize}
+    \item \textbf{PER loss histories (in progress).} Individuals 0--12 of PER
+    have results but no loss log. They are being retrained with identical
+    code, environment and seeds. A rerun is accepted only if its evaluation
+    curve matches the reported one exactly. PER has already reproduced
+    exactly across separate cluster jobs.
+    \item \textbf{Loss coverage elsewhere.} DQN loss histories exist only in
+    the original run's logs. Commit \texttt{d697076} removed them from the
+    working tree, but git history still has them. In the corrected run,
+    Double DQN Breakout has loss histories for only 2 of 30 individuals.
+    Loss figures must state which individuals they cover.
+    \item \textbf{Seaquest} is excluded (see Data and provenance). Reporting it
+    would need a protocol change, such as a capped evaluation that records
+    partial scores, applied to every arm.
+    \item \textbf{Scope.} Each configuration has one training seed, so
+    sensitivity to the configuration cannot be separated from seed variation.
+    The training recipe is shared across arms and is not each paper's
+    published recipe. The results concern these variants under this recipe
+    on MinAtar.
+    \item \textbf{AUC} covers only the observed interval and mixes learning
+    speed with final level. The learning curves and the secondary endpoints
+    should be read alongside it.
+\end{itemize}
+
+\section*{Next steps}
+\begin{enumerate}
+    \item Finish the PER loss rerun, check it, and add PER loss diagnostics:
+    the weighted loss, unweighted TD error, and importance-weight statistics,
+    which are already logged.
+    \item Run exploratory analyses that need no new training. These include
+    whether the treatment effects depend on the hyperparameters (e.g.\
+    $n$-step against buffer size and learning rate), ranking stability
+    across AUC, the last-ten-evaluation mean and the best checkpoint, and
+    paired-bootstrap intervals.
+    \item Decide on the inference family (per game or across games) and on
+    how Seaquest is reported, then freeze the analysis plan before writing
+    the results chapter.
+\end{enumerate}
+
+\begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth]{learning_curves.pdf}
-    \caption{Mean greedy evaluation return throughout training for the four
-    completed games. Shading shows pointwise 95\% bootstrap confidence
-    intervals, resampling whole individuals. Curves are not temporally smoothed.}
+    \caption{Mean greedy evaluation return during training ($n=30$ per arm).
+    Shading shows pointwise 95\% bootstrap intervals from resampling whole
+    individuals. These are not simultaneous bands. Curves are not smoothed.}
     \label{fig:learning-curves}
 \end{figure}
 
 \begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth]{paired_auc_effects.pdf}
-    \caption{Mean paired AUC differences between each treatment and Standard
-    DQN, with 98.75\% $t$ confidence intervals. Positive differences favour
-    the treatment. Intervals correspond to four treatment--control comparisons
-    within each game; all Breakout intervals include zero.}
+    \caption{Mean paired AUC difference from DQN, as a percentage of the DQN
+    mean, with 98.75\% $t$ intervals. Filled markers have $p<0.0125$.
+    Positive values favour the treatment.}
     \label{fig:paired-effects}
-\end{figure}
 
-\begin{figure}[p]
-    \centering
+    \vspace{1.5em}
     \includegraphics[width=\textwidth]{auc_distributions.pdf}
-    \caption{Individual AUC values for each variant and game. Each dot
-    represents one completed run; boxes show medians and interquartile ranges.
-    All 30 observations per variant are displayed.}
+    \caption{AUC of every individual by arm. Boxes show medians and
+    interquartile ranges. All 30 runs per arm are plotted.}
     \label{fig:auc-distributions}
-\end{figure}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\textwidth]{pretorius_auc_densities.pdf}
-    \caption{Smoothed AUC distributions with individual observations shown
-    as ticks. Gaussian kernel density estimates use Scott bandwidth and are
-    scaled to the same peak height, so vertical heights cannot be compared
-    as probability densities. Smoothing below zero does not represent
-    negative observed AUCs.}
-    \label{fig:auc-densities}
-\end{figure}
-
-\clearpage
-\begin{landscape}
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{paired_auc_gaussian_diagnostics.pdf}
-    \caption{Distributions of the 30 paired AUC differences for every
-    treatment--control comparison. Histograms show observations and lines
-    show fitted normal reference densities. Asterisks identify
-    Shapiro--Wilk $p<0.05$; the fitted curves are diagnostic references.}
-    \label{fig:normality}
-\end{figure}
-\end{landscape}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\textwidth]{breakout_loss.pdf}
-    \caption{Breakout training losses. Lines show the median across matched
-    runs of within-run median loss in 50,000-frame bins; bands show the
-    interquartile range, not confidence intervals. Panels use separate
-    logarithmic scales. The same conventions apply to the following loss figures.}
-    \label{fig:breakout-loss}
-\end{figure}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\textwidth]{asterix_loss.pdf}
-    \caption{Asterix training losses. PER shows a large early rise followed
-    by an uneven decline, while the $n$-step median falls after its early peak.}
-    \label{fig:asterix-loss}
-\end{figure}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\textwidth]{freeway_loss.pdf}
-    \caption{Freeway training losses. Standard DQN, Double DQN, and Averaged
-    DQN rise early and then remain comparatively flat. PER's median loss
-    declines after its initial rise.}
-    \label{fig:freeway-loss}
-\end{figure}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[width=\textwidth]{spaceinvaders_loss.pdf}
-    \caption{Space Invaders training losses. PER's median loss decreases
-    substantially, although its mean evaluation AUC is below Standard DQN.
-    This loss trend does not imply better evaluation performance.}
-    \label{fig:spaceinvaders-loss}
 \end{figure}
 
 \end{document}

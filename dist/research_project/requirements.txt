@@ -1,5 +1,0 @@
-gymnasium>=0.29
-minatar>=1.0.13
-numpy
-scipy>=1.10
-wandb==0.26.1
