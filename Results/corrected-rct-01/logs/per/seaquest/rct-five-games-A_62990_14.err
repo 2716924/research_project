@@ -1,0 +1,55 @@
+...../home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+.......................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 12.479s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/seaquest/wandb/offline-run-20261005_050225-f8fc85f4821842a093a218e32f5af205
+/home-mscluster/mkhosa/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▆▃▆▃▅▅▇▆▃▃▃▆▄▃▄▃▃▃▁▅▁▃▅▁▂▄▅▂▃▅▂█▅▄▃▃▄▁▃▁
+wandb:               frames ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:           train/beta ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇▇▇███
+wandb:        train/epsilon ██▅▄▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/is_weight_mean ▅▅▅█▅▅▅▆▅▆▆▄▄▆▆▃▄▃▃▅▃▄▂▃▄▂▁▂▂▂▃▃▂▂▂▂▁▁▂▂
+wandb:  train/is_weight_min ▆█▇▄▄▄▃▃▃▃▃▄▃▄▄▃▄▃▂▃▂▂▁▁▂▂▁▂▁▁▁▂▁▁▁▁▂▁▂▁
+wandb:           train/loss ▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: train/sampled_abs_td ▁▁▁▁▂▅█▆▅▂▂▂▃▃▃▃▄▄▅▄▆▄▃▃▃▂▂▂▂▂▂▃▂▂▂▂▁▁▁▁
+wandb:    train/sampled_mse ▁▁█▃▃▁▁▁▁▁▂▂▃▂▄▃▄▂▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:            completed False
+wandb:     eval/mean_return 0
+wandb:               frames 2150000
+wandb:               status failed
+wandb:           train/beta 0.658
+wandb:        train/epsilon 0.1
+wandb: train/is_weight_mean 0.00605
+wandb:  train/is_weight_min 0.00036
+wandb:           train/loss 0.60594
+wandb: train/sampled_abs_td 9.66298
+wandb:                   +1 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/mkhosa/partition/research_project/experiments/corrected-rct-01/full/tracking/per/seaquest/wandb/offline-run-20261005_050225-f8fc85f4821842a093a218e32f5af205
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/per/seaquest/wandb/offline-run-20261005_050225-f8fc85f4821842a093a218e32f5af205/logs
+Traceback (most recent call last):
+  File "/home-mscluster/mkhosa/partition/research_project/run_rct.py", line 115, in <module>
+    main()
+  File "/home-mscluster/mkhosa/partition/research_project/run_rct.py", line 94, in main
+    stopped_early = execute_rct_trial(
+                    ^^^^^^^^^^^^^^^^^^
+  File "/home-mscluster/mkhosa/partition/research_project/rct/trial.py", line 103, in execute_rct_trial
+    eval_trajectory, finished = train_individual(
+                                ^^^^^^^^^^^^^^^^^
+  File "/home-mscluster/mkhosa/partition/research_project/rct/trainer.py", line 262, in train_individual
+    mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home-mscluster/mkhosa/partition/research_project/rct/evaluation.py", line 43, in evaluate_agent
+    raise RuntimeError(
+RuntimeError: Evaluation episode exceeded 100000 steps in MinAtar/Seaquest-v1 (seed 1000). No partial return was recorded. A finite-horizon evaluation would require an explicit protocol change.

@@ -8,6 +8,8 @@ Run: python verify_arms.py
 import inspect
 import random
 import sys
+import unittest
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -92,17 +94,17 @@ def test_nstep_collector_returns():
         collector.push(states[i], 0, float(i + 1), states[i + 1], False)
 
     assert len(buffer) == 1
-    _, _, reward, _, done = buffer.buffer[0]
+    reward, done = buffer._rewards[0], buffer._dones[0]
     expected = 1.0 + 0.9 * 2.0 + (0.9 ** 2) * 3.0
     assert_close("n-step stored return", reward, expected)
-    assert done is False
+    assert done == 0
 
 
 def test_per_large_capacity_small_fill():
     """Reproduces the cluster PER crash: capacity >> stored transitions."""
     random.seed(0)
     buffer = PrioritizedReplayBuffer(capacity=100_000)
-    state = [[0.0] * 10 for _ in range(10)]
+    state = np.zeros((10, 10), dtype=np.float32)
     for _ in range(5_000):
         buffer.push(state, 0, 1.0, state, False)
 
@@ -158,8 +160,8 @@ def test_trainer_variant_isolation():
     source = inspect.getsource(train_individual)
 
     checks = {
-        "control uses uniform buffer": 'uniform_buffer.push' in source,
-        "per uses prioritised buffer": 'per_buffer.push' in source,
+        "control constructs uniform buffer": 'UniformReplayBuffer(config["buffer_capacity"])' in source,
+        "per constructs prioritised buffer": 'PrioritizedReplayBuffer(' in source,
         "nstep uses n-step collector": 'n_step_collector.push' in source,
         "ddqn uses double target": "double_dqn_target" in source,
         "nstep uses nstep target": "nstep_target" in source,
@@ -182,20 +184,22 @@ def test_paired_population():
 def test_slurm_array_mapping():
     variants = ["control", "ddqn", "per", "nstep", "averaged"]
     games = GAMES
+    num_games = len(games)
+    num_tasks = len(variants) * num_games
     mapped = []
-    for task_id in range(15):
-        variant = variants[task_id // 3]
-        game = games[task_id % 3]
+    for task_id in range(num_tasks):
+        variant = variants[task_id // num_games]
+        game = games[task_id % num_games]
         mapped.append((variant, game))
 
-    if len(mapped) != 15:
-        raise AssertionError("Expected 15 array tasks")
-    if len(set(mapped)) != 15:
+    if len(mapped) != num_tasks:
+        raise AssertionError(f"Expected {num_tasks} array tasks")
+    if len(set(mapped)) != num_tasks:
         raise AssertionError("Array mapping has collisions")
     if mapped[0] != ("control", games[0]):
         raise AssertionError("Task 0 should be control × first game")
-    if mapped[14] != ("averaged", games[2]):
-        raise AssertionError("Task 14 should be averaged × last game")
+    if mapped[-1] != ("averaged", games[-1]):
+        raise AssertionError("Last task should be averaged × last game")
 
 
 def test_constants_coverage():
@@ -230,7 +234,13 @@ def main():
         print(f"  OK  {test.__name__}")
 
     print(f"\nAll {len(tests)} arm verification checks passed.")
-    return 0
+    # Include the regression that exposed PER's double exponent, paper-derived
+    # target oracles, real MinAtar dispatch checks and strict resume protection.
+    suite = unittest.TestSuite()
+    for pattern in ("test_algorithm_audit.py", "test_remaining_arms.py", "test_run_integrity.py", "test_cluster_tracking.py"):
+        suite.addTests(unittest.defaultTestLoader.discover(str(Path(__file__).parent / "tests"), pattern=pattern))
+    result = unittest.TextTestRunner(verbosity=1).run(suite)
+    return 0 if result.wasSuccessful() else 1
 
 
 if __name__ == "__main__":

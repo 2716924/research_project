@@ -50,8 +50,9 @@ class AveragedTargetEnsemble:
     """
     Averaged DQN target ensemble — Anschel et al. 2017.
 
-    Keeps K snapshots of past target networks and averages their
-    max-Q estimates to produce a smoother, lower-variance target.
+    Keeps K snapshots and averages Q-values per action before maximization.
+    The proposal's equation in section 2.4.4 reverses these operations; the
+    implementation follows Anschel et al., Algorithm 2 instead.
     """
 
     def __init__(self, ensemble_size, in_channels, num_actions, num_layers, device):

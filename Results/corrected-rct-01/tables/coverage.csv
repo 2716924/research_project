@@ -1,0 +1,26 @@
+arm,game,status,n_individuals,n_slurm_jobs,slurm_job_statuses,n_tracked_attempts,result_file
+control,breakout,missing,0,0,,0,
+control,asterix,missing,0,0,,0,
+control,freeway,missing,0,0,,0,
+control,spaceinvaders,missing,0,0,,0,
+control,seaquest,failed,0,1,FAILED,1,
+ddqn,breakout,complete,30,1,SUCCESS,2,results/ddqn/breakout/ddqn_results_MinAtar_Breakout-v1.json
+ddqn,asterix,complete,30,1,SUCCESS,13,results/ddqn/asterix/ddqn_results_MinAtar_Asterix-v1.json
+ddqn,freeway,complete,30,1,SUCCESS,14,results/ddqn/freeway/ddqn_results_MinAtar_Freeway-v1.json
+ddqn,spaceinvaders,complete,30,1,SUCCESS,13,results/ddqn/spaceinvaders/ddqn_results_MinAtar_SpaceInvaders-v1.json
+ddqn,seaquest,failed,0,1,FAILED,1,
+per,breakout,complete,30,2,PARTIAL (time budget); SUCCESS,18,results/per/breakout/per_results_MinAtar_Breakout-v1.json
+per,asterix,complete,30,2,PARTIAL (time budget); SUCCESS,18,results/per/asterix/per_results_MinAtar_Asterix-v1.json
+per,freeway,complete,30,2,PARTIAL (time budget); SUCCESS,18,results/per/freeway/per_results_MinAtar_Freeway-v1.json
+per,spaceinvaders,complete,30,2,PARTIAL (time budget); SUCCESS,18,results/per/spaceinvaders/per_results_MinAtar_SpaceInvaders-v1.json
+per,seaquest,failed,0,1,FAILED,1,
+nstep,breakout,complete,30,1,SUCCESS,11,results/nstep/breakout/nstep_results_MinAtar_Breakout-v1.json
+nstep,asterix,complete,30,1,SUCCESS,11,results/nstep/asterix/nstep_results_MinAtar_Asterix-v1.json
+nstep,freeway,partial,18,1,DID NOT START,0,results/nstep/freeway/nstep_results_MinAtar_Freeway-v1.json
+nstep,spaceinvaders,complete,30,1,SUCCESS,12,results/nstep/spaceinvaders/nstep_results_MinAtar_SpaceInvaders-v1.json
+nstep,seaquest,missing,0,1,DID NOT START,0,
+averaged,breakout,complete,30,3,PARTIAL (time budget); PARTIAL (time budget); SUCCESS,25,results/averaged/breakout/averaged_results_MinAtar_Breakout-v1.json
+averaged,asterix,complete,30,3,PARTIAL (time budget); PARTIAL (time budget); SUCCESS,25,results/averaged/asterix/averaged_results_MinAtar_Asterix-v1.json
+averaged,freeway,complete,30,4,PARTIAL (time budget); PARTIAL (time budget); PARTIAL (time budget); SUCCESS,26,results/averaged/freeway/averaged_results_MinAtar_Freeway-v1.json
+averaged,spaceinvaders,complete,30,4,PARTIAL (time budget); PARTIAL (time budget); PARTIAL (time budget); SUCCESS,26,results/averaged/spaceinvaders/averaged_results_MinAtar_SpaceInvaders-v1.json
+averaged,seaquest,failed,0,1,FAILED,1,

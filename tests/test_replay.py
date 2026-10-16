@@ -1,5 +1,7 @@
 import random
 
+import numpy as np
+
 from rct.replay import PrioritizedReplayBuffer
 
 
@@ -7,7 +9,7 @@ def test_prioritized_replay_does_not_sample_uninitialized_entries():
     buffer = PrioritizedReplayBuffer(capacity=8)
 
     for i in range(3):
-        buffer.push(i, 0, 1.0, i + 1, False)
+        buffer.push(np.array([i]), 0, 1.0, np.array([i + 1]), False)
 
     indices, states, actions, rewards, next_states, dones, weights = buffer.sample(2)
 
@@ -22,7 +24,7 @@ def test_prioritized_replay_large_capacity_small_fill():
     random.seed(0)
     buffer = PrioritizedReplayBuffer(capacity=100_000)
 
-    state = [[0.0] * 10 for _ in range(10)]
+    state = np.zeros((10, 10), dtype=np.float32)
     for _ in range(5_000):
         buffer.push(state, 0, 1.0, state, False)
 
@@ -38,7 +40,7 @@ def test_prioritized_replay_handles_small_buffer_without_crashing():
     buffer = PrioritizedReplayBuffer(capacity=8)
 
     for i in range(2):
-        buffer.push(i, 0, 1.0, i + 1, False)
+        buffer.push(np.array([i]), 0, 1.0, np.array([i + 1]), False)
 
     indices, states, actions, rewards, next_states, dones, weights = buffer.sample(2)
 

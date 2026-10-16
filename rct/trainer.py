@@ -18,7 +18,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import gymnasium as gym
 
-from rct.constants import TREATMENT_DEFAULTS
+from rct.constants import TREATMENT_DEFAULTS, TRAINING_SETTINGS, VARIANTS
 from rct.evaluation import evaluate_agent
 from rct.network import MinAtarQNetwork
 from rct.replay import NStepCollector, PrioritizedReplayBuffer, UniformReplayBuffer
@@ -50,10 +50,15 @@ def train_individual(
     total_frames,
     eval_frequency,
     num_eval_episodes,
-    gamma=0.99,
+    gamma=TRAINING_SETTINGS["gamma"],
     log_every=1000,
+    metrics_callback=None,
 ):
     """Train a single hyperparameter individual and return its eval trajectory."""
+    if variant not in VARIANTS:
+        raise ValueError(f"Unknown variant: {variant}")
+    if total_frames < 1 or eval_frequency < 1 or log_every < 1:
+        raise ValueError("Frame budget and evaluation/logging intervals must be positive")
     config = individual["config"]
     seed = individual["seed"]
 
@@ -73,7 +78,8 @@ def train_individual(
     target_network.load_state_dict(q_network.state_dict())
     target_network.eval()
 
-    optimizer = optim.RMSprop(q_network.parameters(), lr=config["lr"])
+    optimizer = optim.RMSprop(q_network.parameters(), lr=config["lr"],
+                             **TRAINING_SETTINGS["optimizer_options"])
 
     n_step_collector = None
     target_ensemble = None
@@ -106,15 +112,16 @@ def train_individual(
     state, _ = train_env.reset(seed=seed)
     eval_trajectory = []
 
-    epsilon = 1.0
-    epsilon_min = 0.1
-    epsilon_decay = (1.0 - epsilon_min) / config["epsilon_decay_steps"]
+    epsilon = TRAINING_SETTINGS["epsilon_initial"]
+    epsilon_min = TRAINING_SETTINGS["epsilon_final"]
+    epsilon_decay = (epsilon - epsilon_min) / config["epsilon_decay_steps"]
     replay_start_size = config["replay_start_size"]
 
     # Pre-allocate a reusable tensor for single-state action selection.
     # MinAtar obs shape is fixed for a given game, so this is safe.
     _state_buf = torch.empty(1, *state.shape, dtype=torch.float32)
 
+    completed = False
     for frame in range(total_frames):
         # Check SLURM time limit periodically, not every frame.
         if frame % _TIME_CHECK_INTERVAL == 0 and should_stop_for_time_limit():
@@ -129,6 +136,10 @@ def train_individual(
                 action = q_network(_state_buf).argmax(dim=1).item()
 
         next_state, reward, terminated, truncated, _ = train_env.step(action)
+        if truncated and not terminated:
+            train_env.close()
+            raise ValueError("External episode truncation is unsupported by this MinAtar protocol; "
+                             "it requires continuation bootstraps and stored n-step tail horizons")
         done = terminated or truncated
 
         if variant == "nstep":
@@ -198,22 +209,48 @@ def train_individual(
                 if variant == "per" and is_weights is not None:
                     weight_tensor = _np_to_tensor(is_weights).unsqueeze(1)
                     loss = (elementwise_loss * weight_tensor).mean()
-                    # .numpy() works directly on detached CPU tensors.
-                    replay_buffer.update_priorities(
-                        per_indices, td_errors.squeeze(1).numpy()
-                    )
                 else:
                     loss = elementwise_loss.mean()
 
+                if not torch.isfinite(loss):
+                    train_env.close()
+                    raise FloatingPointError(f"Nonfinite loss in {variant} at frame {frame + 1}")
+                if per_indices is not None:
+                    replay_buffer.update_priorities(per_indices, td_errors.squeeze(1).numpy())
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
+                if any(not torch.isfinite(p.grad).all() for p in q_network.parameters() if p.grad is not None):
+                    train_env.close()
+                    raise FloatingPointError(f"Nonfinite gradient in {variant} at frame {frame + 1}")
                 optimizer.step()
 
                 if (frame + 1) % log_every == 0:
+                    diagnostics = f" | sampled_mse: {elementwise_loss.mean().item():.6g}"
+                    diagnostics += f" | sampled_abs_td: {td_errors.abs().mean().item():.6g}"
+                    if is_weights is not None:
+                        diagnostics += (
+                            f" | is_weight_mean: {is_weights.mean():.6g}"
+                            f" | is_weight_min: {is_weights.min():.6g}"
+                            f" | beta: {replay_buffer.beta:.6f}"
+                        )
                     print(
                         f"    [{variant}] frame {frame + 1}/{total_frames} | "
                         f"loss: {loss.item():.6f} | epsilon: {epsilon:.4f}"
+                        f"{diagnostics}"
                     )
+                    if metrics_callback is not None:
+                        metrics = {
+                            "train/loss": loss.item(), "train/epsilon": epsilon,
+                            "train/sampled_mse": elementwise_loss.mean().item(),
+                            "train/sampled_abs_td": td_errors.abs().mean().item(),
+                        }
+                        if is_weights is not None:
+                            metrics.update({
+                                "train/is_weight_mean": float(is_weights.mean()),
+                                "train/is_weight_min": float(is_weights.min()),
+                                "train/beta": replay_buffer.beta,
+                            })
+                        metrics_callback(frame + 1, metrics)
 
             if (frame + 1) % config["target_update_freq"] == 0:
                 target_network.load_state_dict(q_network.state_dict())
@@ -221,13 +258,25 @@ def train_individual(
                     target_ensemble.snapshot(target_network)
 
         if (frame + 1) % eval_frequency == 0:
-            mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes)
+            try:
+                mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes)
+            except BaseException:
+                train_env.close()
+                raise
+            if not np.isfinite(mean_score):
+                train_env.close()
+                raise FloatingPointError(f"Nonfinite evaluation return in {variant} at frame {frame + 1}")
             eval_trajectory.append(mean_score)
             print(
                 f"    [{variant}] frame {frame + 1}/{total_frames} | "
                 f"eval mean return: {mean_score:.3f}"
             )
+            if metrics_callback is not None:
+                metrics_callback(frame + 1, {"eval/mean_return": mean_score})
 
+    else:
+        # A time-budget break before the last step is still incomplete, even
+        # when its zero-based frame index is total_frames - 1.
+        completed = True
     train_env.close()
-    completed = (frame + 1) >= total_frames
     return eval_trajectory, completed

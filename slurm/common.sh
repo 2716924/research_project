@@ -17,7 +17,9 @@ rct_log_header() {
     echo "#  User:          ${USER:-unknown}"
     echo "#  Job ID:        ${SLURM_JOB_ID:-local}"
     echo "#  Job name:      ${SLURM_JOB_NAME:-local}"
-    echo "#  Array task:    ${SLURM_ARRAY_TASK_ID:-0}  (0=breakout 1=asterix 2=freeway)"
+    echo "#  Array task:    ${SLURM_ARRAY_TASK_ID:-0}  (variant-major, five games per variant)"
+    echo "#  Experiment:    ${RCT_EXPERIMENT_ID:-local}"
+    echo "#  W&B:           ${WANDB_MODE:-disabled} / ${WANDB_ENTITY:-}/${WANDB_PROJECT:-}"
     echo "#  Node:          $(hostname)"
     echo "#  CPUs/task:     ${SLURM_CPUS_PER_TASK:-1}"
     echo "#  Mem limit:     ${SLURM_MEM_PER_NODE:-n/a} MB"
@@ -37,7 +39,7 @@ rct_log_footer() {
     local ss=$(( elapsed % 60 ))
     local status_label
     if   [[ "$exit_code" -eq 0 ]]; then status_label="SUCCESS"
-    elif [[ "$exit_code" -eq 2 ]]; then status_label="PARTIAL (resubmitting)"
+    elif [[ "$exit_code" -eq 2 ]]; then status_label="PARTIAL (time budget)"
     else                                  status_label="FAILED"
     fi
     echo ""
@@ -83,7 +85,7 @@ rct_setup_cpu() {
     export TORCH_CUDA_ARCH_LIST=""
     export TORCH_CPP_LOG_LEVEL=ERROR
 
-    PYTHON="$HOME/.conda/envs/mltest/bin/python"
+    PYTHON="${RCT_PYTHON:-$HOME/.conda/envs/mltest/bin/python}"
     if [[ ! -x "$PYTHON" ]]; then
         echo "ERROR: mltest environment not found at $PYTHON"
         echo "Create it with: conda create -n mltest python=3.11 -y"
@@ -91,27 +93,24 @@ rct_setup_cpu() {
     fi
 }
 
-rct_install_python_deps() {
-    if [[ -f "${PROJECT_ROOT}/requirements.txt" ]]; then
-        echo "Installing Python requirements from requirements.txt"
-        "$PYTHON" -m pip install --user --disable-pip-version-check \
-            -r "${PROJECT_ROOT}/requirements.txt" >/dev/null 2>&1 || \
-            echo "WARNING: failed to install all requirements; continuing anyway"
-    fi
-}
-
 rct_export_time_budget() {
     export RCT_TIME_LIMIT_BUFFER="${RCT_TIME_LIMIT_BUFFER:-900}"
+    # --export=ALL carries the previous allocation's derived deadline on retry.
+    unset RCT_JOB_END_EPOCH
 
     local end_time="${SLURM_JOB_END_TIME:-}"
     if [[ -z "$end_time" || "$end_time" == "Unknown" || "$end_time" == "N/A" ]]; then
         if [[ -n "${SLURM_JOB_ID:-}" ]]; then
-            end_time=$(scontrol show job "${SLURM_JOB_ID}" 2>/dev/null | awk -F= '/EndTime=/{print $2}' | awk '{print $1}')
+            end_time=$(scontrol show job "${SLURM_JOB_ID}" 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i ~ /^EndTime=/) {sub(/^EndTime=/,"",$i); print $i}}' || true)
         fi
     fi
 
     if [[ -n "$end_time" && "$end_time" != "Unknown" && "$end_time" != "N/A" ]]; then
-        export RCT_JOB_END_EPOCH=$(date -d "${end_time}" +%s 2>/dev/null || true)
+        if [[ "$end_time" =~ ^[0-9]+$ ]]; then
+            export RCT_JOB_END_EPOCH="$end_time"
+        else
+            export RCT_JOB_END_EPOCH=$(date -d "${end_time}" +%s 2>/dev/null || true)
+        fi
         echo "Job end time: ${end_time} (stop ${RCT_TIME_LIMIT_BUFFER}s before)"
     fi
 }
@@ -127,6 +126,11 @@ import sys
 import torch
 import gymnasium
 import minatar
+import scipy
+
+if os.environ.get("WANDB_MODE", "disabled") != "disabled":
+    import wandb
+    print("W&B:        ", wandb.__version__)
 
 print("Environment check passed.")
 print("Python:     ", sys.version.split()[0])
@@ -137,15 +141,49 @@ print("CUDA visible devices:", os.environ.get("CUDA_VISIBLE_DEVICES", "<unset>")
 EOF
 }
 
-# Map array task ID (0-2) to game only (single variant passed via RCT_VARIANT)
-rct_map_game_only() {
-    local GAMES=("MinAtar/Breakout-v1" "MinAtar/Asterix-v1" "MinAtar/Freeway-v1")
-    local GAME_SLUGS=(breakout asterix freeway)
+# Map all 25 cells using the same constants as the training CLI.
+rct_map_task() {
+    local assignment
+    assignment=$("$PYTHON" -m rct.tasks "${SLURM_ARRAY_TASK_ID:-}") || return 1
+    read -r RCT_VARIANT RCT_GAME RCT_GAME_SLUG <<< "$assignment"
+    export RCT_VARIANT RCT_GAME RCT_GAME_SLUG
+}
 
-    local TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
-    export RCT_GAME="${GAMES[$TASK_ID]}"
-    export RCT_GAME_SLUG="${GAME_SLUGS[$TASK_ID]}"
-    export RCT_VARIANT="${RCT_VARIANT:-control}"
+rct_setup_experiment() {
+    local phase="$1"
+    export RCT_EXPERIMENT_ID="${RCT_EXPERIMENT_ID:-${SLURM_ARRAY_JOB_ID:-${SLURM_JOB_ID:-local}}}"
+    if [[ ! "$RCT_EXPERIMENT_ID" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+        echo "ERROR: experiment ID must use only letters, numbers, dots, underscores or hyphens" >&2
+        return 1
+    fi
+    # Absolute shared storage survives allocation changes. Phase separates pilots.
+    export RCT_EXPERIMENT_ROOT="${RCT_EXPERIMENT_ROOT:-${PROJECT_ROOT}/experiments/${RCT_EXPERIMENT_ID}}"
+    if [[ "$RCT_EXPERIMENT_ROOT" != /* ]]; then
+        echo "ERROR: RCT_EXPERIMENT_ROOT must be an absolute shared-filesystem path" >&2
+        return 1
+    fi
+    export OUTPUT_DIR="${RCT_EXPERIMENT_ROOT}/${phase}/results/${RCT_VARIANT}/${RCT_GAME_SLUG}"
+    export RCT_TRACKING_DIR="${RCT_EXPERIMENT_ROOT}/${phase}/tracking/${RCT_VARIANT}/${RCT_GAME_SLUG}"
+    export WANDB_MODE="${WANDB_MODE:-offline}"
+    export WANDB_ENTITY="${WANDB_ENTITY:-2716924-wits}"
+    export WANDB_PROJECT="${WANDB_PROJECT:-dqn-rct}"
+    export WANDB_CONSOLE=off
+    export WANDB_DISABLE_CODE=true
+    # Offline jobs never need a key. Do not propagate one to the SDK.
+    if [[ "$WANDB_MODE" == offline || "$WANDB_MODE" == disabled ]]; then
+        unset WANDB_API_KEY
+    fi
+    mkdir -p "$OUTPUT_DIR" "$RCT_TRACKING_DIR"
+}
+
+rct_lock_task() {
+    # Keep the descriptor open through training to prevent simultaneous writers
+    # if the same experiment/task is accidentally submitted twice.
+    exec 9>"${OUTPUT_DIR}/.task.lock"
+    if ! flock -n 9; then
+        echo "ERROR: this experiment's variant/game is already running" >&2
+        return 1
+    fi
 }
 
 rct_task_incomplete() {

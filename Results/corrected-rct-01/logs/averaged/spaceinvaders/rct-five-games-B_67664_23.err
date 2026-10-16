@@ -1,0 +1,65 @@
+...../home-mscluster/tmhizha/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+.......................ss........
+----------------------------------------------------------------------
+Ran 38 tests in 10.666s
+
+OK (skipped=2)
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_142914-6a39d672415f45cfb277126452a9eac3
+/home-mscluster/tmhizha/.conda/envs/mltest/lib/python3.11/site-packages/torch/autograd/graph.py:979: UserWarning: CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▁▂▂▂▄▃▄▄▃▅▃▃▃▄▅▄▅▅▄▄▅▄▄▄█▅▅▄▇▆▅▄▆▅▄▄▅▆▄▅
+wandb:               frames ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇████
+wandb:        train/epsilon █▆▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▇▁▁▁▁▁▂▁▁▁▁▂▁▁▅▁▂▁▁▁▃█▁▁▂▁
+wandb: train/sampled_abs_td ▁▂▃▂▃▄▃▃▃▂▃▃▄▃▃▄▃▄▃▄▃▄▃▄█▃▃▃▃▄▅▃▃▃▃▃▃▃▇▃
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▁▂▃▂▁▂▁▂▂▂█▂▂▂▂▁▂▃▁▁▂▂▁▂▂▂▃▅▃▂▂▂▂
+wandb: 
+wandb: Run summary:
+wandb:                 auc 471890000.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 73.5
+wandb:        final_return 73.5
+wandb:              frames 5000000
+wandb: last_10_mean_return 107.38
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.79533
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_142914-6a39d672415f45cfb277126452a9eac3
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_142914-6a39d672415f45cfb277126452a9eac3/logs
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_233255-43b248cbc9064b74b29b6fa3e2a6cb96
+wandb: 
+wandb: Run history:
+wandb:     eval/mean_return ▅▇▆▆▆██▄▆▆▆▅▆▇▅▅▅▇▇▇▅█▆▅▆▅█▅▅▃▃▁▆▁▄▄▁▄▄▄
+wandb:               frames ▁▁▂▂▂▂▂▂▂▂▂▂▄▄▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇▇▇█
+wandb:        train/epsilon ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/loss ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▃█▁▁▁▁▂▁▁▂▂▁▁▁▁▁▁▂▂▂▁▁▃
+wandb: train/sampled_abs_td ▂▁▂▂▂▄▂▂▃▂▄▄▄▂▃█▄▄▂▃▆▂▄▄▃▁▃▃▄▃▄▂▄▃▂▁▂█▃▄
+wandb:    train/sampled_mse ▁▁▁▁▁▁▁▅█▂▁▂▁▁▁▁▁▁▂▁▅▁▂▁▃▂▁▃▁▁▁▂▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                 auc 100212500.0
+wandb:           completed True
+wandb:    completed_frames 5000000
+wandb:    eval/mean_return 14.3
+wandb:        final_return 14.3
+wandb:              frames 5000000
+wandb: last_10_mean_return 12.72
+wandb:              status completed
+wandb:       train/epsilon 0.1
+wandb:          train/loss 0.14883
+wandb:                  +2 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /home-mscluster/tmhizha/Matimu_Khosa/research_project/experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_233255-43b248cbc9064b74b29b6fa3e2a6cb96
+wandb: Find logs at: ./experiments/corrected-rct-01/full/tracking/averaged/spaceinvaders/wandb/offline-run-20261013_233255-43b248cbc9064b74b29b6fa3e2a6cb96/logs

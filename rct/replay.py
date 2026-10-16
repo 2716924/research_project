@@ -3,8 +3,8 @@ Experience replay buffers for the RCT arms.
 
 Implementations follow trusted community references:
   - Uniform replay: Mnih et al. 2015 (Nature DQN)
-  - Prioritised replay: Schaul et al. 2015; segment-tree pattern from
-    OpenAI Baselines / CleanRL rainbow implementations
+  - Prioritised replay: Schaul et al. 2016; segment-tree pattern from
+    OpenAI Baselines baselines/deepq/replay_buffer.py
   - n-step collector: Hernandez-Garcia & Sutton 2019
 
 Storage uses pre-allocated numpy arrays for CPU performance.
@@ -180,13 +180,16 @@ class PrioritizedReplayBuffer:
 
     def update_priorities(self, indices, td_errors):
         for idx, td_error in zip(indices, td_errors):
-            priority = (abs(float(td_error)) + self.priority_eps) ** self.alpha
+            # Keep the running maximum in raw-priority units. push() applies
+            # alpha once; storing the tree mass here would apply it twice.
+            raw_priority = abs(float(td_error)) + self.priority_eps
+            priority = raw_priority ** self.alpha
             self.sum_tree.update(int(idx), priority)
             self.min_tree.update(int(idx), priority)
-            self.max_priority = max(self.max_priority, priority)
+            self.max_priority = max(self.max_priority, raw_priority)
 
     def set_beta(self, frame, total_frames, beta_end=1.0):
-        """Linearly anneal beta from beta_start to 1.0 (Rainbow / CleanRL pattern)."""
+        """Linearly anneal beta from beta_start to 1.0 (Schaul et al. 2016)."""
         fraction = min(1.0, frame / max(total_frames, 1))
         self.beta = self.beta_start + fraction * (beta_end - self.beta_start)
 

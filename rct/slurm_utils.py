@@ -1,5 +1,7 @@
 """SLURM helpers for time-limit safety and resume checks."""
 
+from __future__ import annotations
+
 import os
 import subprocess
 from datetime import datetime
@@ -55,15 +57,17 @@ def slurm_time_remaining_seconds() -> Optional[float]:
 
     end_time = os.environ.get("SLURM_JOB_END_TIME")
     if end_time and end_time not in {"Unknown", "N/A"}:
+        if end_time.isdigit():
+            return float(end_time) - datetime.now().timestamp()
         end_dt = _parse_slurm_datetime(end_time)
         if end_dt is not None:
-            return (end_dt - datetime.now()).total_seconds()
+            return (end_dt - datetime.now(tz=end_dt.tzinfo)).total_seconds()
 
     job_id = os.environ.get("SLURM_JOB_ID")
     if job_id:
         end_dt = _end_time_from_scontrol(job_id)
         if end_dt is not None:
-            return (end_dt - datetime.now()).total_seconds()
+            return (end_dt - datetime.now(tz=end_dt.tzinfo)).total_seconds()
 
     return None
 

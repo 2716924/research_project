@@ -1,100 +1,43 @@
-# Explaining the project (non-technical guide)
+# Explaining the project
 
-Use this document when presenting the project to supervisors, examiners,
-or anyone who does not write code.
+This project asks which individual changes to DQN improve learning across a
+population of plausible training configurations. Each of 30 sampled
+configurations is trained with all five algorithms, using the same seed for
+matched runs.
 
-## The big picture
+| Group | Change being tested |
+|---|---|
+| DQN control | Uniform replay and a one-step target |
+| Double DQN | Separate action selection from target evaluation |
+| PER | Prioritize replay transitions using TD error |
+| n-step DQN | Accumulate several rewards before bootstrapping |
+| Averaged DQN | Use historical target networks to form the target |
 
-We are running a **fair experiment** to find out which small improvements
-to a famous AI learning algorithm (DQN) actually help, and by how much.
+The proposal specifies Breakout, Asterix, and Freeway. The saved results also
+contain Space Invaders. Seaquest currently has partial logs without completed
+result JSONs. The current cluster scripts target Seaquest and Space Invaders;
+this differs from the original three-game collection.
 
-Think of it like a **clinical drug trial**, but for machine-learning
-algorithms instead of medicines.
+Every 50,000 training frames, we evaluate the greedy policy on ten fixed-seed
+episodes. Integrating these mean returns gives one AUC per run. Higher AUC means
+better return over the observed interval; the curve shows details the single
+number loses.
 
-## The five groups
+We compare each treatment's AUC with its matched control. The proposal calls for
+normality diagnostics, paired t-tests, and Bonferroni correction. Effect size
+and uncertainty matter alongside statistical significance.
 
-Every "participant" in our trial is not a person — it is a **settings
-profile** (learning speed, memory size, etc.) drawn at random from a
-fixed list of options.
+The presentation combines learning curves, individual AUC distributions,
+paired effects, and loss diagnostics. Pretorius-style density curves show the
+spread of outcomes. Gaussian kernels in those curves do not mean the outcomes
+have a normal distribution.
 
-Each profile is tested under **five versions** of the same AI:
+Training loss describes the network update objective. Evaluation return measures
+policy performance. Their trends can differ, particularly when replay sampling
+and target definitions differ between variants.
 
-| Name | Plain-English idea | What changes |
-|------|-------------------|--------------|
-| **Control** | The original recipe | Nothing — baseline |
-| **Double DQN** | Ask two experts instead of one | How the AI estimates future reward |
-| **PER** | Replay important mistakes more often | Which past experiences get reviewed |
-| **n-step** | Look further ahead before updating | How many steps of reward are combined |
-| **Averaged DQN** | Average several past "expert" networks | How the target score is smoothed |
-
-**Key rule:** only **one** thing changes per treatment. Everything else
-(network shape, games, evaluation) stays the same. That way, if one
-version scores higher, we know *which change* caused it.
-
-## The three games
-
-We use simplified Atari-style games (MinAtar):
-
-- **Breakout** — timing and prediction (dense rewards)
-- **Asterix** — fast reactions (dynamic enemies)
-- **Freeway** — patience (sparse rewards)
-
-Together they test whether an improvement works across different styles
-of challenge, not just one lucky game.
-
-## How we measure success
-
-We do **not** just report the single best score. Instead:
-
-1. During training, we pause every 50,000 steps and test the AI fairly
-   (no random guessing).
-2. We plot performance over time and compute the **area under the curve
-   (AUC)** — higher AUC means the AI learned faster and more reliably.
-3. After 30+ settings profiles, we run **paired statistical tests** to
-   see if differences are real or just noise.
-
-## What each folder does
-
-```
-research_project/
-├── rct/              # The experiment "engine" (shared code)
-├── run_rct.py        # Start one algorithmic arm
-├── analyze_rct.py    # Statistics after results are collected
-├── check_env.py      # One-time cluster health check
-├── slurm/            # Cluster GPU job scripts (biggpu partition)
-├── docs/             # Guides like this one
-└── results/          # Output data (created when jobs run)
-```
-
-## Cluster workflow (simple steps)
-
-1. **Check setup** — make sure Python, PyTorch, GPU, and games work:
-   `~/.conda/envs/mltest/bin/python check_env.py`
-
-2. **Set wandb key** (once, in `~/.bashrc` — never commit the key):
-   `export WANDB_API_KEY="..."`
-
-3. **Practice run** — short GPU test for each variant:
-   `sbatch --export=RCT_VARIANT=control slurm/run_rct_gpu_test.slurm`
-
-4. **Full experiment** — all variants and games on `biggpu`:
-   `sbatch slurm/run_rct_gpu_full.slurm`
-   (auto-resubmits every 3 days until each task finishes)
-
-5. **Monitor** — W&B dashboard + SLURM logs in `logs/rct-gpu-full/`
-
-6. **Analyse** — compare treatment vs control:
-   `python analyze_rct.py --results-root results --game-slug breakout`
-
-## Test vs full jobs
-
-| Script | Purpose | Scale |
-|--------|---------|-------|
-| `run_rct_gpu_test.slurm` | GPU smoke test | 3 profiles, ~15k frames |
-| `run_rct_gpu_full.slurm` | Real data collection | 30 profiles, 5M frames, auto-resubmit |
-
-## Resuming interrupted jobs
-
-If the cluster stops a job halfway, you can resubmit the same script.
-The code skips individuals that already finished and continues from
-where it left off.
+The [research review](RESULTS_REVIEW.md) gives findings and citations. The
+[figure index](../analysis_output/review/README.md) links generated plots.
+The [README](../README.md) gives current CPU cluster and analysis commands.
+Resubmission preserves completed individuals; partial individuals restart and
+are treated as separate attempts in the log audit.

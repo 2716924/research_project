@@ -1,118 +1,78 @@
-# DQN Randomised Control Trial (Honours Research)
+# DQN Randomised Control Trial
 
-Rigorous benchmarking of DQN modifications using a Randomised Control Trial
-(RCT) methodology, as described in the research proposal.
+Honours research comparing DQN, Double DQN, Prioritised Experience Replay,
+n-step DQN, and Averaged DQN across 30 paired hyperparameter configurations and
+five MinAtar games: **750 full training runs**. AUC is the primary outcome.
 
-## Repository layout
+## Prepare the cluster transfer
 
-```
-rct/                    Core library (trainer, replay, targets, evaluation)
-run_rct.py              Main CLI — run one algorithmic arm
-analyze_rct.py          Paired t-tests + Bonferroni (Phase 4)
-verify_arms.py          Automated checks for all five algorithmic arms
-check_env.py            Cluster environment check
-slurm/                  Wits HPC job scripts
-docs/EXPLAINER.md       Non-technical project guide
-docs/REFERENCES.md      Trusted implementation sources
-results/                JSON outputs (gitignored)
-logs/                   SLURM logs (gitignored)
-wandb/                  Local wandb runs (gitignored)
+```sh
+python3 prepare_cluster.py
 ```
 
-## Algorithmic arms
+Transfer only `dist/rct-cluster.tar.gz`. It contains the training package,
+launch scripts, required preflight tests, environment check, W&B sync helper,
+single-game analysis helper and cluster guide. The archive excludes the local
+Python environment, Git history, research documents, historical analysis code,
+results, logs, figures and caches. Rebuild it after changing the training code.
 
-| `--variant` | Description |
-|-------------|-------------|
-| `control` | Canonical Nature-DQN (baseline) |
-| `ddqn` | Double DQN — Van Hasselt et al. 2016 |
-| `per` | Prioritised Experience Replay — Schaul et al. 2015 |
-| `nstep` | n-step learning — Hernandez-Garcia & Sutton 2019 |
-| `averaged` | Averaged DQN — Anschel et al. 2017 |
+On the cluster, extract it into a fresh directory:
 
-## Cluster setup (Wits HPC — bigbatch CPU)
-
-### 1. Sync code and install dependencies
-
-```bash
-cd ~/research_project
-git pull
-module load anaconda
-~/.conda/envs/mltest/bin/pip install -r requirements.txt
+```sh
+tar -xzf rct-cluster.tar.gz
+cd research_project
 ```
 
-### 2. Set Weights & Biases API key (once)
+Follow [CLUSTER_RUN_GUIDE.md](CLUSTER_RUN_GUIDE.md) for environment setup, the
+25-task pilot and full submission. Use the cluster's CPU PyTorch environment;
+the laptop's `.venv` is not portable. W&B defaults to offline, with new results
+under `experiments/<experiment-id>/`. Review the pilot before the full run.
 
-**Do not commit your API key.** Add this to `~/.bashrc` on the cluster:
+## Local cleanup
 
-```bash
-export WANDB_API_KEY="your-key-here"
-export WANDB_ENTITY="juniormatimu572-wits"
-export WANDB_PROJECT="DQN modifications"
+Historical `results/`, `new_logs/`, `slurm/logs/` and generated
+`analysis_output/` were removed for the fresh mass run on 20 September 2026,
+following confirmation that the results are already on GitHub. They remain
+available in earlier Git history. New generated outputs are ignored by Git.
+
+Research documents, analysis source, tests and the local Python environment
+remain available on the laptop, outside the transfer archive. Historical
+reviews describe the previous experiment and require its archived data.
+
+For paired AUC analysis of a completed new game:
+
+```sh
+python analyze_rct.py --results-root experiments/corrected-rct-01/full/results --game-slug breakout
 ```
 
-Then run `source ~/.bashrc`.
+The current analysis (corrected-rct-01; DQN from the original run) and its
+figures and tables in `analysis_output/corrected-rct-01/`:
 
-### 3. Verify environment
-
-```bash
-~/.conda/envs/mltest/bin/python check_env.py
-~/.conda/envs/mltest/bin/python verify_arms.py
+```sh
+.venv/bin/python -m analysis.corrected_rct01
 ```
 
-### 4. Create log directories (from project root)
+`overview.tex` is the draft results overview built from those outputs.
 
-```bash
-cd ~/research_project
-mkdir -p logs/rct-bigbatch-test logs/rct-bigbatch-variant results
+The September analysis pipeline (`analysis.review`, `analysis.endpoints`), the
+September cluster bundle and other unused files are in
+`archive/unused-2026-10-16.zip`. `ARCHIVE_MANIFEST.csv` inside it gives each
+file's original path, SHA-256 and the reason it was archived.
+
+## PER loss-history rerun
+
+`dist/per-rerun.zip` reruns PER individuals 0-12 with the regular
+`slurm/run_rct_bigbatch_variant.slurm` (`RCT_NUM_INDIVIDUALS=13`) to recover
+their training-loss logs. Its README has the commands and the checks.
+
+## Validation
+
+```sh
+python verify_arms.py
+python -m unittest discover -s tests
+bash -n slurm/common.sh slurm/run_rct_bigbatch_variant.slurm slurm/run_rct_bigbatch_test.slurm
 ```
 
-### 5. CPU smoke test on bigbatch (run every variant first)
-
-Each submission launches **3 array tasks** (Breakout, Asterix, Freeway) for one variant:
-
-```bash
-cd ~/research_project
-sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_test.slurm
-sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_test.slurm
-sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_test.slurm
-sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_test.slurm
-sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_test.slurm
-```
-
-Monitor:
-
-```bash
-squeue -u $USER
-tail -f logs/rct-bigbatch-test/rct-bigbatch-test_<JOBID>_0.out
-```
-
-### 6. Full CPU experiment (one variant at a time, 3 games in parallel)
-
-```bash
-cd ~/research_project
-sbatch --export=RCT_VARIANT=control  slurm/run_rct_bigbatch_variant.slurm
-sbatch --export=RCT_VARIANT=ddqn     slurm/run_rct_bigbatch_variant.slurm
-sbatch --export=RCT_VARIANT=per      slurm/run_rct_bigbatch_variant.slurm
-sbatch --export=RCT_VARIANT=nstep    slurm/run_rct_bigbatch_variant.slurm
-sbatch --export=RCT_VARIANT=averaged slurm/run_rct_bigbatch_variant.slurm
-```
-
-Each job uses the **bigbatch** partition (CPU, 3-day limit). Array tasks 0–2 run Breakout, Asterix, and Freeway simultaneously for the chosen variant. If a task hits the time limit, it saves progress and auto-resubmits.
-
-Results: `results/{variant}/{game}/`  
-W&B dashboard: https://wandb.ai/juniormatimu572-wits/DQN%20modifications
-
-### Optional: GPU runs on biggpu
-
-See `slurm/run_rct_gpu_test.slurm` and `slurm/run_rct_gpu_variant.slurm`.
-
-## Analysis
-
-```bash
-python analyze_rct.py --results-root results --game-slug breakout
-```
-
-## Requirements
-
-- Python 3.10+
-- PyTorch, Gymnasium, MinAtar ≥ 1.0.13, NumPy, SciPy, wandb
+See the [implementation audit](DESIGN_AND_IMPLEMENTATION_AUDIT.md),
+[research audit](RESEARCH_AUDIT.md) and [proposal](Research_Proposal.pdf)
+for the research design and methodological qualifications.
