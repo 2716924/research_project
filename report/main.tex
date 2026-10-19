@@ -1,0 +1,523 @@
+\documentclass[conference,a4paper]{IEEEtran}
+
+% Author-year citations as in the supervisor's examples: [Mnih et al. 2015] and Mnih et al. [2015].
+% For round brackets, as in the AAAI-style examples, replace "square" with "round".
+\usepackage[square,authoryear]{natbib}
+\setcitestyle{aysep={}}
+\renewcommand{\bibfont}{\footnotesize}
+\setlength{\bibsep}{2pt}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../analysis_output/corrected-rct-01/report/}}
+\newcommand{\results}{../analysis_output/corrected-rct-01/report}
+
+\begin{document}
+
+\title{Isolating the Effects of Deep Q-Network Extensions: A Paired Randomised Controlled Trial on MinAtar}
+
+\author{\IEEEauthorblockN{Matimu Khosa}
+\IEEEauthorblockA{\textit{School of Computer Science and Applied Mathematics}\\
+\textit{University of the Witwatersrand}\\
+Johannesburg, South Africa\\
+2716924@students.wits.ac.za\\[3pt]
+Supervised by Steven James and Benjamin Rosman}}
+
+\maketitle
+
+\begin{abstract}
+Extensions to the deep Q-network (DQN) are usually evaluated with their own tuned hyperparameters and a handful of
+random seeds, so a reported gain may reflect the configuration rather than the extension. We evaluate four
+extensions, namely Double DQN, prioritised experience replay, multi-step returns and Averaged DQN, in a paired
+randomised controlled trial. Thirty hyperparameter configurations were sampled from a shared population, each with
+its own seed, and every configuration was trained with DQN and with each extension on four MinAtar games, giving
+600 runs of five million frames. The primary outcome was the area under the greedy evaluation curve, compared with
+DQN by paired t-tests with a Bonferroni correction across all sixteen comparisons. Averaged DQN improved on DQN in
+Asterix, Freeway and Space Invaders, by 58, 21 and 19 per cent. Double DQN improved only in Space Invaders, by
+11 per cent, and the Wilcoxon signed-rank test did not confirm this. Prioritised replay was worse in Freeway and
+Space Invaders, and multi-step returns were worse in Asterix, Freeway and Space Invaders, by up to 80 per cent. No
+extension differed detectably from DQN in Breakout. The sampled learning rate was associated with larger differences
+in performance than fifteen of the sixteen treatment effects, and evaluating only the final checkpoint confirmed
+three of the nine findings. Under a shared training recipe, Averaged DQN was the only reliable improvement.
+\end{abstract}
+
+\begin{IEEEkeywords}
+deep reinforcement learning, deep Q-network, experimental design, randomised controlled trial, MinAtar, sample
+efficiency
+\end{IEEEkeywords}
+
+% =====================================================================================
+\section{Introduction}
+
+The deep Q-network (DQN) of \citet{mnih2015human} learnt to play Atari 2600 games from pixels, using two
+stabilising devices: experience replay and a periodically updated target network. Many extensions followed, each
+changing one part of the algorithm. Double DQN changes how the bootstrap target is computed \citep{vanhasselt2016deep},
+prioritised experience replay (PER) changes which transitions are replayed \citep{schaul2016prioritized}, multi-step
+($n$-step) returns lengthen the horizon of the target \citep{hernandezgarcia2019understanding,sutton2018reinforcement},
+and Averaged DQN averages the estimates of several earlier target networks \citep{anschel2017averaged}. Rainbow
+combined several such components and, in an ablation, found prioritised replay and multi-step learning to be the two
+most important \citep{hessel2018rainbow}.
+
+Each extension was, however, introduced with its own training recipe and evaluated on its own configuration. Deep
+reinforcement learning results are sensitive to hyperparameters, random seeds and implementation
+details \citep{henderson2018deep}, evaluation protocols differ between papers \citep{machado2018revisiting}, and
+comparisons often rest on few runs and point estimates \citep{colas2018many,agarwal2021deep}. When an extension
+outperforms DQN under one tuned configuration, it is therefore hard to say whether the gain belongs to the
+extension or to the configuration.
+
+We address this with a randomised controlled trial in the sense of \citet{pretorius2020dropout}. The
+individuals of the trial are hyperparameter configurations sampled from a shared population, and every individual
+receives every treatment. Each comparison with DQN is then paired on the same configuration and seed, which removes
+the variation between configurations from the comparison while still averaging over the population. We use the
+MinAtar suite \citep{young2019minatar}, whose small observations make 600 full training runs feasible on CPUs.
+
+We ask two research questions. \emph{RQ1:} across a population of configurations and under one shared training
+recipe, does each extension change sample efficiency, measured as the area under the evaluation curve (AUC),
+relative to DQN? \emph{RQ2:} does a curve-based, population-level evaluation reach different conclusions from an
+evaluation based on a single checkpoint? Our contributions are:
+\begin{itemize}
+\item a paired trial of four DQN extensions on 30 sampled configurations and four MinAtar games (600 runs,
+$3\times10^{9}$ frames), with code, raw results and provenance released\footnote{\url{https://github.com/2716924/research_project}};
+\item evidence that Averaged DQN is the only extension that improves on DQN consistently, that the benefit of Double
+DQN is small, and that PER and $n$-step returns are harmful under the shared recipe;
+\item evidence that effects vary across the population: the learning rate is associated with larger differences
+than almost all treatment effects, and the $n$-step deficit is concentrated at the lowest learning rate;
+\item a demonstration that single-checkpoint endpoints confirm only some of the AUC findings.
+\end{itemize}
+Section~\ref{sec:background} reviews background and related work, Section~\ref{sec:method} describes the trial,
+Section~\ref{sec:results} reports the results, Section~\ref{sec:discussion} discusses them and
+Section~\ref{sec:limitations} states the limitations.
+
+% =====================================================================================
+\section{Background and Related Work}\label{sec:background}
+
+\subsection{Deep Q-Networks}
+An agent interacting with a Markov decision process observes a state $s_t$, takes an action $a_t$, receives a
+reward $r_{t+1}$ and moves to $s_{t+1}$; it seeks to maximise the expected return discounted by
+$\gamma\in[0,1)$ \citep{sutton2018reinforcement}. Q-learning \citep{watkins1992q} estimates the optimal action-value
+function by bootstrapping from $\max_{a'}Q(s',a')$. DQN \citep{mnih2015human} approximates $Q$ with a neural network
+with parameters $\theta$, stores transitions in a replay buffer $\mathcal{D}$ \citep{lin1992self} and minimises
+\begin{equation}
+L(\theta)=\mathbb{E}_{(s,a,r,s')\sim U(\mathcal{D})}\big[(y-Q(s,a;\theta))^2\big]
+\label{eq:loss}
+\end{equation}
+with the target
+\begin{equation}
+y=r+\gamma\max_{a'}Q(s',a';\theta^-),
+\label{eq:dqn}
+\end{equation}
+where $\theta^-$ are the parameters of a target network copied from $\theta$ every $C$ steps, and $y=r$ when $s'$
+is terminal.
+
+\subsection{The Four Extensions}\label{sec:extensions}
+\emph{Double DQN} \citep{vanhasselt2016deep}. The maximum in~\eqref{eq:dqn} uses the same estimates to select and
+to evaluate the next action, which biases the target upwards. Double DQN selects the action with the online network
+and evaluates it with the target network:
+\begin{equation}
+y=r+\gamma\,Q\big(s',\textstyle\arg\max_{a'}Q(s',a';\theta);\theta^-\big).
+\end{equation}
+
+\emph{Prioritised experience replay} \citep{schaul2016prioritized}. Instead of sampling uniformly, PER samples
+transition $i$ with probability
+\begin{equation}
+P(i)=\frac{p_i^{\alpha}}{\sum_k p_k^{\alpha}},\qquad p_i=|\delta_i|+\epsilon,
+\end{equation}
+where $\delta_i$ is the latest temporal-difference (TD) error of the transition. New transitions receive the largest
+priority seen so far. Importance-sampling weights $w_i=(|\mathcal{D}|\,P(i))^{-\beta}/\max_j w_j$ correct the bias
+of non-uniform sampling, with $\beta$ annealed linearly to 1. For the proportional variant used here,
+\citet{schaul2016prioritized} chose $\alpha=0.6$ and $\beta_0=0.4$ by a coarse grid search, and they reduced the step
+size by a factor of four relative to their baseline because prioritised replay produces larger gradients.
+
+\emph{Multi-step returns} \citep{hernandezgarcia2019understanding,sutton2018reinforcement}. The $n$-step target sums
+$n$ observed rewards before bootstrapping:
+\begin{equation}
+y=\sum_{k=0}^{n-1}\gamma^k r_{t+k+1}+\gamma^n\max_{a'}Q(s_{t+n},a';\theta^-).
+\end{equation}
+Without an off-policy correction, as in Rainbow \citep{hessel2018rainbow}, the reward sum follows the exploratory
+behaviour policy rather than the greedy policy, which trades bias for faster propagation of reward.
+
+\emph{Averaged DQN} \citep{anschel2017averaged}. Averaged DQN keeps the last $K$ target networks
+$\theta^-_1,\dots,\theta^-_K$ and averages their action values before taking the maximum:
+\begin{equation}
+y=r+\gamma\max_{a'}\frac{1}{K}\sum_{k=1}^{K}Q(s',a';\theta^-_k).
+\label{eq:avg}
+\end{equation}
+This reduces the variance of the target approximation error at the cost of $K$ forward passes per target, with the
+same number of gradient updates as DQN \citep{anschel2017averaged}.
+
+\subsection{Component Studies}
+Rainbow's ablation on 57 Atari games found that removing prioritised replay or multi-step learning caused the
+largest drops in median performance \citep{hessel2018rainbow}. \citet{obandoceron2021revisiting} repeated the
+additive and ablative studies on smaller environments, including the five MinAtar games, and found multi-step returns
+to be the component that most improved DQN on MinAtar. Their agents used the Adam optimiser \citep{kingma2015adam},
+fixed hyperparameters and 10 runs per setting; they also observed on Atari that, with RMSProp, the Huber loss tends to
+perform better than the mean squared error (MSE). \citet{fedus2020revisiting} found that uncorrected $n$-step returns
+benefit uniquely from a larger replay capacity, whereas DQN does not. \citet{fujimoto2020equivalence} showed that a
+loss evaluated on non-uniformly sampled data can be rewritten as a uniformly sampled loss with the same expected
+gradient, which ties the effect of PER to the loss it is combined with.
+
+\subsection{Evaluation Methodology}
+\citet{henderson2018deep} showed that hyperparameter settings, random seeds, environment properties and codebases
+can each change reported performance substantially. \citet{machado2018revisiting} revisited the evaluation protocols
+of the Arcade Learning Environment and introduced sticky actions to make it stochastic. \citet{colas2018many} related
+the number of random seeds to the error rates of statistical tests, and \citet{agarwal2021deep} showed that
+conclusions drawn from point estimates over few runs can differ substantially from those of a more thorough
+statistical analysis, and advocated interval estimates. \citet{pretorius2020dropout} brought the randomised
+controlled trial to deep learning: they sampled network designs from a population, trained identical copies of each
+design under every intervention and tested the differences, over more than 12,000 trained networks. We apply this
+design to DQN extensions and exploit the pairing explicitly.
+
+% =====================================================================================
+\section{Method}\label{sec:method}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    font=\footnotesize, >={Stealth[length=1.5mm]},
+    box/.style={draw, rounded corners=2pt, align=center, inner sep=3pt, text width=0.92\columnwidth},
+    arm/.style={draw, rounded corners=2pt, align=center, inner sep=1.5pt, minimum width=14.5mm,
+                minimum height=7mm, font=\scriptsize}]
+  \node[box] (pop) {Population $\Lambda$: candidate values of six shared hyperparameters (Table~\ref{tab:population})};
+  \node[box, below=3.5mm of pop] (ind) {30 individuals $\lambda_j\sim\Lambda$, each with training seed $1337+j$};
+  \node[arm, below=5mm of ind] (a3) {PER};
+  \node[arm, left=1.5mm of a3] (a2) {Double\\DQN};
+  \node[arm, left=1.5mm of a2] (a1) {DQN\\(control)};
+  \node[arm, right=1.5mm of a3] (a4) {$n$-step\\DQN};
+  \node[arm, right=1.5mm of a4] (a5) {Averaged\\DQN};
+  \node[box, below=5mm of a3] (run) {Each (individual, arm) pair trained on four MinAtar games for $5\times10^{6}$
+    frames; greedy evaluation every $5\times10^{4}$ frames $\rightarrow$ AUC};
+  \node[box, below=3.5mm of run] (test) {Paired differences $d_j=\mathrm{AUC}_j^{\mathrm{treatment}}-
+    \mathrm{AUC}_j^{\mathrm{DQN}}$ $\rightarrow$ paired $t$-tests, Bonferroni over 16 comparisons};
+  \draw[->] (pop) -- (ind);
+  \foreach \a in {a1,a2,a3,a4,a5} {\draw[->] (ind.south) -- (\a.north); \draw[->] (\a.south) -- (run.north);}
+  \draw[->] (run) -- (test);
+\end{tikzpicture}
+\caption{Design of the trial. Every individual (a hyperparameter configuration with its own seed) is trained under
+all five arms, so each treatment is compared with DQN on the same configuration.}
+\label{fig:design}
+\end{figure}
+
+\subsection{Trial Design}
+Fig.~\ref{fig:design} summarises the design. The population $\Lambda$ is the Cartesian product of the candidate
+values of six shared hyperparameters (Table~\ref{tab:population}). Each of the $N=30$ individuals $\lambda_j$ was
+drawn by sampling every hyperparameter independently and uniformly from its candidates with a seeded generator, and
+was given its own training seed $1337+j$. This is a simple random sample, and Table~\ref{tab:population} shows the
+resulting counts, which are unbalanced for the replay buffer capacity. Every run filled the buffer with 5,000
+transitions, collected by uniformly random actions, before learning began.
+
+\begin{table}[t]
+\caption{Shared Hyperparameter Population and the Sampled Individuals}
+\label{tab:population}
+\centering
+\footnotesize
+\input{\results/tab_population.tex}
+\end{table}
+
+Five arms were trained on every individual: DQN, the control, and four treatments, each of which changes one
+component (Section~\ref{sec:extensions}). The treatment-specific settings were fixed at published values rather
+than sampled: $\alpha=0.6$, $\beta_0=0.4$ and $\epsilon=10^{-6}$ for PER \citep{schaul2016prioritized}, $n=3$ for
+$n$-step DQN \citep{hessel2018rainbow} and $K=10$ for Averaged DQN \citep{anschel2017averaged}. Within an individual,
+all arms share the configuration, the training seed and the evaluation seeds, so every comparison with DQN is paired.
+
+The arms were trained on four MinAtar games \citep{young2019minatar}: Breakout, Asterix, Freeway and Space Invaders
+(version~1, with the minimal action set). MinAtar's default settings were kept, including sticky actions with
+probability 0.1 \citep{young2019minatar} and difficulty ramping in the games that support it. Seaquest was also run but
+is excluded: in every arm in which it was run, a greedy evaluation episode exceeded the 100,000-step limit, because
+MinAtar never ends a Seaquest episode in which the submarine stays on the surface, where it starts. The trial therefore comprises $4\times5\times30=600$
+runs.
+
+\subsection{Agent and Shared Training Recipe}
+Table~\ref{tab:settings} lists the training settings. All arms use the network of the MinAtar DQN
+baseline \citep{young2019minatar}: one convolutional layer with 16 $3\times3$ filters and stride 1, followed by fully
+connected hidden layers of 128 units, with ReLU activations; whether there are one or two hidden layers is a sampled
+hyperparameter. \citet{young2019minatar} chose 16 filters and 128 units as a quarter of the corresponding layers of
+DQN \citep{mnih2015human}. Training uses RMSProp \citep{tieleman2012rmsprop} with the MSE
+loss~\eqref{eq:loss} and one gradient update per environment step once learning has begun. Exploration is
+$\varepsilon$-greedy, with $\varepsilon$ annealed linearly from 1.0 to 0.1 over the sampled duration. MinAtar has
+no frame skipping, so a frame is one environment step, and each run lasts $5\times10^{6}$ frames, as in the
+MinAtar baselines \citep{young2019minatar}.
+
+\begin{table}[t]
+\caption{Training Settings}
+\label{tab:settings}
+\centering
+\footnotesize
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.66\columnwidth}@{}}
+\toprule
+Setting & Value \\
+\midrule
+Network & convolution ($16$ filters, $3\times3$, stride 1), then 1 or 2 hidden layers of 128 units (ReLU) \\
+Optimiser, loss & RMSProp (decay 0.99, $\epsilon=10^{-8}$, no momentum); MSE \\
+Discount, exploration & $\gamma=0.99$; $\varepsilon$ from 1.0 to 0.1, linear over the sampled duration \\
+Updates & one per step after 5,000 random transitions \\
+Training length & $5\times10^{6}$ frames (no frame skipping) \\
+Evaluation & every $5\times10^{4}$ frames; 10 greedy episodes with seeds 1000--1009 \\
+\midrule
+PER & proportional; $\alpha=0.6$; $\beta$ from 0.4 to 1 over training; $\epsilon=10^{-6}$ \\
+$n$-step DQN & $n=3$; no off-policy correction \\
+Averaged DQN & $K=10$ target networks, one stored at each target update \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The recipe is deliberately shared and is not the recipe of any one paper: DQN is usually trained with the Huber
+loss \citep{obandoceron2021revisiting}, and \citet{schaul2016prioritized} lowered the step size for PER.
+Changing one component under a fixed recipe is what isolates its effect, but it also means that the results concern
+these components under this recipe.
+
+The treatments were implemented as follows. PER stores priorities in a sum tree, draws each mini-batch by stratified
+sampling over equal segments of the total priority, normalises the importance weights by the largest possible weight,
+anneals $\beta$ linearly over the $5\times10^{6}$ frames and averages the weighted squared TD errors. $n$-step DQN
+stores, for each transition, the discounted sum of the next three rewards and the state three steps later; at the
+end of an episode, the remaining shorter returns are stored without a bootstrap. Averaged DQN stores a copy of the
+target network at every target update and averages the last ten copies as in~\eqref{eq:avg}, or all of them while
+fewer than ten exist.
+
+\subsection{Evaluation and Primary Outcome}
+Every $5\times10^{4}$ frames, the online network was evaluated greedily ($\varepsilon=0$) for 10 episodes, with the
+same environment seeds (1000--1009) for every individual, arm and checkpoint. The mean return $G_i$ at checkpoint $i$
+is one point on the evaluation curve, giving 100 points per run. An evaluation episode longer than $10^{5}$ steps
+aborts the run without recording a score. The primary outcome is the trapezoidal area under the curve,
+\begin{equation}
+\mathrm{AUC}=\sum_{i=1}^{99}\frac{G_i+G_{i+1}}{2}\,\Delta x,\qquad \Delta x=5\times10^{4}\ \text{frames},
+\end{equation}
+reported in units of $10^{6}$ (return $\times$ frames). The AUC rewards both fast learning and a high final level:
+divided by the $4.95\times10^{6}$ frames it spans, it is the average evaluation return over training.
+
+\subsection{Statistical Analysis}
+The statistical unit is the individual; the ten evaluation episodes and the 100 checkpoints are repeated
+measurements within a run, not replicates. For each game and treatment, we form the 30 paired differences
+$d_j=\mathrm{AUC}_j^{\mathrm{treatment}}-\mathrm{AUC}_j^{\mathrm{DQN}}$ and test whether their mean is zero with a
+two-sided paired $t$-test. We treat all $4\times4=16$ comparisons as one family and apply the Bonferroni
+correction \citep{dunn1961multiple}, $\alpha=0.05/16=0.003125$, with matching simultaneous 99.69\% $t$-intervals. We
+report each effect as the mean difference as a percentage of the DQN mean, with the standardised effect
+$d_z=\bar d/s_d$ \citep{lakens2013calculating} and the number of individuals for which the treatment beat DQN.
+
+This analysis departs from our research proposal in two ways. First, the proposal applied the Bonferroni
+correction within each game ($\alpha=0.0125$); because our conclusions are drawn across games, we use the stricter
+family-wide threshold. Second, the proposal would have replaced the $t$-test by the Wilcoxon signed-rank test
+whenever a Shapiro--Wilk test \citep{shapiro1965analysis} rejected normality of the differences. Choosing the test
+after a preliminary normality test alters the conditional error rates of the test that
+follows \citep{rochon2012test}, so we instead report both tests for every comparison, with the $t$-test as primary
+and the Wilcoxon test \citep{wilcoxon1945individual} as a sensitivity analysis. For reference, Shapiro--Wilk rejected
+normality at the 0.05 level for 6 of the 16 comparisons.
+
+Two secondary endpoints, analysed in the same way and treated as exploratory, address RQ2: the mean of the last ten
+evaluations (the final $5\times10^{5}$ frames) and the final evaluation alone. The bands in the learning curves are
+pointwise 95\% percentile bootstrap intervals over individuals, from 2,000 resamples \citep{efron1979bootstrap}.
+
+\subsection{Implementation and Data Provenance}
+The agents were implemented in PyTorch \citep{paszke2019pytorch} (version 2.13) with the
+Gymnasium \citep{towers2024gymnasium} interface to MinAtar (version 1.0.15) and trained on CPUs, with four threads
+per job, on the MSL cluster at the University of the Witwatersrand. The code includes unit tests and analytic checks
+of every arm's target and replay computations, which run before each cluster job.
+
+An initial run used a PER implementation that applied the priority exponent twice when inserting a new transition,
+giving it priority $p_{\max}^{\alpha^2}$ instead of $p_{\max}^{\alpha}$. After the fix, the PER, Double DQN,
+$n$-step and Averaged DQN arms were rerun with the corrected code. The three arms that do not use prioritised replay
+reproduced all 348 of their overlapping learning curves exactly, which shows that training is reproducible and that
+the fix affected only PER. The DQN arm, which was not rerun, is therefore taken from the initial run, as are
+$n$-step individuals 18--29 in Freeway, whose rerun job failed to start. Every stored AUC was recomputed from its
+curve, every individual was checked to have the same configuration and seed in every arm, and all tests were
+reproduced by an independent script.
+
+% =====================================================================================
+\section{Results}\label{sec:results}
+
+\begin{table*}[t]
+\caption{Mean AUC ($10^{6}$, Standard Deviation in Parentheses) and Paired Comparisons with DQN ($n=30$ per Arm)}
+\label{tab:main}
+\centering
+\footnotesize
+\input{\results/tab_main.tex}\\[3pt]
+\parbox{\textwidth}{\scriptsize $\Delta$: mean paired difference as a percentage of the DQN mean. CI:
+Bonferroni-adjusted 99.69\% $t$-interval on the same scale; it is symmetric, so it can extend below $-100\%$.
+$d_z$: mean difference divided by the standard deviation of the differences. $p_t$, $p_W$: two-sided paired
+$t$-test and Wilcoxon signed-rank $p$-values; bold values are at most $0.05/16$. Better: individuals for which the
+treatment's AUC exceeds that of DQN.}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{paired_effects.pdf}
+\caption{Mean paired AUC difference from DQN, as a percentage of the DQN mean, with Bonferroni-adjusted 99.69\%
+intervals. Filled markers: $p_t\le0.05/16$. The horizontal scales differ between games. DDQN: Double DQN; Avg.:
+Averaged DQN.}
+\label{fig:effects}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{learning_curves.pdf}
+\caption{Mean greedy evaluation return during training ($n=30$ individuals per arm). Shaded bands are pointwise
+95\% bootstrap intervals over individuals; the curves are not smoothed.}
+\label{fig:curves}
+\end{figure*}
+
+\subsection{Primary Outcome}
+Table~\ref{tab:main} and Fig.~\ref{fig:effects} report the 16 comparisons, nine of which are significant at the
+family-wide threshold. Averaged DQN had a higher AUC than DQN in Asterix ($+57.5\%$), Freeway ($+20.9\%$) and Space
+Invaders ($+19.5\%$), and beat DQN on 25, 24 and 26 of the 30 individuals. Double DQN was better only in Space
+Invaders ($+11.4\%$, 21 of 30 individuals); its differences in Asterix ($+28.2\%$, $p_t=0.048$) and Freeway
+($-8.5\%$, $p_t=0.014$) were not significant. PER was worse in Freeway ($-35.3\%$) and Space Invaders ($-50.0\%$),
+beating DQN on only 3 and 1 individuals. $n$-step DQN was worse in Asterix ($-80.0\%$), Freeway ($-59.4\%$) and Space
+Invaders ($-21.0\%$), with 2, 0 and 6 wins. The significant effects have $|d_z|$ between 0.59 and 1.64.
+
+In Breakout no treatment differed significantly from DQN. The point estimates lie between $+0.1\%$ and $+4.5\%$, but
+the intervals extend from $-10.8\%$ to $+17.3\%$, so the data do not show that the extensions are equivalent to DQN
+there either.
+
+\subsection{Learning Dynamics}
+The learning curves (Fig.~\ref{fig:curves}) show how these differences arise. In Breakout the curves rise quickly
+and then overlap for the rest of training, ending between 13.2 and 14.8 (mean of the last ten evaluations); $n$-step
+DQN learnt fastest early on, with a mean return of 14.0 against 12.0 for DQN at $5\times10^{5}$ frames. In Asterix,
+$n$-step DQN barely improved: its mean curve never exceeded 1.24, whereas DQN ended at 3.8. In Freeway, Averaged DQN
+led from early in training (31.6 against 20.1 for DQN at $5\times10^{5}$ frames) and ended highest (44.1 against
+38.4). In Space Invaders, PER started level with DQN (23.6 against 23.5 at the first evaluation), fell to 13.0 by
+$10^{6}$ frames and ended at about half the level of DQN (19.1 against 35.9).
+
+\subsection{Variation Across Configurations}
+Performance varied widely between configurations (Fig.~\ref{fig:dist}). For DQN, the standard deviation of
+the AUC across individuals ranged from 26\% (Breakout) to 84\% (Asterix) of its mean. The paired design removes this
+variation from the comparisons.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{auc_distributions.pdf}
+\caption{AUC of every individual by arm. Boxes show medians and interquartile ranges; whiskers extend to 1.5 times
+the interquartile range. DDQN: Double DQN; Avg.: Averaged DQN.}
+\label{fig:dist}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{learning_rate.pdf}
+\caption{Mean AUC by sampled learning rate (7, 13 and 10 individuals at $10^{-4}$, $5\times10^{-4}$ and $10^{-3}$).
+The subgroups also differ in their other hyperparameters, so the comparison is descriptive.}
+\label{fig:lr}
+\end{figure}
+
+Much of this variation was associated with the learning rate (Fig.~\ref{fig:lr}). The mean AUC of DQN at a learning rate
+of $10^{-4}$ was 1.7 to 5.9 times its mean at $10^{-3}$ (Breakout 86.5 against 52.2, Asterix 35.1 against 6.0,
+Freeway 205.4 against 113.2, Space Invaders 287.9 against 90.8). As a ratio of means, this spread exceeded the
+treatment effect in 15 of the 16 comparisons; the exception was $n$-step DQN in Freeway. The lowest learning rate gave
+the highest mean AUC for every arm in every game except $n$-step DQN in Asterix and Freeway.
+
+The $n$-step deficit depended strongly on the learning rate. In Freeway, its mean AUC at $10^{-4}$ was 16.1, against
+205.4 for DQN, a ratio of 0.08, compared with ratios of 0.50 and 0.63 at the two larger rates; Asterix showed the
+same pattern (0.09, 0.19 and 0.70). PER, by contrast, stayed below DQN at every learning rate in Freeway and Space
+Invaders, with ratios between 0.41 and 0.74 and no consistent trend.
+
+\subsection{Robustness}
+
+\begin{table}[t]
+\caption{Secondary Endpoints: Paired Comparisons with DQN}
+\label{tab:robust}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\input{\results/tab_robustness.tex}\\[3pt]
+\parbox{\columnwidth}{\scriptsize $\Delta$ and $p_t$ as in Table~\ref{tab:main}; bold: $p_t\le0.05/16$. DDQN: Double DQN; Avg.: Averaged DQN. These
+endpoints are exploratory.}
+\end{table}
+
+The nine findings survive several checks. Under the per-game threshold of our proposal ($\alpha=0.0125$), the same
+nine comparisons are significant. The Wilcoxon test confirms eight of them at the family-wide threshold; the
+exception is Double DQN in Space Invaders ($p_W=0.012$), whose interval also only just excludes zero
+($[+0.1\%, +22.6\%]$), so this finding rests on the $t$-test alone. Restricting $n$-step DQN in Freeway to the
+individuals of the rerun (0--17) gives $-53.3\%$ ($p_t=2.4\times10^{-5}$), in line with the full sample.
+
+The secondary endpoints (Table~\ref{tab:robust}) agree in direction with all nine findings, but they are noisier.
+With the mean of the last ten evaluations, five of the nine remain significant at the family-wide threshold; with the
+final evaluation alone, only three do. No comparison that was not significant on the AUC became significant on
+either secondary endpoint.
+
+\subsection{Effect of the PER Fix}
+Fixing the priority bug did not change PER significantly in any game. Comparing the same 30 individuals before and
+after the fix, the AUC of PER changed by $+2.1\%$ in Breakout ($p_t=0.58$), $-0.9\%$ in Asterix ($p_t=0.89$),
+$-9.4\%$ in Freeway ($p_t=0.27$) and $+4.2\%$ in Space Invaders ($p_t=0.43$), without any correction for multiple
+comparisons. Before the fix, PER was already $28.6\%$ and $52.0\%$ below DQN in Freeway and Space Invaders, both
+significant at the family-wide threshold, and did not differ significantly from DQN in Breakout or Asterix. The
+deficit of PER is therefore not an artefact of the bug.
+
+% =====================================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{RQ1: Which Extensions Help?}
+Averaged DQN was the only extension that improved on DQN reliably. It was better in three of the four games and on at
+least 24 of 30 individuals in each; the Wilcoxon test confirmed all three results, and all three kept their direction
+under both secondary endpoints. This is consistent with its motivation, the reduction of variance in the
+target \citep{anschel2017averaged}. The gain has a computational cost, since each target needs ten forward passes
+rather than one.
+
+Double DQN helped little. Its one significant result, in Space Invaders, was the weakest of the nine findings, and
+its other estimates had mixed signs. Under this recipe, decoupling action selection from evaluation was not an
+important source of improvement on MinAtar.
+
+PER and $n$-step returns were harmful, which contrasts with their importance in the Rainbow ablation on
+Atari \citep{hessel2018rainbow} and, for $n$-step returns, with the MinAtar results of
+\citet{obandoceron2021revisiting}. Two differences between the studies may explain this, although our data cannot
+separate them. The first is the recipe. \citet{schaul2016prioritized} reduced the step size for PER, and Obando-Ceron
+and Castro used Adam with one update every four steps. We used
+RMSProp with the MSE loss and one update per step, and with RMSProp they found that the Huber loss tended to work
+better than the MSE on Atari. Because non-uniform sampling has the same expected gradient as a different loss under
+uniform sampling \citep{fujimoto2020equivalence}, PER combined with the MSE may weight large errors more heavily than
+intended. The second difference is the population. In Asterix and Freeway, the $n$-step deficit was concentrated at
+the lowest learning rate, which was the best learning rate for DQN, and was much smaller at $10^{-3}$
+(Fig.~\ref{fig:lr}). A study that tunes each method separately evaluates each at a single point of such a curve. We
+found no consistent association with the replay buffer capacity, the factor that \citet{fedus2020revisiting}
+identified for $n$-step returns, but the subgroups are small.
+
+In Breakout, all arms learnt quickly to a similar level. Every interval there includes zero, but their width means
+that small effects in either direction cannot be ruled out.
+
+\subsection{RQ2: What Does a Population-Level Evaluation Change?}
+Our results answer RQ2 in three ways. First, the endpoint matters. The final evaluation alone confirmed three of the
+nine AUC findings and the mean of the last ten evaluations confirmed five, although all nine kept their direction;
+an evaluation based on a single checkpoint would have missed most of the effects. Second, the configuration matters at least
+as much as the algorithm. The learning rate alone was associated with larger differences than 15 of the 16 treatment
+effects. Even Averaged DQN, the most consistent improvement, failed to beat DQN on 5, 6 and 4 of the 30
+configurations in Asterix, Freeway and Space Invaders, so a comparison on one randomly chosen configuration would
+have favoured DQN with a probability of 0.13 to 0.20. Third, the paired design makes these effects detectable despite this variation: the significant effects have
+$|d_z|$ between 0.59 and 1.64, whereas the spread of the AUC between individuals is often as large as the differences
+between arms (Fig.~\ref{fig:dist}).
+
+Our proposal hypothesised that isolated effects would be smaller than those reported in the literature. This was
+partly supported: the benefits reported for PER and $n$-step returns did not appear under the shared recipe, whereas
+those of Averaged DQN did.
+
+% =====================================================================================
+\section{Limitations}\label{sec:limitations}
+Each configuration was trained with one seed, so within an individual the effects of the configuration and the seed
+cannot be separated; both are shared across arms, so the comparisons remain paired. The results hold for one shared
+recipe with treatment settings fixed at published values; tuning each arm separately could change them. The trial
+covers four MinAtar games and $5\times10^{6}$ frames, so longer training or other environments could give different
+results, and Seaquest could not be evaluated under the present protocol. The AUC combines learning speed and final
+level over the observed interval. The 30 configurations are a simple random sample, so the subgroup analyses are
+descriptive. Finally, the DQN arm comes from the initial run; this is justified by the exact reproduction of every
+rerun curve, but it is a departure from running all arms together.
+
+% =====================================================================================
+\section{Conclusion}
+In a paired randomised controlled trial of four DQN extensions over 30 sampled configurations and four MinAtar games,
+only Averaged DQN improved on DQN consistently. Double DQN helped only slightly, and prioritised replay and multi-step
+returns were harmful under the shared recipe, contrary to earlier component studies. Differences between
+configurations, especially in the learning rate, were larger than most treatment effects, and single-checkpoint
+endpoints confirmed few of the findings. Future work should add several seeds per configuration, compare recipes
+tuned for each arm, examine the training dynamics of PER and $n$-step returns directly, and evaluate Seaquest with a
+capped evaluation protocol.
+
+\section*{Acknowledgement}
+The author thanks Steven James and Benjamin Rosman for their supervision. The experiments were run on the MSL
+cluster at the University of the Witwatersrand.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
