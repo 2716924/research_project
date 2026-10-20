@@ -1,18 +1,34 @@
 Rc files read (in order):
   NONE
 Latexmk: This is Latexmk, John Collins, 9 March 2026. Version 4.88.
+Force everything to be remade.
+Latexmk: applying rule 'bibtex main'...
+Rule 'bibtex main':  Reasons for rerun
+Category 'other':
+  Rerun of 'bibtex main' forced or previously required:
+    Reason or flag: 'go_mode'
+
+------------
+Run number 1 of rule 'bibtex main'
+------------
+------------
+Running 'bibtex  "main.aux"'
+------------
+This is BibTeX, Version 0.99e (TeX Live 2026)
+The top-level auxiliary file: main.aux
+The style file: plainnat.bst
+Database file #1: refs.bib
 Latexmk: applying rule 'pdflatex'...
 Rule 'pdflatex':  Reasons for rerun
-Changed files or newly in use/created:
-  main.tex
-Category 'changed_user':
-  main.tex
+Category 'other':
+  Rerun of 'pdflatex' forced or previously required:
+    Reason or flag: 'go_mode'
 
 ------------
 Run number 1 of rule 'pdflatex'
 ------------
 ------------
-Running 'pdflatex  -interaction=nonstopmode -halt-on-error -recorder  "main.tex"'
+Running 'pdflatex  -interaction=nonstopmode -recorder  "main.tex"'
 ------------
 This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex)
  restricted \write18 enabled.
@@ -208,22 +224,25 @@ ty
 (/usr/local/texlive/2026basic/texmf-dist/tex/latex/amsfonts/umsb.fd) [1{/usr/lo
 cal/texlive/2026basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/
 texlive/2026basic/texmf-dist/fonts/enc/dvips/base/8r.enc}]
-Underfull \hbox (badness 3128) in paragraph at lines 130--136
+Underfull \hbox (badness 3128) in paragraph at lines 136--143
 \OT1/ptm/m/n/10 the tran-si-tion. New tran-si-tions re-ceive the largest pri-
 
-Underfull \hbox (badness 2573) in paragraph at lines 130--136
+Underfull \hbox (badness 2573) in paragraph at lines 136--143
 \OT1/ptm/m/n/10 or-ity seen so far. Importance-sampling weights $\OML/cmm/m/it/
 10 w[] \OT1/cmr/m/n/10 =
-[2] (../analysis_output/corrected-rct-01/report/tab_population.tex)
-Underfull \vbox (badness 2735) has occurred while \output is active [3]
-(../analysis_output/corrected-rct-01/report/tab_main.tex) [4 <../analysis_outpu
-t/corrected-rct-01/report/paired_effects.pdf>]
-(../analysis_output/corrected-rct-01/report/tab_robustness.tex) [5]
-Underfull \vbox (badness 1924) has occurred while \output is active
-Underfull \vbox (badness 3312) has occurred while \output is active [6 <../anal
-ysis_output/corrected-rct-01/report/learning_curves.pdf> <../analysis_output/co
-rrected-rct-01/report/auc_distributions.pdf> <../analysis_output/corrected-rct-
-01/report/learning_rate.pdf>] [7] (./main.bbl)
+[2] (../analysis_output/corrected-rct-01/report/tab_population.tex) [3]
+(../analysis_output/corrected-rct-01/report/tab_main.tex) [4] [5 <../analysis_o
+utput/corrected-rct-01/report/paired_effects.pdf>] [6 <../analysis_output/corre
+cted-rct-01/report/learning_curves.pdf> <../analysis_output/corrected-rct-01/re
+port/auc_density.pdf> <../analysis_output/corrected-rct-01/report/learning_rate
+.pdf>] (../analysis_output/corrected-rct-01/report/tab_reliability.tex)
+[7] (./main.bbl [8]
+Underfull \vbox (badness 10000) has occurred while \output is active)
+(../analysis_output/corrected-rct-01/report/tab_robustness.tex)
+(../analysis_output/corrected-rct-01/report/tab_regression.tex)
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -235,7 +254,7 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[8] (./main.aux) )
+[9] [10] (./main.aux) )
 (see the transcript file for additional information)</usr/local/texlive/2026bas
 ic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6.pfb></usr/local/texlive/2026
 basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2
@@ -261,13 +280,11 @@ ts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/ty
 pe1/urw/times/utmbi8a.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/
 urw/times/utmr8a.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/urw/t
 imes/utmri8a.pfb>
-Output written on main.pdf (8 pages, 507677 bytes).
+Output written on main.pdf (10 pages, 564680 bytes).
 Transcript written on main.log.
 Latexmk: Getting log file 'main.log'
 Latexmk: Examining 'main.fls'
 Latexmk: Examining 'main.log'
-Latexmk: Found input bbl file 'main.bbl'
-Latexmk: Found input bbl file 'main.bbl'
 Latexmk: Found input bbl file 'main.bbl'
 Latexmk: Log file says output to 'main.pdf'
 Latexmk: Using bibtex to make bibliography file(s).

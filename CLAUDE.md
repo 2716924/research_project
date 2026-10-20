@@ -10,7 +10,8 @@ outcome is AUC of the greedy evaluation curve. Training runs on the Wits HPC `bi
 
 - **Main dataset is complete and analysed:** `corrected-rct-01`, 4 games × 5 arms × 30 = 600 runs.
   Results draft: `overview.tex` → `overview.pdf` (dated 16 Oct 2026).
-- **Headline results** (AUC vs DQN, paired t-test, Bonferroni α = 0.05/4 per game):
+- **Headline results** (AUC vs DQN, paired t-test, Bonferroni α = 0.05/16 across all 16 comparisons, as in
+  the report; a per-game α = 0.05/4 gives the same nine):
   - Averaged DQN is significantly better in Asterix (+57.5%), Freeway (+20.9%) and Space Invaders (+19.5%).
   - Double DQN is significantly better only in Space Invaders (+11.4%).
   - PER is significantly worse in Freeway (−35.3%) and Space Invaders (−50.0%).

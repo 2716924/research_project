@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.9.9)  18 OCT 2026 21:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.9.9)  20 OCT 2026 20:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -761,13 +761,13 @@ Package hyperref Info: Link coloring OFF on input line 21.
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 62.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 66.
 
 
 (/usr/local/texlive/2026basic/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 62.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 66.
 
 
 (/usr/local/texlive/2026basic/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -777,64 +777,65 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 
 ]
-Underfull \hbox (badness 3128) in paragraph at lines 130--136
+Underfull \hbox (badness 3128) in paragraph at lines 136--143
 \OT1/ptm/m/n/10 the tran-si-tion. New tran-si-tions re-ceive the largest pri-
  []
 
 
-Underfull \hbox (badness 2573) in paragraph at lines 130--136
+Underfull \hbox (badness 2573) in paragraph at lines 136--143
 \OT1/ptm/m/n/10 or-ity seen so far. Importance-sampling weights $\OML/cmm/m/it/
 10 w[] \OT1/cmr/m/n/10 =
  []
 
-[2] (../analysis_output/corrected-rct-01/report/tab_population.tex)
-Underfull \vbox (badness 2735) has occurred while \output is active []
-
- [3]
+[2] (../analysis_output/corrected-rct-01/report/tab_population.tex) [3]
 (../analysis_output/corrected-rct-01/report/tab_main.tex)
-<../analysis_output/corrected-rct-01/report/paired_effects.pdf, id=295, 248.867
-81pt x 195.61032pt>
+<../analysis_output/corrected-rct-01/report/paired_effects.pdf, id=309, 248.867
+81pt x 181.15633pt>
 File: ../analysis_output/corrected-rct-01/report/paired_effects.pdf Graphic fil
 e (type pdf)
 <use ../analysis_output/corrected-rct-01/report/paired_effects.pdf>
 Package pdftex.def Info: ../analysis_output/corrected-rct-01/report/paired_effe
-cts.pdf  used on input line 348.
-(pdftex.def)             Requested size: 252.0pt x 198.07823pt.
-<../analysis_output/corrected-rct-01/report/learning_curves.pdf, id=296, 512.86
-783pt x 278.21918pt>
+cts.pdf  used on input line 362.
+(pdftex.def)             Requested size: 252.0pt x 183.44186pt.
+<../analysis_output/corrected-rct-01/report/learning_curves.pdf, id=310, 512.86
+783pt x 220.40318pt>
 File: ../analysis_output/corrected-rct-01/report/learning_curves.pdf Graphic fi
 le (type pdf)
 <use ../analysis_output/corrected-rct-01/report/learning_curves.pdf>
 Package pdftex.def Info: ../analysis_output/corrected-rct-01/report/learning_cu
-rves.pdf  used on input line 357.
-(pdftex.def)             Requested size: 516.0pt x 279.9463pt.
- [4 <../analysis_output/corrected-rct-01/report/paired_effects.pdf>]
-<../analysis_output/corrected-rct-01/report/auc_distributions.pdf, id=333, 248.
-86781pt x 213.67781pt>
-File: ../analysis_output/corrected-rct-01/report/auc_distributions.pdf Graphic 
-file (type pdf)
-<use ../analysis_output/corrected-rct-01/report/auc_distributions.pdf>
-Package pdftex.def Info: ../analysis_output/corrected-rct-01/report/auc_distrib
-utions.pdf  used on input line 392.
-(pdftex.def)             Requested size: 252.0pt x 216.37367pt.
-<../analysis_output/corrected-rct-01/report/learning_rate.pdf, id=334, 248.8678
-1pt x 209.56268pt>
+rves.pdf  used on input line 371.
+(pdftex.def)             Requested size: 516.0pt x 221.7714pt.
+ [4]
+<../analysis_output/corrected-rct-01/report/auc_density.pdf, id=337, 248.19725p
+t x 244.00146pt>
+File: ../analysis_output/corrected-rct-01/report/auc_density.pdf Graphic file (
+type pdf)
+<use ../analysis_output/corrected-rct-01/report/auc_density.pdf>
+Package pdftex.def Info: ../analysis_output/corrected-rct-01/report/auc_density
+.pdf  used on input line 418.
+(pdftex.def)             Requested size: 252.0pt x 247.74634pt.
+<../analysis_output/corrected-rct-01/report/learning_rate.pdf, id=342, 248.7983
+4pt x 205.94919pt>
 File: ../analysis_output/corrected-rct-01/report/learning_rate.pdf Graphic file
  (type pdf)
 <use ../analysis_output/corrected-rct-01/report/learning_rate.pdf>
 Package pdftex.def Info: ../analysis_output/corrected-rct-01/report/learning_ra
-te.pdf  used on input line 400.
-(pdftex.def)             Requested size: 252.0pt x 212.20662pt.
+te.pdf  used on input line 427.
+(pdftex.def)             Requested size: 252.0pt x 208.59781pt.
+ [5 <../analysis_output/corrected-rct-01/report/paired_effects.pdf>] [6 <../ana
+lysis_output/corrected-rct-01/report/learning_curves.pdf> <../analysis_output/c
+orrected-rct-01/report/auc_density.pdf> <../analysis_output/corrected-rct-01/re
+port/learning_rate.pdf>] (../analysis_output/corrected-rct-01/report/tab_reliab
+ility.tex)
+[7] (./main.bbl [8]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-(../analysis_output/corrected-rct-01/report/tab_robustness.tex) [5]
-Underfull \vbox (badness 1924) has occurred while \output is active []
+)
+(../analysis_output/corrected-rct-01/report/tab_robustness.tex)
+(../analysis_output/corrected-rct-01/report/tab_regression.tex)
 
+LaTeX Warning: `h' float specifier changed to `ht'.
 
-Underfull \vbox (badness 3312) has occurred while \output is active []
-
- [6 <../analysis_output/corrected-rct-01/report/learning_curves.pdf> <../analys
-is_output/corrected-rct-01/report/auc_distributions.pdf> <../analysis_output/co
-rrected-rct-01/report/learning_rate.pdf>] [7] (./main.bbl)
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -846,22 +847,24 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[8] (./main.aux)
+[9] [10
+
+] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: F3F071FD8EC7E706753CB40240B64E20;3623.
+(rerunfilecheck)             Checksum: 81755260264BDAB595428294A6988452;3961.
  ) 
 Here is how much of TeX's memory you used:
- 22114 strings out of 469006
- 415104 string characters out of 5454814
- 833206 words of memory out of 5000000
- 50373 multiletter control sequences out of 15000+600000
+ 22161 strings out of 469006
+ 416408 string characters out of 5454814
+ 830209 words of memory out of 5000000
+ 50401 multiletter control sequences out of 15000+600000
  668958 words of font info for 119 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 84i,12n,104p,425b,786s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,428b,786s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx6
 .pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/amsfonts/cm/cm
 bx8.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/amsfonts/cm
@@ -886,10 +889,10 @@ live/2026basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
 2026basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2026
 basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2026basic
 /texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (8 pages, 507677 bytes).
+Output written on main.pdf (10 pages, 564680 bytes).
 PDF statistics:
- 597 PDF objects out of 1000 (max. 8388607)
- 462 compressed objects within 5 object streams
- 79 named destinations out of 1000 (max. 500000)
- 217 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 629 PDF objects out of 1000 (max. 8388607)
+ 508 compressed objects within 6 object streams
+ 92 named destinations out of 1000 (max. 500000)
+ 233 words of extra memory for PDF output out of 10000 (max. 10000000)
 

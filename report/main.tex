@@ -20,7 +20,9 @@
 
 \begin{document}
 
-\title{Isolating the Effects of Deep Q-Network Extensions: A Paired Randomised Controlled Trial on MinAtar}
+\title{INVESTIGATING DEEP Q-LEARNING
+MODIFICATIONS WITH RANDOMISED
+CONTROL TRIALS}
 
 \author{\IEEEauthorblockN{Matimu Khosa}
 \IEEEauthorblockA{\textit{School of Computer Science and Applied Mathematics}\\
@@ -39,12 +41,14 @@ randomised controlled trial. Thirty hyperparameter configurations were sampled f
 its own seed, and every configuration was trained with DQN and with each extension on four MinAtar games, giving
 600 runs of five million frames. The primary outcome was the area under the greedy evaluation curve, compared with
 DQN by paired t-tests with a Bonferroni correction across all sixteen comparisons. Averaged DQN improved on DQN in
-Asterix, Freeway and Space Invaders, by 58, 21 and 19 per cent. Double DQN improved only in Space Invaders, by
-11 per cent, and the Wilcoxon signed-rank test did not confirm this. Prioritised replay was worse in Freeway and
-Space Invaders, and multi-step returns were worse in Asterix, Freeway and Space Invaders, by up to 80 per cent. No
-extension differed detectably from DQN in Breakout. The sampled learning rate was associated with larger differences
-in performance than fifteen of the sixteen treatment effects, and evaluating only the final checkpoint confirmed
-three of the nine findings. Under a shared training recipe, Averaged DQN was the only reliable improvement.
+Asterix, Freeway and Space Invaders, by 57.5, 20.9 and 19.5 per cent in mean AUC. Double DQN improved only in Space
+Invaders, by 11.4 per cent. Prioritised replay was worse in Freeway and Space Invaders, and multi-step returns were
+worse in Asterix, Freeway and Space Invaders, by up to 80 per cent. No extension differed detectably from DQN in
+Breakout. On the scale of per-configuration AUC ratios, seven of these nine findings remained significant; the gains
+of Averaged DQN in Asterix and of Double DQN in Space Invaders did not. Final-checkpoint endpoints agreed in direction
+with all nine findings but detected fewer of them, trials of three to ten configurations often missed them, and
+comparing the best configuration of each method reversed two of them. Under a shared training recipe, Averaged DQN
+was the only extension that improved on DQN in more than one game.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -74,21 +78,23 @@ extension or to the configuration.
 We address this with a randomised controlled trial in the sense of \citet{pretorius2020dropout}. The
 individuals of the trial are hyperparameter configurations sampled from a shared population, and every individual
 receives every treatment. Each comparison with DQN is then paired on the same configuration and seed, which removes
-the variation between configurations from the comparison while still averaging over the population. We use the
+the main effect of the configuration from the comparison while still averaging over the population. We use the
 MinAtar suite \citep{young2019minatar}, whose small observations make 600 full training runs feasible on CPUs.
 
 We ask two research questions. \emph{RQ1:} across a population of configurations and under one shared training
 recipe, does each extension change sample efficiency, measured as the area under the evaluation curve (AUC),
-relative to DQN? \emph{RQ2:} does a curve-based, population-level evaluation reach different conclusions from an
-evaluation based on a single checkpoint? Our contributions are:
+relative to DQN? \emph{RQ2:} how far can the conclusions of smaller or more typical evaluations, based on a single
+checkpoint, a few configurations or the best configuration of each method, be trusted relative to those of the full
+trial? Our contributions are:
 \begin{itemize}
 \item a paired trial of four DQN extensions on 30 sampled configurations and four MinAtar games (600 runs,
 $3\times10^{9}$ frames), with code, raw results and provenance released\footnote{\url{https://github.com/2716924/research_project}};
-\item evidence that Averaged DQN is the only extension that improves on DQN consistently, that the benefit of Double
-DQN is small, and that PER and $n$-step returns are harmful under the shared recipe;
-\item evidence that effects vary across the population: the learning rate is associated with larger differences
-than almost all treatment effects, and the $n$-step deficit is concentrated at the lowest learning rate;
-\item a demonstration that single-checkpoint endpoints confirm only some of the AUC findings.
+\item evidence that, under the shared recipe, Averaged DQN is the only extension that improves on DQN in more than one
+game, that the benefit of Double DQN is small and fragile, and that PER and $n$-step returns are harmful;
+\item evidence that effects vary across the population: the learning rate changes the AUC by as much as the largest
+treatment effects, and in Freeway the $n$-step deficit is concentrated at the rate every other arm prefers;
+\item evidence that single-checkpoint endpoints and small trials lack power, and that comparing the best configuration
+of each method can reverse a conclusion.
 \end{itemize}
 Section~\ref{sec:background} reviews background and related work, Section~\ref{sec:method} describes the trial,
 Section~\ref{sec:results} reports the results, Section~\ref{sec:discussion} discusses them and
@@ -131,8 +137,9 @@ P(i)=\frac{p_i^{\alpha}}{\sum_k p_k^{\alpha}},\qquad p_i=|\delta_i|+\epsilon,
 where $\delta_i$ is the latest temporal-difference (TD) error of the transition. New transitions receive the largest
 priority seen so far. Importance-sampling weights $w_i=(|\mathcal{D}|\,P(i))^{-\beta}/\max_j w_j$ correct the bias
 of non-uniform sampling, with $\beta$ annealed linearly to 1. For the proportional variant used here,
-\citet{schaul2016prioritized} chose $\alpha=0.6$ and $\beta_0=0.4$ by a coarse grid search, and they reduced the step
-size by a factor of four relative to their baseline because prioritised replay produces larger gradients.
+\citet{schaul2016prioritized} chose $\alpha=0.6$ and $\beta_0=0.4$ by a coarse grid search on eight games, with Double
+DQN rather than DQN as the base agent, and they reduced the step size by a factor of four relative to that agent because
+prioritised replay picks high-error transitions more often, which makes the typical gradient larger.
 
 \emph{Multi-step returns} \citep{hernandezgarcia2019understanding,sutton2018reinforcement}. The $n$-step target sums
 $n$ observed rewards before bootstrapping:
@@ -155,9 +162,11 @@ same number of gradient updates as DQN \citep{anschel2017averaged}.
 Rainbow's ablation on 57 Atari games found that removing prioritised replay or multi-step learning caused the
 largest drops in median performance \citep{hessel2018rainbow}. \citet{obandoceron2021revisiting} repeated the
 additive and ablative studies on smaller environments, including the five MinAtar games, and found multi-step returns
-to be the component that most improved DQN on MinAtar. Their agents used the Adam optimiser \citep{kingma2015adam},
-fixed hyperparameters and 10 runs per setting; they also observed on Atari that, with RMSProp, the Huber loss tends to
-perform better than the mean squared error (MSE). \citet{fedus2020revisiting} found that uncorrected $n$-step returns
+to be the component that most improved DQN on MinAtar. Their agents used the Adam optimiser \citep{kingma2015adam}
+and fixed hyperparameters apart from a learning rate swept for each component, with 10 runs per setting. With Adam,
+the mean squared error (MSE) loss gave much better results than the Huber loss in every environment they tested, and
+on Atari Adam with the MSE loss was overwhelmingly better than RMSProp with the Huber loss; with RMSProp, however, the
+Huber loss tended to perform better than the MSE. \citet{fedus2020revisiting} found that uncorrected $n$-step returns
 benefit uniquely from a larger replay capacity, whereas DQN does not. \citet{fujimoto2020equivalence} showed that a
 loss evaluated on non-uniformly sampled data can be rewritten as a uniformly sampled loss with the same expected
 gradient, which ties the effect of PER to the loss it is combined with.
@@ -168,10 +177,15 @@ can each change reported performance substantially. \citet{machado2018revisiting
 of the Arcade Learning Environment and introduced sticky actions to make it stochastic. \citet{colas2018many} related
 the number of random seeds to the error rates of statistical tests, and \citet{agarwal2021deep} showed that
 conclusions drawn from point estimates over few runs can differ substantially from those of a more thorough
-statistical analysis, and advocated interval estimates. \citet{pretorius2020dropout} brought the randomised
+statistical analysis, and advocated interval estimates and the probability of improvement. \citet{jordan2020evaluating}
+argued that tuning hyperparameters and then reporting performance answers the wrong question, and evaluated algorithms
+made `complete' by sampling their hyperparameters at random from a fixed distribution in every trial.
+\citet{patterson2024empirical} give a broader guide to empirical design in RL, including hyperparameter sensitivity,
+hypothesis testing and experimenter bias. \citet{pretorius2020dropout} brought the randomised
 controlled trial to deep learning: they sampled network designs from a population, trained identical copies of each
 design under every intervention and tested the differences, over more than 12,000 trained networks. We apply this
-design to DQN extensions and exploit the pairing explicitly.
+design to DQN extensions: like Jordan et al., we sample configurations at random, but every arm is trained on the same
+draws, so each comparison is paired.
 
 % =====================================================================================
 \section{Method}\label{sec:method}
@@ -220,28 +234,25 @@ transitions, collected by uniformly random actions, before learning began.
 \end{table}
 
 Five arms were trained on every individual: DQN, the control, and four treatments, each of which changes one
-component (Section~\ref{sec:extensions}). The treatment-specific settings were fixed at published values rather
-than sampled: $\alpha=0.6$, $\beta_0=0.4$ and $\epsilon=10^{-6}$ for PER \citep{schaul2016prioritized}, $n=3$ for
-$n$-step DQN \citep{hessel2018rainbow} and $K=10$ for Averaged DQN \citep{anschel2017averaged}. Within an individual,
+component (Section~\ref{sec:extensions}). The treatment-specific settings were fixed rather than
+sampled: $\alpha=0.6$ and $\beta_0=0.4$ for PER \citep{schaul2016prioritized}, with the small priority constant
+$\epsilon=10^{-6}$ our own choice; $n=3$ for $n$-step DQN \citep{hessel2018rainbow}; and $K=10$ for Averaged DQN, one
+of the values evaluated by \citet{anschel2017averaged}. Within an individual,
 all arms share the configuration, the training seed and the evaluation seeds, so every comparison with DQN is paired.
 
 The arms were trained on four MinAtar games \citep{young2019minatar}: Breakout, Asterix, Freeway and Space Invaders
 (version~1, with the minimal action set). MinAtar's default settings were kept, including sticky actions with
 probability 0.1 \citep{young2019minatar} and difficulty ramping in the games that support it. Seaquest was also run but
-is excluded: in every arm in which it was run, a greedy evaluation episode exceeded the 100,000-step limit, because
-MinAtar never ends a Seaquest episode in which the submarine stays on the surface, where it starts. The trial therefore comprises $4\times5\times30=600$
-runs.
+is excluded: in each of the four arms in which it was run, a greedy evaluation episode exceeded the 100,000-step limit, because
+MinAtar never ends a Seaquest episode in which the submarine stays on the surface, where it starts. No run in the
+four reported games was aborted. The trial therefore comprises $4\times5\times30=600$ runs.
 
 \subsection{Agent and Shared Training Recipe}
 Table~\ref{tab:settings} lists the training settings. All arms use the network of the MinAtar DQN
-baseline \citep{young2019minatar}: one convolutional layer with 16 $3\times3$ filters and stride 1, followed by fully
-connected hidden layers of 128 units, with ReLU activations; whether there are one or two hidden layers is a sampled
-hyperparameter. \citet{young2019minatar} chose 16 filters and 128 units as a quarter of the corresponding layers of
-DQN \citep{mnih2015human}. Training uses RMSProp \citep{tieleman2012rmsprop} with the MSE
-loss~\eqref{eq:loss} and one gradient update per environment step once learning has begun. Exploration is
-$\varepsilon$-greedy, with $\varepsilon$ annealed linearly from 1.0 to 0.1 over the sampled duration. MinAtar has
-no frame skipping, so a frame is one environment step, and each run lasts $5\times10^{6}$ frames, as in the
-MinAtar baselines \citep{young2019minatar}.
+baseline \citep{young2019minatar}, whose 16 filters and 128 hidden units are a quarter of the corresponding layers of
+DQN \citep{mnih2015human}; whether there are one or two hidden layers is sampled. Training uses
+RMSProp \citep{tieleman2012rmsprop} with the MSE loss~\eqref{eq:loss}. MinAtar has no frame skipping, so a frame is
+one environment step, and each run lasts $5\times10^{6}$ frames, as in the MinAtar baselines.
 
 \begin{table}[t]
 \caption{Training Settings}
@@ -290,42 +301,44 @@ aborts the run without recording a score. The primary outcome is the trapezoidal
 reported in units of $10^{6}$ (return $\times$ frames). The AUC rewards both fast learning and a high final level:
 divided by the $4.95\times10^{6}$ frames it spans, it is the average evaluation return over training.
 
-\subsection{Statistical Analysis}
+\subsection{Statistical Analysis}\label{sec:stats}
 The statistical unit is the individual; the ten evaluation episodes and the 100 checkpoints are repeated
 measurements within a run, not replicates. For each game and treatment, we form the 30 paired differences
 $d_j=\mathrm{AUC}_j^{\mathrm{treatment}}-\mathrm{AUC}_j^{\mathrm{DQN}}$ and test whether their mean is zero with a
-two-sided paired $t$-test. We treat all $4\times4=16$ comparisons as one family and apply the Bonferroni
-correction \citep{dunn1961multiple}, $\alpha=0.05/16=0.003125$, with matching simultaneous 99.69\% $t$-intervals. We
-report each effect as the mean difference as a percentage of the DQN mean, with the standardised effect
-$d_z=\bar d/s_d$ \citep{lakens2013calculating} and the number of individuals for which the treatment beat DQN.
+two-sided paired $t$-test. Because our conclusions are drawn across games, we treat all $4\times4=16$ comparisons as
+one family and apply the Bonferroni correction \citep{dunn1961multiple}, $\alpha=0.05/16=0.003125$, with matching
+simultaneous 99.69\% $t$-intervals. We report each effect as the mean difference as a percentage of the DQN mean, with
+the standardised effect $d_z=\bar d/s_d$ \citep{lakens2013calculating} and the number of individuals for which the
+treatment beat DQN. We report the $t$-test as primary and the Wilcoxon signed-rank test \citep{wilcoxon1945individual}
+as a sensitivity analysis for every comparison, rather than choosing between them with a normality pre-test, which
+alters the error rates of the test that follows \citep{rochon2012test}; Shapiro--Wilk \citep{shapiro1965analysis}
+rejected normality of the differences at the 0.05 level for 6 of the 16 comparisons.
 
-This analysis departs from our research proposal in two ways. First, the proposal applied the Bonferroni
-correction within each game ($\alpha=0.0125$); because our conclusions are drawn across games, we use the stricter
-family-wide threshold. Second, the proposal would have replaced the $t$-test by the Wilcoxon signed-rank test
-whenever a Shapiro--Wilk test \citep{shapiro1965analysis} rejected normality of the differences. Choosing the test
-after a preliminary normality test alters the conditional error rates of the test that
-follows \citep{rochon2012test}, so we instead report both tests for every comparison, with the $t$-test as primary
-and the Wilcoxon test \citep{wilcoxon1945individual} as a sensitivity analysis. For reference, Shapiro--Wilk rejected
-normality at the 0.05 level for 6 of the 16 comparisons.
+A percentage of the DQN mean treats that mean as known, and its interval can extend below $-100\%$ although the AUC
+is positive. We therefore also analyse the per-individual log ratios
+$\log(\mathrm{AUC}_j^{\mathrm{treatment}}/\mathrm{AUC}_j^{\mathrm{DQN}})$: their back-transformed mean is the
+geometric-mean ratio, which we report with the same 99.69\% $t$-interval and a one-sample $t$-test ($p_r$).
 
-Two secondary endpoints, analysed in the same way and treated as exploratory, address RQ2: the mean of the last ten
-evaluations (the final $5\times10^{5}$ frames) and the final evaluation alone. The bands in the learning curves are
-pointwise 95\% percentile bootstrap intervals over individuals, from 2,000 resamples \citep{efron1979bootstrap}.
+Two secondary endpoints address RQ2: the mean of the last ten evaluations (the final $5\times10^{5}$ frames) and the
+final evaluation alone. The fraction of individuals for which a treatment beats DQN estimates the probability that it
+does so on a randomly drawn configuration, a paired analogue of the probability of improvement of
+\citet{agarwal2021deep}; we give 95\% Wilson intervals \citep{wilson1927probable}. To mimic smaller trials, we repeat
+each significant comparison on every subset of $k\in\{3,5\}$ individuals and on $10^{5}$ random subsets of $k=10$, and
+record how often a paired $t$-test at $\alpha=0.05$ detects the effect in the direction of the full trial. To mimic
+separately tuned methods, we compare the best AUC of each arm over the 30 configurations with that of DQN, a comparison
+that is biased upwards and only illustrative. Finally, as the six hyperparameters were sampled independently, we
+regress log AUC on all six, as categorical factors, for each arm and game. The bands in the learning curves are
+pointwise 95\% bootstrap intervals over individuals (2,000 resamples, \citealt{efron1979bootstrap}). All analyses
+other than the Bonferroni-corrected paired $t$-tests on the AUC are exploratory.
 
-\subsection{Implementation and Data Provenance}
+\subsection{Implementation}\label{sec:implementation}
 The agents were implemented in PyTorch \citep{paszke2019pytorch} (version 2.13) with the
 Gymnasium \citep{towers2024gymnasium} interface to MinAtar (version 1.0.15) and trained on CPUs, with four threads
 per job, on the MSL cluster at the University of the Witwatersrand. The code includes unit tests and analytic checks
-of every arm's target and replay computations, which run before each cluster job.
-
-An initial run used a PER implementation that applied the priority exponent twice when inserting a new transition,
-giving it priority $p_{\max}^{\alpha^2}$ instead of $p_{\max}^{\alpha}$. After the fix, the PER, Double DQN,
-$n$-step and Averaged DQN arms were rerun with the corrected code. The three arms that do not use prioritised replay
-reproduced all 348 of their overlapping learning curves exactly, which shows that training is reproducible and that
-the fix affected only PER. The DQN arm, which was not rerun, is therefore taken from the initial run, as are
-$n$-step individuals 18--29 in Freeway, whose rerun job failed to start. Every stored AUC was recomputed from its
-curve, every individual was checked to have the same configuration and seed in every arm, and all tests were
-reproduced by an independent script.
+of every arm's target and replay computations, which run before each cluster job. Among them, PER's sampling
+probabilities and importance weights are checked against analytic values, $n$-step returns against an independent
+episode-level reference, and $n$-step DQN with $n=1$ is checked to reproduce the network weights of DQN exactly through
+the MinAtar training loop.
 
 % =====================================================================================
 \section{Results}\label{sec:results}
@@ -335,20 +348,21 @@ reproduced by an independent script.
 \label{tab:main}
 \centering
 \footnotesize
+\setlength{\tabcolsep}{4.5pt}
 \input{\results/tab_main.tex}\\[3pt]
-\parbox{\textwidth}{\scriptsize $\Delta$: mean paired difference as a percentage of the DQN mean. CI:
-Bonferroni-adjusted 99.69\% $t$-interval on the same scale; it is symmetric, so it can extend below $-100\%$.
-$d_z$: mean difference divided by the standard deviation of the differences. $p_t$, $p_W$: two-sided paired
-$t$-test and Wilcoxon signed-rank $p$-values; bold values are at most $0.05/16$. Better: individuals for which the
-treatment's AUC exceeds that of DQN.}
+\parbox{\textwidth}{\scriptsize $\Delta$: mean paired difference as a percentage of the DQN mean. Ratio: geometric
+mean of the per-individual ratio of the treatment's AUC to that of DQN, with its Bonferroni-adjusted 99.69\%
+$t$-interval on the log scale. $d_z$: mean difference divided by the standard deviation of the differences. $p_t$,
+$p_W$: two-sided paired $t$-test and Wilcoxon signed-rank $p$-values (primary analysis); $p_r$: one-sample $t$-test of
+the log ratios. Bold values are at most $0.05/16$.}
 \end{table*}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{paired_effects.pdf}
-\caption{Mean paired AUC difference from DQN, as a percentage of the DQN mean, with Bonferroni-adjusted 99.69\%
-intervals. Filled markers: $p_t\le0.05/16$. The horizontal scales differ between games. DDQN: Double DQN; Avg.:
-Averaged DQN.}
+\caption{Geometric-mean AUC ratio of each treatment to DQN, on a log scale, with Bonferroni-adjusted 99.69\%
+intervals. Filled markers: significant in the primary paired $t$-test ($p_t\le0.05/16$). The horizontal scales differ
+between games. DDQN: Double DQN; Avg.: Averaged DQN.}
 \label{fig:effects}
 \end{figure}
 
@@ -368,10 +382,18 @@ Invaders ($+11.4\%$, 21 of 30 individuals); its differences in Asterix ($+28.2\%
 ($-8.5\%$, $p_t=0.014$) were not significant. PER was worse in Freeway ($-35.3\%$) and Space Invaders ($-50.0\%$),
 beating DQN on only 3 and 1 individuals. $n$-step DQN was worse in Asterix ($-80.0\%$), Freeway ($-59.4\%$) and Space
 Invaders ($-21.0\%$), with 2, 0 and 6 wins. The significant effects have $|d_z|$ between 0.59 and 1.64.
+Holm's step-down procedure \citep{holm1979simple}, which is uniformly at least as powerful as the Bonferroni correction,
+rejects the same nine hypotheses: the tenth-smallest $p$-value, 0.014, exceeds $0.05/7$.
 
-In Breakout no treatment differed significantly from DQN. The point estimates lie between $+0.1\%$ and $+4.5\%$, but
-the intervals extend from $-10.8\%$ to $+17.3\%$, so the data do not show that the extensions are equivalent to DQN
-there either.
+On the ratio scale, seven of the nine findings remain significant at the family-wide threshold
+(Table~\ref{tab:main}, Fig.~\ref{fig:effects}). The two exceptions are gains. Averaged DQN in Asterix has a
+geometric-mean ratio of 1.38 $[0.89, 2.12]$ ($p_r=0.024$): it beat DQN on 25 individuals, but on two others it reached
+only 0.10 and 0.28 of the AUC of DQN, and these dominate on the log scale; a Wilcoxon test on the log ratios still
+rejects ($p=0.0016$). Double DQN in Space Invaders has a ratio of 1.10 $[0.97, 1.26]$ ($p_r=0.023$). The log ratios
+were not closer to normal than the differences: Shapiro--Wilk rejected normality for 9 of the 16 comparisons.
+
+In Breakout no treatment differed significantly from DQN. The ratios lie between 1.00 and 1.03, but their intervals
+extend from 0.89 to 1.18, so the data do not show that the extensions are equivalent to DQN there either.
 
 \subsection{Learning Dynamics}
 The learning curves (Fig.~\ref{fig:curves}) show how these differences arise. In Breakout the curves rise quickly
@@ -382,41 +404,183 @@ led from early in training (31.6 against 20.1 for DQN at $5\times10^{5}$ frames)
 38.4). In Space Invaders, PER started level with DQN (23.6 against 23.5 at the first evaluation), fell to 13.0 by
 $10^{6}$ frames and ended at about half the level of DQN (19.1 against 35.9).
 
-\subsection{Variation Across Configurations}
+\subsection{Variation Across Configurations}\label{sec:variation}
 Performance varied widely between configurations (Fig.~\ref{fig:dist}). For DQN, the standard deviation of
-the AUC across individuals ranged from 26\% (Breakout) to 84\% (Asterix) of its mean. The paired design removes this
-variation from the comparisons.
+the AUC across individuals ranged from 26\% (Breakout) to 84\% (Asterix) of its mean. The paired design removes the
+main effect of the configuration from the comparisons; the interaction between configuration and treatment remains
+in the variance of the differences. Several of the distributions are skewed or have more than one mode. The most
+extreme are those of $n$-step DQN: in Asterix, 29 of its 30 individuals had an AUC of at most 5, and in Freeway its
+seven individuals at the lowest learning rate all had an AUC between 8.2 and 28.0, against 144.8 to 231.9 for DQN at
+that rate.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{auc_distributions.pdf}
-\caption{AUC of every individual by arm. Boxes show medians and interquartile ranges; whiskers extend to 1.5 times
-the interquartile range. DDQN: Double DQN; Avg.: Averaged DQN.}
+\includegraphics[width=\columnwidth]{auc_density.pdf}
+\caption{Distribution of the AUC over the 30 individuals of each arm, in the style of \citet{pretorius2020dropout}:
+Gaussian kernel density estimates (Scott's bandwidth, clipped at zero), each scaled to its own peak height.
+Dashed lines mark the medians. DDQN: Double DQN; Avg.: Averaged DQN.}
 \label{fig:dist}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{learning_rate.pdf}
-\caption{Mean AUC by sampled learning rate (7, 13 and 10 individuals at $10^{-4}$, $5\times10^{-4}$ and $10^{-3}$).
-The subgroups also differ in their other hyperparameters, so the comparison is descriptive.}
+\caption{Mean AUC by sampled learning rate, with $\pm1$ standard error over the $n$ individuals at each rate. The
+subgroups also differ in their other hyperparameters, so the comparison is descriptive;
+Table~\ref{tab:regression} adjusts for them.}
 \label{fig:lr}
 \end{figure}
 
 Much of this variation was associated with the learning rate (Fig.~\ref{fig:lr}). The mean AUC of DQN at a learning rate
 of $10^{-4}$ was 1.7 to 5.9 times its mean at $10^{-3}$ (Breakout 86.5 against 52.2, Asterix 35.1 against 6.0,
-Freeway 205.4 against 113.2, Space Invaders 287.9 against 90.8). As a ratio of means, this spread exceeded the
-treatment effect in 15 of the 16 comparisons; the exception was $n$-step DQN in Freeway. The lowest learning rate gave
-the highest mean AUC for every arm in every game except $n$-step DQN in Asterix and Freeway.
+Freeway 205.4 against 113.2, Space Invaders 287.9 against 90.8). Because these subgroups also differ in their other
+hyperparameters, we regressed log AUC on all six sampled factors (Table~\ref{tab:regression},
+Appendix~\ref{app:regression}). Adjusted for the other
+five, raising the learning rate from $10^{-4}$ to $10^{-3}$ multiplied the AUC of DQN by 0.21 (Asterix) to 0.57
+(Freeway), and the learning rate explained 58\% to 93\% of the variance in log AUC that the other factors left
+unexplained (partial $R^2$). On this common log scale, the adjusted learning-rate effect on DQN was larger than the
+geometric-mean treatment effect in 15 of the 16 comparisons; the exception was $n$-step DQN in Freeway. The lowest
+learning rate gave the highest mean AUC for every arm in every game except $n$-step DQN in Asterix and Freeway.
 
-The $n$-step deficit depended strongly on the learning rate. In Freeway, its mean AUC at $10^{-4}$ was 16.1, against
-205.4 for DQN, a ratio of 0.08, compared with ratios of 0.50 and 0.63 at the two larger rates; Asterix showed the
-same pattern (0.09, 0.19 and 0.70). PER, by contrast, stayed below DQN at every learning rate in Freeway and Space
-Invaders, with ratios between 0.41 and 0.74 and no consistent trend.
+The two $n$-step deficits responded differently to the learning rate. In Asterix, $n$-step DQN barely learnt at any
+rate: its mean AUC was 3.0, 2.9 and 4.2 from the lowest rate to the highest, and its ratio of mean AUC to that of DQN rose from 0.09 to
+0.70 only because DQN did worse at higher rates. In Freeway, by contrast, $n$-step DQN failed at $10^{-4}$, the rate at
+which every other arm did best: its mean AUC there was 16.1, against 205.4 for DQN, whereas at the two larger rates it
+reached 86.1 and 71.4 (ratios of means to DQN of 0.50 and 0.63). Adjusted for the other factors, its AUC at $10^{-3}$ was 4.12
+$[2.31, 7.34]$ times that at $10^{-4}$, whereas the corresponding factor was below one for DQN, Double DQN and
+Averaged DQN. PER stayed below DQN at every learning rate in Freeway and Space Invaders, with ratios of means to DQN between 0.41
+and 0.74 and no consistent trend; at $10^{-4}$ the ratios were 0.71 and 0.61.
+
+The gain of Averaged DQN did not shrink consistently at longer target-update periods: at periods of 500, 1000 and
+2000 steps (8, 11 and 11 individuals), its geometric-mean ratio to DQN was 1.23, 1.25 and 1.27 in Freeway, 0.85,
+1.78 and 1.51 in Asterix and 1.21, 1.26 and 1.08 in Space Invaders. In the regression, a period of 2000 rather than
+500 steps changed the AUC of DQN itself by a factor of 0.83 to 1.12.
 
 \subsection{Robustness}
+The nine findings survive several checks. With a Bonferroni correction within each game instead
+($\alpha=0.05/4=0.0125$), the same nine comparisons are significant. The Wilcoxon test confirms eight of them at the
+family-wide threshold; the exception is Double DQN in Space Invaders ($p_W=0.012$), whose interval also only just
+excludes zero ($[+0.1\%, +22.6\%]$), so this finding rests on the $t$-test alone.
+
+The secondary endpoints (Table~\ref{tab:robust}) agree in direction with all nine findings, but they are noisier.
+With the mean of the last ten evaluations, five of the nine remain significant at the family-wide threshold; with the
+final evaluation alone, only three do. No comparison that was not significant on the AUC became significant on
+either secondary endpoint. The single-checkpoint endpoints therefore have less power than the AUC; they do not point
+to different conclusions.
+
+\subsection{Reliability of Smaller Evaluations}\label{sec:reliability}
 
 \begin{table}[t]
+\caption{Reliability of Smaller Evaluations}
+\label{tab:reliability}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\input{\results/tab_reliability.tex}\\[3pt]
+\parbox{\columnwidth}{\scriptsize PoI: fraction of individuals for which the treatment's AUC exceeds that of DQN,
+with 95\% Wilson interval. Best of 30: best AUC of the arm over the 30 configurations relative to the best of DQN.
+Detected: percentage of subsets of $k$ individuals in which a paired $t$-test at $\alpha=0.05$ is significant in the
+direction of the full trial (all subsets for $k=3,5$; $10^{5}$ random subsets for $k=10$), shown for the nine
+significant comparisons.}
+\end{table}
+
+Table~\ref{tab:reliability} shows how smaller or more typical evaluations would have fared. The paired probability of
+improvement of Averaged DQN was 0.83, 0.80 and 0.87 in Asterix, Freeway and Space Invaders, so a comparison on one
+configuration drawn at random would have favoured DQN with a probability of 0.13 to 0.20. Trials of a few
+configurations usually got the direction of a finding right: the mean difference had the sign of the full trial in
+84\% to 100\% of the subsets of three individuals and 92\% to 100\% of those of five. They seldom reached
+significance, however: a $t$-test detected the effects in 6\% to 30\% of the subsets of three, 9\% to 79\% of those of
+five and 37\% to 100\% of those of ten, and detected the two weakest findings, Double DQN in Space Invaders and
+Averaged DQN in Asterix, in fewer than half of the subsets of ten. Significance in the wrong direction occurred in at
+most 0.4\% of subsets. Comparing the best configuration of each arm with that of DQN, as a study that tunes each
+method separately would, reversed two findings: $n$-step DQN was $24.7\%$ better than DQN in Space Invaders and PER
+$2.0\%$ better in Freeway.
+
+% =====================================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{RQ1: Which Extensions Help?}
+Averaged DQN was the only extension that improved on DQN in more than one game, on at least 24 of 30 individuals in
+each of three games, and the Wilcoxon test confirmed all three; on the ratio scale its gain in Asterix was not
+significant. It was designed to reduce the variance of the target \citep{anschel2017averaged}, which we did not
+measure. Averaging ten target networks also makes the target depend on older parameters; if that were the cause, the
+gain should shrink at long target-update periods and long periods should help DQN, but neither happened consistently
+(Section~\ref{sec:variation}).
+
+Double DQN helped little. Its one significant result, in Space Invaders, was the weakest of the nine findings: neither
+the Wilcoxon test nor the ratio scale confirmed it, and its other estimates had mixed signs. We did not measure
+overestimation, so we cannot tell whether it was small under this recipe or whether reducing it did not raise the AUC.
+
+PER and $n$-step returns were harmful, unlike in the Rainbow ablation on Atari \citep{hessel2018rainbow} and, for
+$n$-step returns, the MinAtar study of \citet{obandoceron2021revisiting}. Is this the recipe or an implementation
+error? The analytic checks of every arm (Section~\ref{sec:implementation}) make a gross error unlikely, but they cannot exclude an interaction between our implementation and the recipe. Without a
+positive control, such as DQN against PER and $n$-step DQN under the recipe of Obando-Ceron and Castro, the
+explanations below are hypotheses.
+
+\citet{schaul2016prioritized} reduced the step size for PER, and Obando-Ceron and Castro used Adam with one update
+every four steps, whereas we used RMSProp with the MSE loss and one update per step; with RMSProp, they found that the
+Huber loss tended to work better than the MSE on Atari, although Adam with the MSE loss was their best combination. A step size too large for PER should matter least at the
+lowest learning rate, yet PER remained 29\% and 39\% below DQN at $10^{-4}$ in Freeway and Space Invaders, so the step
+size alone does not explain its deficit. Because non-uniform sampling has the same expected gradient as a different
+loss under uniform sampling \citep{fujimoto2020equivalence}, PER with the MSE may weight large errors more heavily than
+intended; recording the importance weights and TD errors during training would allow this to be examined.
+
+The two $n$-step deficits differ in kind (Section~\ref{sec:variation}). In Asterix, $n$-step DQN barely learnt at any
+learning rate. In Freeway, it failed at the rate at which every other arm did best and partly recovered at larger
+rates, an interaction that a study tuning each method separately would not see. We found no consistent association
+with the replay buffer capacity, the factor that \citet{fedus2020revisiting} identified for $n$-step returns, but the
+subgroups are small.
+
+\subsection{RQ2: How Reliable Are Smaller Evaluations?}
+Evaluating whole learning curves over a population of configurations exposes how unreliable smaller or more typical
+evaluations are (Section~\ref{sec:reliability}). The single-checkpoint endpoints
+differed from the AUC in power, not in conclusions: they agreed in direction with all nine findings but detected only
+three or five. Small trials usually pointed the right way but seldom reached significance, so the absence of a
+significant effect in a small evaluation says little. Comparing the best configuration of each method, as separately
+tuned studies effectively do, reversed two findings, because the effects depend on the configuration.
+
+The paired design makes the effects detectable despite this dependence: the significant effects have $|d_z|$ between
+0.59 and 1.64, whereas the spread of the AUC between individuals is often as large as the differences between arms
+(Fig.~\ref{fig:dist}).
+
+Isolated under a shared recipe, the effects only partly matched those reported in the literature: the benefits
+reported for PER and $n$-step returns did not appear, whereas those of Averaged DQN did.
+
+% =====================================================================================
+\section{Limitations}\label{sec:limitations}
+Each configuration was trained with one seed, so within an individual the effects of the configuration and the seed
+cannot be separated; both are shared across arms, so the comparisons remain paired. The results hold for one shared
+recipe with treatment settings fixed at published values; tuning each arm separately could change them, and without a
+positive control under another recipe an interaction between our implementation and the recipe cannot be fully
+excluded. The grid of learning rates does not bracket the optimum: the lowest rate was best for almost every arm, so
+the treatment effects are conditional on a population in which 23 of the 30 configurations probably use too large a
+learning rate. The trial covers four MinAtar games and $5\times10^{6}$ frames. Seaquest was lost to a protocol choice:
+the evaluation aborted a run whose greedy episode exceeded $10^{5}$ steps instead of capping the episode, which would
+have kept the game in the trial. The subgroup analyses are descriptive, and all analyses beyond the primary
+comparisons are exploratory (Section~\ref{sec:stats}).
+
+% =====================================================================================
+\section{Conclusion}
+In a paired randomised controlled trial of four DQN extensions over 30 sampled configurations and four MinAtar games,
+only Averaged DQN improved on DQN in more than one game. Double DQN helped only slightly and not robustly, and
+prioritised replay and multi-step returns were harmful under the shared recipe, contrary to earlier component studies.
+The learning rate changed performance by as much as the largest treatment effects, small evaluations detected fewer
+of the findings, and comparing the best configuration of each method reversed two of them. Future work should run a
+positive control under the recipe of \citet{obandoceron2021revisiting}, extend the learning-rate grid downwards, add
+seeds per configuration, and evaluate Seaquest with a capped protocol.
+
+\section*{Acknowledgement}
+I express my sincere gratitude to my supervisors, Steven James and Benjamin Rosman,
+for their invaluable guidance, patience, and continuous support throughout the formulation of this research report.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendices
+\section{Additional Results}\label{app:results}
+Table~\ref{tab:robust} gives the paired comparisons on the two secondary endpoints.
+
+\begin{table}[h]
 \caption{Secondary Endpoints: Paired Comparisons with DQN}
 \label{tab:robust}
 \centering
@@ -427,97 +591,22 @@ Invaders, with ratios between 0.41 and 0.74 and no consistent trend.
 endpoints are exploratory.}
 \end{table}
 
-The nine findings survive several checks. Under the per-game threshold of our proposal ($\alpha=0.0125$), the same
-nine comparisons are significant. The Wilcoxon test confirms eight of them at the family-wide threshold; the
-exception is Double DQN in Space Invaders ($p_W=0.012$), whose interval also only just excludes zero
-($[+0.1\%, +22.6\%]$), so this finding rests on the $t$-test alone. Restricting $n$-step DQN in Freeway to the
-individuals of the rerun (0--17) gives $-53.3\%$ ($p_t=2.4\times10^{-5}$), in line with the full sample.
+\section{Learning-Rate Regression}\label{app:regression}
+Table~\ref{tab:regression} gives, for every arm and game, the ordinary least-squares regression of log AUC on the six
+sampled hyperparameters, each coded as a categorical factor with its first value as the reference (11 coefficients,
+19 residual degrees of freedom). The learning-rate ratio is the back-transformed coefficient of $10^{-3}$ relative to
+$10^{-4}$; the partial $R^2$ is the share of the variance left by the other five factors that the learning rate
+explains.
 
-The secondary endpoints (Table~\ref{tab:robust}) agree in direction with all nine findings, but they are noisier.
-With the mean of the last ten evaluations, five of the nine remain significant at the family-wide threshold; with the
-final evaluation alone, only three do. No comparison that was not significant on the AUC became significant on
-either secondary endpoint.
-
-\subsection{Effect of the PER Fix}
-Fixing the priority bug did not change PER significantly in any game. Comparing the same 30 individuals before and
-after the fix, the AUC of PER changed by $+2.1\%$ in Breakout ($p_t=0.58$), $-0.9\%$ in Asterix ($p_t=0.89$),
-$-9.4\%$ in Freeway ($p_t=0.27$) and $+4.2\%$ in Space Invaders ($p_t=0.43$), without any correction for multiple
-comparisons. Before the fix, PER was already $28.6\%$ and $52.0\%$ below DQN in Freeway and Space Invaders, both
-significant at the family-wide threshold, and did not differ significantly from DQN in Breakout or Asterix. The
-deficit of PER is therefore not an artefact of the bug.
-
-% =====================================================================================
-\section{Discussion}\label{sec:discussion}
-
-\subsection{RQ1: Which Extensions Help?}
-Averaged DQN was the only extension that improved on DQN reliably. It was better in three of the four games and on at
-least 24 of 30 individuals in each; the Wilcoxon test confirmed all three results, and all three kept their direction
-under both secondary endpoints. This is consistent with its motivation, the reduction of variance in the
-target \citep{anschel2017averaged}. The gain has a computational cost, since each target needs ten forward passes
-rather than one.
-
-Double DQN helped little. Its one significant result, in Space Invaders, was the weakest of the nine findings, and
-its other estimates had mixed signs. Under this recipe, decoupling action selection from evaluation was not an
-important source of improvement on MinAtar.
-
-PER and $n$-step returns were harmful, which contrasts with their importance in the Rainbow ablation on
-Atari \citep{hessel2018rainbow} and, for $n$-step returns, with the MinAtar results of
-\citet{obandoceron2021revisiting}. Two differences between the studies may explain this, although our data cannot
-separate them. The first is the recipe. \citet{schaul2016prioritized} reduced the step size for PER, and Obando-Ceron
-and Castro used Adam with one update every four steps. We used
-RMSProp with the MSE loss and one update per step, and with RMSProp they found that the Huber loss tended to work
-better than the MSE on Atari. Because non-uniform sampling has the same expected gradient as a different loss under
-uniform sampling \citep{fujimoto2020equivalence}, PER combined with the MSE may weight large errors more heavily than
-intended. The second difference is the population. In Asterix and Freeway, the $n$-step deficit was concentrated at
-the lowest learning rate, which was the best learning rate for DQN, and was much smaller at $10^{-3}$
-(Fig.~\ref{fig:lr}). A study that tunes each method separately evaluates each at a single point of such a curve. We
-found no consistent association with the replay buffer capacity, the factor that \citet{fedus2020revisiting}
-identified for $n$-step returns, but the subgroups are small.
-
-In Breakout, all arms learnt quickly to a similar level. Every interval there includes zero, but their width means
-that small effects in either direction cannot be ruled out.
-
-\subsection{RQ2: What Does a Population-Level Evaluation Change?}
-Our results answer RQ2 in three ways. First, the endpoint matters. The final evaluation alone confirmed three of the
-nine AUC findings and the mean of the last ten evaluations confirmed five, although all nine kept their direction;
-an evaluation based on a single checkpoint would have missed most of the effects. Second, the configuration matters at least
-as much as the algorithm. The learning rate alone was associated with larger differences than 15 of the 16 treatment
-effects. Even Averaged DQN, the most consistent improvement, failed to beat DQN on 5, 6 and 4 of the 30
-configurations in Asterix, Freeway and Space Invaders, so a comparison on one randomly chosen configuration would
-have favoured DQN with a probability of 0.13 to 0.20. Third, the paired design makes these effects detectable despite this variation: the significant effects have
-$|d_z|$ between 0.59 and 1.64, whereas the spread of the AUC between individuals is often as large as the differences
-between arms (Fig.~\ref{fig:dist}).
-
-Our proposal hypothesised that isolated effects would be smaller than those reported in the literature. This was
-partly supported: the benefits reported for PER and $n$-step returns did not appear under the shared recipe, whereas
-those of Averaged DQN did.
-
-% =====================================================================================
-\section{Limitations}\label{sec:limitations}
-Each configuration was trained with one seed, so within an individual the effects of the configuration and the seed
-cannot be separated; both are shared across arms, so the comparisons remain paired. The results hold for one shared
-recipe with treatment settings fixed at published values; tuning each arm separately could change them. The trial
-covers four MinAtar games and $5\times10^{6}$ frames, so longer training or other environments could give different
-results, and Seaquest could not be evaluated under the present protocol. The AUC combines learning speed and final
-level over the observed interval. The 30 configurations are a simple random sample, so the subgroup analyses are
-descriptive. Finally, the DQN arm comes from the initial run; this is justified by the exact reproduction of every
-rerun curve, but it is a departure from running all arms together.
-
-% =====================================================================================
-\section{Conclusion}
-In a paired randomised controlled trial of four DQN extensions over 30 sampled configurations and four MinAtar games,
-only Averaged DQN improved on DQN consistently. Double DQN helped only slightly, and prioritised replay and multi-step
-returns were harmful under the shared recipe, contrary to earlier component studies. Differences between
-configurations, especially in the learning rate, were larger than most treatment effects, and single-checkpoint
-endpoints confirmed few of the findings. Future work should add several seeds per configuration, compare recipes
-tuned for each arm, examine the training dynamics of PER and $n$-step returns directly, and evaluate Seaquest with a
-capped evaluation protocol.
-
-\section*{Acknowledgement}
-The author thanks Steven James and Benjamin Rosman for their supervision. The experiments were run on the MSL
-cluster at the University of the Witwatersrand.
-
-\bibliographystyle{plainnat}
-\bibliography{refs}
+\begin{table}[h]
+\caption{Adjusted Learning-Rate Effect on Log AUC}
+\label{tab:regression}
+\centering
+\footnotesize
+\input{\results/tab_regression.tex}\\[3pt]
+\parbox{\columnwidth}{\scriptsize LR ratio: multiplicative change in AUC from a learning rate of $10^{-4}$ to
+$10^{-3}$, adjusted for the other five hyperparameters, with 95\% $t$-interval. Partial $R^2$: of the learning rate
+given the other factors. $R^2$: of the full model.}
+\end{table}
 
 \end{document}
