@@ -1,20 +1,22 @@
 # Fdb version 4
-["bibtex main"] 1792352644.43712 "main.aux" "main.bbl" "main" 1792352715.984 0
-  "./refs.bib" 1792352644.36291 10935 5ba3027076fb1dc8c25c52e4c6be6170 ""
+["bibtex main"] 1792520575.73643 "main.aux" "main.bbl" "main" 1792520576.27568 0
+  "./refs.bib" 1792411084.27177 12385 df7355e21318be74749b177b496b3e62 ""
   "/usr/local/texlive/2026basic/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "main.aux" 1792352715.87416 11985 36266770dbd7b64efdd28b932544a75b "pdflatex"
+  "main.aux" 1792520576.16579 14196 e3634ecdf68a8dde020a27abbae8b544 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1792352715.50768 "main.tex" "main.pdf" "main" 1792352715.9841 0
-  "../analysis_output/corrected-rct-01/report/auc_distributions.pdf" 1792349602.99859 54483 621b77ac8e6cb979f999b98c6e9afcb8 ""
-  "../analysis_output/corrected-rct-01/report/learning_curves.pdf" 1792349602.36776 84404 8981240d30521935878983a7b2014320 ""
-  "../analysis_output/corrected-rct-01/report/learning_rate.pdf" 1792349603.30656 45085 b7cafa0c742fe188b95746443531753e ""
-  "../analysis_output/corrected-rct-01/report/paired_effects.pdf" 1792349602.67098 35457 19d0493a2b4f0c14b7f9459341a7a861 ""
-  "../analysis_output/corrected-rct-01/report/tab_main.tex" 1792349601.95563 2221 0290c32df69145565a3a8c206e289fa5 ""
-  "../analysis_output/corrected-rct-01/report/tab_population.tex" 1792349601.9558 496 e3de8387cb61ec37c9faeadfb1788101 ""
-  "../analysis_output/corrected-rct-01/report/tab_robustness.tex" 1792349601.95573 1257 d453e8a8287fa66e27fbc60ab0f30db2 ""
+["pdflatex"] 1792520575.75705 "main.tex" "main.pdf" "main" 1792520576.2758 0
+  "../analysis_output/corrected-rct-01/report/auc_density.pdf" 1792520448.43079 97241 dec28bef65d82a1b4c239fc3089641bd ""
+  "../analysis_output/corrected-rct-01/report/learning_curves.pdf" 1792520446.92451 83105 f6dd2bcca911da5c7d8e5fcb9ccde792 ""
+  "../analysis_output/corrected-rct-01/report/learning_rate.pdf" 1792520449.0231 45357 cb40f2dbe48d19218d7c72d00bbf058f ""
+  "../analysis_output/corrected-rct-01/report/paired_effects.pdf" 1792520447.21007 35715 d340fadb0fdc26795a9183cb28243de5 ""
+  "../analysis_output/corrected-rct-01/report/tab_main.tex" 1792520446.50733 2483 e57b9fa7ab729cb6f43bc66fe7fcc811 ""
+  "../analysis_output/corrected-rct-01/report/tab_population.tex" 1792520446.50758 496 e3de8387cb61ec37c9faeadfb1788101 ""
+  "../analysis_output/corrected-rct-01/report/tab_regression.tex" 1792520446.50812 1257 e480c80dacab294d5901f13bc94f6af1 ""
+  "../analysis_output/corrected-rct-01/report/tab_reliability.tex" 1792520446.50797 1389 313e534fb38b6d3ae76b2da61f82081a ""
+  "../analysis_output/corrected-rct-01/report/tab_robustness.tex" 1792520446.50752 1257 d453e8a8287fa66e27fbc60ab0f30db2 ""
   "/usr/local/texlive/2026basic/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2026basic/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
   "/usr/local/texlive/2026basic/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm" 1136768653 4524 6bce29db5bc272ba5f332261583fee9c ""
@@ -191,10 +193,10 @@
   "/usr/local/texlive/2026basic/texmf-var/web2c/pdftex/pdflatex.fmt" 1788955593 2966188 51d92f2cbc54c93bd87ec81a86d35139 ""
   "/usr/local/texlive/2026basic/texmf.cnf" 1772405582 628 bbc09d6d38872d53c11bb48dc9b14e88 ""
   "IEEEtran.cls" 1792349875.40088 288304 b67b6fc6c2abb39f9b461923f5199343 ""
-  "main.aux" 1792352715.87416 11985 36266770dbd7b64efdd28b932544a75b "pdflatex"
-  "main.bbl" 1792352644.45753 9404 a35021cf3acb5772735799ff559eb05b "bibtex main"
-  "main.out" 1792352715.87473 3623 f3f071fd8ec7e706753cb40240b64e20 "pdflatex"
-  "main.tex" 1792352709.55023 35636 ef3132c08d0230ef9e95fb31b41e25ad ""
+  "main.aux" 1792520576.16579 14196 e3634ecdf68a8dde020a27abbae8b544 "pdflatex"
+  "main.bbl" 1792520575.75637 10616 3c9990765c33b9a2c53c32f736589073 "bibtex main"
+  "main.out" 1792520576.16645 3961 81755260264bdab595428294a6988452 "pdflatex"
+  "main.tex" 1792444509.87441 43161 575e0524129b79802361618f32f77f5c ""
   (generated)
   "main.aux"
   "main.log"

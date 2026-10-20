@@ -1,4 +1,4 @@
-\begin{thebibliography}{28}
+\begin{thebibliography}{32}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -78,6 +78,21 @@ Matteo Hessel, Joseph Modayil, Hado van Hasselt, Tom Schaul, Georg Ostrovski,
 \newblock In \emph{Proceedings of the AAAI Conference on Artificial
   Intelligence}, volume~32, 2018.
 
+\bibitem[Holm(1979)]{holm1979simple}
+Sture Holm.
+\newblock A simple sequentially rejective multiple test procedure.
+\newblock \emph{Scandinavian Journal of Statistics}, 6\penalty0 (2):\penalty0
+  65--70, 1979.
+
+\bibitem[Jordan et~al.(2020)Jordan, Chandak, Cohen, Zhang, and
+  Thomas]{jordan2020evaluating}
+Scott~M. Jordan, Yash Chandak, Daniel Cohen, Mengxue Zhang, and Philip~S.
+  Thomas.
+\newblock Evaluating the performance of reinforcement learning algorithms.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+  Learning}, volume 119 of \emph{Proceedings of Machine Learning Research},
+  pages 4962--4973, 2020.
+
 \bibitem[Kingma and Ba(2015)]{kingma2015adam}
 Diederik~P. Kingma and Jimmy Ba.
 \newblock Adam: {A} method for stochastic optimization.
@@ -129,6 +144,13 @@ Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory
   library.
 \newblock In \emph{Advances in Neural Information Processing Systems},
   volume~32, 2019.
+
+\bibitem[Patterson et~al.(2024)Patterson, Neumann, White, and
+  White]{patterson2024empirical}
+Andrew Patterson, Samuel Neumann, Martha White, and Adam White.
+\newblock Empirical design in reinforcement learning.
+\newblock \emph{Journal of Machine Learning Research}, 25\penalty0
+  (318):\penalty0 1--63, 2024.
 
 \bibitem[Pretorius et~al.(2020)Pretorius, van Biljon, van Niekerk, Eloff,
   Reynard, James, Rosman, Kamper, and Kroon]{pretorius2020dropout}
@@ -192,6 +214,12 @@ Christopher J. C.~H. Watkins and Peter Dayan.
 Frank Wilcoxon.
 \newblock Individual comparisons by ranking methods.
 \newblock \emph{Biometrics Bulletin}, 1\penalty0 (6):\penalty0 80--83, 1945.
+
+\bibitem[Wilson(1927)]{wilson1927probable}
+Edwin~B. Wilson.
+\newblock Probable inference, the law of succession, and statistical inference.
+\newblock \emph{Journal of the American Statistical Association}, 22\penalty0
+  (158):\penalty0 209--212, 1927.
 
 \bibitem[Young and Tian(2019)]{young2019minatar}
 Kenny Young and Tian Tian.
