@@ -1,0 +1,230 @@
+\begin{thebibliography}{32}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Agarwal et~al.(2021)Agarwal, Schwarzer, Castro, Courville, and
+  Bellemare]{agarwal2021deep}
+Rishabh Agarwal, Max Schwarzer, Pablo~Samuel Castro, Aaron Courville, and Marc
+  Bellemare.
+\newblock Deep reinforcement learning at the edge of the statistical precipice.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~34, pages 29304--29320, 2021.
+
+\bibitem[Anschel et~al.(2017)Anschel, Baram, and Shimkin]{anschel2017averaged}
+Oron Anschel, Nir Baram, and Nahum Shimkin.
+\newblock Averaged-{DQN}: {V}ariance reduction and stabilization for deep
+  reinforcement learning.
+\newblock In \emph{Proceedings of the 34th International Conference on Machine
+  Learning}, volume~70 of \emph{Proceedings of Machine Learning Research},
+  pages 176--185, 2017.
+
+\bibitem[Colas et~al.(2018)Colas, Sigaud, and Oudeyer]{colas2018many}
+C{\'e}dric Colas, Olivier Sigaud, and Pierre-Yves Oudeyer.
+\newblock How many random seeds? {S}tatistical power analysis in deep
+  reinforcement learning experiments, 2018.
+\newblock arXiv:1806.08295.
+
+\bibitem[Dunn(1961)]{dunn1961multiple}
+Olive~Jean Dunn.
+\newblock Multiple comparisons among means.
+\newblock \emph{Journal of the American Statistical Association}, 56\penalty0
+  (293):\penalty0 52--64, 1961.
+
+\bibitem[Efron(1979)]{efron1979bootstrap}
+Bradley Efron.
+\newblock Bootstrap methods: {A}nother look at the jackknife.
+\newblock \emph{The Annals of Statistics}, 7\penalty0 (1):\penalty0 1--26,
+  1979.
+
+\bibitem[Fedus et~al.(2020)Fedus, Ramachandran, Agarwal, Bengio, Larochelle,
+  Rowland, and Dabney]{fedus2020revisiting}
+William Fedus, Prajit Ramachandran, Rishabh Agarwal, Yoshua Bengio, Hugo
+  Larochelle, Mark Rowland, and Will Dabney.
+\newblock Revisiting fundamentals of experience replay.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+  Learning}, volume 119 of \emph{Proceedings of Machine Learning Research},
+  pages 3061--3071, 2020.
+
+\bibitem[Fujimoto et~al.(2020)Fujimoto, Meger, and
+  Precup]{fujimoto2020equivalence}
+Scott Fujimoto, David Meger, and Doina Precup.
+\newblock An equivalence between loss functions and non-uniform sampling in
+  experience replay.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~33, pages 14219--14230, 2020.
+
+\bibitem[Henderson et~al.(2018)Henderson, Islam, Bachman, Pineau, Precup, and
+  Meger]{henderson2018deep}
+Peter Henderson, Riashat Islam, Philip Bachman, Joelle Pineau, Doina Precup,
+  and David Meger.
+\newblock Deep reinforcement learning that matters.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~32, 2018.
+
+\bibitem[Hernandez-Garcia and Sutton(2019)]{hernandezgarcia2019understanding}
+J.~Fernando Hernandez-Garcia and Richard~S. Sutton.
+\newblock Understanding multi-step deep reinforcement learning: {A} systematic
+  study of the {DQN} target, 2019.
+\newblock arXiv:1901.07510.
+
+\bibitem[Hessel et~al.(2018)Hessel, Modayil, van Hasselt, Schaul, Ostrovski,
+  Dabney, Horgan, Piot, Azar, and Silver]{hessel2018rainbow}
+Matteo Hessel, Joseph Modayil, Hado van Hasselt, Tom Schaul, Georg Ostrovski,
+  Will Dabney, Dan Horgan, Bilal Piot, Mohammad Azar, and David Silver.
+\newblock Rainbow: {C}ombining improvements in deep reinforcement learning.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~32, 2018.
+
+\bibitem[Holm(1979)]{holm1979simple}
+Sture Holm.
+\newblock A simple sequentially rejective multiple test procedure.
+\newblock \emph{Scandinavian Journal of Statistics}, 6\penalty0 (2):\penalty0
+  65--70, 1979.
+
+\bibitem[Jordan et~al.(2020)Jordan, Chandak, Cohen, Zhang, and
+  Thomas]{jordan2020evaluating}
+Scott~M. Jordan, Yash Chandak, Daniel Cohen, Mengxue Zhang, and Philip~S.
+  Thomas.
+\newblock Evaluating the performance of reinforcement learning algorithms.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+  Learning}, volume 119 of \emph{Proceedings of Machine Learning Research},
+  pages 4962--4973, 2020.
+
+\bibitem[Kingma and Ba(2015)]{kingma2015adam}
+Diederik~P. Kingma and Jimmy Ba.
+\newblock Adam: {A} method for stochastic optimization.
+\newblock In \emph{International Conference on Learning Representations}, 2015.
+\newblock arXiv:1412.6980.
+
+\bibitem[Lakens(2013)]{lakens2013calculating}
+Dani{\"e}l Lakens.
+\newblock Calculating and reporting effect sizes to facilitate cumulative
+  science: {A} practical primer for t-tests and {ANOVAs}.
+\newblock \emph{Frontiers in Psychology}, 4:\penalty0 863, 2013.
+
+\bibitem[Lin(1992)]{lin1992self}
+Long-Ji Lin.
+\newblock Self-improving reactive agents based on reinforcement learning,
+  planning and teaching.
+\newblock \emph{Machine Learning}, 8\penalty0 (3--4):\penalty0 293--321, 1992.
+
+\bibitem[Machado et~al.(2018)Machado, Bellemare, Talvitie, Veness, Hausknecht,
+  and Bowling]{machado2018revisiting}
+Marlos~C. Machado, Marc~G. Bellemare, Erik Talvitie, Joel Veness, Matthew
+  Hausknecht, and Michael Bowling.
+\newblock Revisiting the arcade learning environment: {E}valuation protocols
+  and open problems for general agents.
+\newblock \emph{Journal of Artificial Intelligence Research}, 61:\penalty0
+  523--562, 2018.
+
+\bibitem[Mnih et~al.(2015)Mnih, Kavukcuoglu, Silver, Rusu, Veness, Bellemare,
+  Graves, Riedmiller, Fidjeland, Ostrovski, et~al.]{mnih2015human}
+Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei~A. Rusu, Joel Veness,
+  Marc~G. Bellemare, Alex Graves, Martin Riedmiller, Andreas~K. Fidjeland,
+  Georg Ostrovski, et~al.
+\newblock Human-level control through deep reinforcement learning.
+\newblock \emph{Nature}, 518\penalty0 (7540):\penalty0 529--533, 2015.
+
+\bibitem[Obando-Ceron and Castro(2021)]{obandoceron2021revisiting}
+Johan~S. Obando-Ceron and Pablo~Samuel Castro.
+\newblock Revisiting {Rainbow}: {P}romoting more insightful and inclusive deep
+  reinforcement learning research.
+\newblock In \emph{Proceedings of the 38th International Conference on Machine
+  Learning}, volume 139 of \emph{Proceedings of Machine Learning Research},
+  pages 1373--1383, 2021.
+
+\bibitem[Paszke et~al.(2019)Paszke, Gross, Massa, Lerer, Bradbury, Chanan,
+  Killeen, Lin, Gimelshein, Antiga, et~al.]{paszke2019pytorch}
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory
+  Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et~al.
+\newblock {PyTorch}: {A}n imperative style, high-performance deep learning
+  library.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~32, 2019.
+
+\bibitem[Patterson et~al.(2024)Patterson, Neumann, White, and
+  White]{patterson2024empirical}
+Andrew Patterson, Samuel Neumann, Martha White, and Adam White.
+\newblock Empirical design in reinforcement learning.
+\newblock \emph{Journal of Machine Learning Research}, 25\penalty0
+  (318):\penalty0 1--63, 2024.
+
+\bibitem[Pretorius et~al.(2020)Pretorius, van Biljon, van Niekerk, Eloff,
+  Reynard, James, Rosman, Kamper, and Kroon]{pretorius2020dropout}
+Arnu Pretorius, Elan van Biljon, Benjamin van Niekerk, Ryan Eloff, Matthew
+  Reynard, Steve James, Benjamin Rosman, Herman Kamper, and Steve Kroon.
+\newblock If dropout limits trainable depth, does critical initialisation still
+  matter? {A} large-scale statistical analysis on {ReLU} networks.
+\newblock \emph{Pattern Recognition Letters}, 138:\penalty0 95--105, 2020.
+
+\bibitem[Rochon et~al.(2012)Rochon, Gondan, and Kieser]{rochon2012test}
+Justine Rochon, Matthias Gondan, and Meinhard Kieser.
+\newblock To test or not to test: {P}reliminary assessment of normality when
+  comparing two independent samples.
+\newblock \emph{BMC Medical Research Methodology}, 12:\penalty0 81, 2012.
+
+\bibitem[Schaul et~al.(2016)Schaul, Quan, Antonoglou, and
+  Silver]{schaul2016prioritized}
+Tom Schaul, John Quan, Ioannis Antonoglou, and David Silver.
+\newblock Prioritized experience replay.
+\newblock In \emph{International Conference on Learning Representations}, 2016.
+\newblock arXiv:1511.05952.
+
+\bibitem[Shapiro and Wilk(1965)]{shapiro1965analysis}
+S.~S. Shapiro and M.~B. Wilk.
+\newblock An analysis of variance test for normality (complete samples).
+\newblock \emph{Biometrika}, 52\penalty0 (3--4):\penalty0 591--611, 1965.
+
+\bibitem[Sutton and Barto(2018)]{sutton2018reinforcement}
+Richard~S. Sutton and Andrew~G. Barto.
+\newblock \emph{Reinforcement Learning: {A}n Introduction}.
+\newblock MIT Press, Cambridge, MA, USA, second edition, 2018.
+
+\bibitem[Tieleman and Hinton(2012)]{tieleman2012rmsprop}
+Tijmen Tieleman and Geoffrey Hinton.
+\newblock Lecture 6.5---{RMSProp}: {D}ivide the gradient by a running average
+  of its recent magnitude.
+\newblock COURSERA: Neural Networks for Machine Learning, 2012.
+
+\bibitem[Towers et~al.(2024)Towers, Kwiatkowski, Terry, Balis, De~Cola, Deleu,
+  Goul{\~a}o, Kallinteris, Krimmel, KG, et~al.]{towers2024gymnasium}
+Mark Towers, Ariel Kwiatkowski, Jordan Terry, John~U. Balis, Gianluca De~Cola,
+  Tristan Deleu, Manuel Goul{\~a}o, Andreas Kallinteris, Markus Krimmel, Arjun
+  KG, et~al.
+\newblock Gymnasium: {A} standard interface for reinforcement learning
+  environments, 2024.
+\newblock arXiv:2407.17032.
+
+\bibitem[van Hasselt et~al.(2016)van Hasselt, Guez, and
+  Silver]{vanhasselt2016deep}
+Hado van Hasselt, Arthur Guez, and David Silver.
+\newblock Deep reinforcement learning with double {Q}-learning.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~30, 2016.
+
+\bibitem[Watkins and Dayan(1992)]{watkins1992q}
+Christopher J. C.~H. Watkins and Peter Dayan.
+\newblock Technical note: {Q}-learning.
+\newblock \emph{Machine Learning}, 8\penalty0 (3--4):\penalty0 279--292, 1992.
+
+\bibitem[Wilcoxon(1945)]{wilcoxon1945individual}
+Frank Wilcoxon.
+\newblock Individual comparisons by ranking methods.
+\newblock \emph{Biometrics Bulletin}, 1\penalty0 (6):\penalty0 80--83, 1945.
+
+\bibitem[Wilson(1927)]{wilson1927probable}
+Edwin~B. Wilson.
+\newblock Probable inference, the law of succession, and statistical inference.
+\newblock \emph{Journal of the American Statistical Association}, 22\penalty0
+  (158):\penalty0 209--212, 1927.
+
+\bibitem[Young and Tian(2019)]{young2019minatar}
+Kenny Young and Tian Tian.
+\newblock {MinAtar}: {A}n {Atari}-inspired testbed for thorough and
+  reproducible reinforcement learning experiments, 2019.
+\newblock arXiv:1903.03176.
+
+\end{thebibliography}
