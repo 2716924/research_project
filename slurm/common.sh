@@ -76,7 +76,7 @@ rct_cd_project_root() {
 }
 
 rct_setup_cpu() {
-    source /etc/profile.d/lmod.sh 2>/dev/null || true
+    if [[ -r /etc/profile.d/lmod.sh ]]; then source /etc/profile.d/lmod.sh; fi
     module purge 2>/dev/null || true
     module load anaconda 2>/dev/null || true
 

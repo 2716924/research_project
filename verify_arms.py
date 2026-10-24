@@ -237,7 +237,8 @@ def main():
     # Include the regression that exposed PER's double exponent, paper-derived
     # target oracles, real MinAtar dispatch checks and strict resume protection.
     suite = unittest.TestSuite()
-    for pattern in ("test_algorithm_audit.py", "test_remaining_arms.py", "test_run_integrity.py", "test_cluster_tracking.py"):
+    for pattern in ("test_algorithm_audit.py", "test_remaining_arms.py", "test_run_integrity.py", "test_cluster_tracking.py",
+                    "test_followup.py"):
         suite.addTests(unittest.defaultTestLoader.discover(str(Path(__file__).parent / "tests"), pattern=pattern))
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     return 0 if result.wasSuccessful() else 1

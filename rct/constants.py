@@ -37,6 +37,46 @@ TRAINING_SETTINGS = {
     "averaged_snapshot_schedule": "target_sync_after_optimizer_step",
 }
 
+# Follow-up experiments only. "shared" is the RCT recipe above, unchanged.
+# "obando2021" is the DQN recipe of Obando-Ceron & Castro (2021) on MinAtar
+# (their Table 2 and the Dopamine JaxDQNAgent defaults): Adam (default betas)
+# with eps 3.125e-4, MSE loss, one gradient step every 4 frames, epsilon decayed
+# to 0.01. Its lr, buffer, batch, target period, epsilon decay length and
+# replay start stay per-individual config values (see REFERENCE_CONFIGS).
+RECIPES = {
+    "shared": TRAINING_SETTINGS,
+    "obando2021": {
+        **TRAINING_SETTINGS,
+        "epsilon_final": 0.01,
+        "optimizer": "Adam",
+        "optimizer_options": {"eps": 3.125e-4},
+        "update_period": 4,
+    },
+}
+
+# Their published MinAtar DQN configuration, expressed in our config keys.
+# The paper does not list the MinAtar network, so the MinAtar baseline network
+# (one hidden layer of 128 units; Young & Tian 2019) is used.
+REFERENCE_CONFIGS = {
+    "obando2021": {
+        "lr": 0.00025,
+        "buffer_capacity": 100000,
+        "batch_size": 32,
+        "target_update_freq": 1000,
+        "epsilon_decay_steps": 250000,
+        "num_layers": 1,
+        "replay_start_size": 1000,
+    },
+}
+
+# What evaluation does when a greedy episode reaches evaluation_max_episode_steps.
+# "raise" is the RCT protocol; "truncate" records the partial return instead
+# (used to keep Seaquest, where a submarine left on the surface never terminates).
+EVAL_LIMIT_BEHAVIORS = {
+    "raise": "raise_without_recording_partial_score",
+    "truncate": "truncate_and_record_partial_return",
+}
+
 # Five algorithmic arms in the RCT (Table 4.2).
 VARIANTS = ["control", "ddqn", "per", "nstep", "averaged"]
 

@@ -53,10 +53,24 @@ def train_individual(
     gamma=TRAINING_SETTINGS["gamma"],
     log_every=1000,
     metrics_callback=None,
+    settings=None,
+    eval_limit="raise",
+    eval_truncations=None,
 ):
-    """Train a single hyperparameter individual and return its eval trajectory."""
+    """Train a single hyperparameter individual and return its eval trajectory.
+
+    settings defaults to the shared RCT recipe (TRAINING_SETTINGS); follow-up
+    runs pass another entry of RECIPES. eval_limit and eval_truncations are
+    forwarded to evaluate_agent.
+    """
     if variant not in VARIANTS:
         raise ValueError(f"Unknown variant: {variant}")
+    settings = TRAINING_SETTINGS if settings is None else settings
+    if settings["loss"] != "mse":
+        raise ValueError(f"Unsupported loss: {settings['loss']}")
+    update_period = settings.get("update_period", 1)
+    if update_period < 1:
+        raise ValueError("update_period must be positive")
     if total_frames < 1 or eval_frequency < 1 or log_every < 1:
         raise ValueError("Frame budget and evaluation/logging intervals must be positive")
     config = individual["config"]
@@ -78,8 +92,11 @@ def train_individual(
     target_network.load_state_dict(q_network.state_dict())
     target_network.eval()
 
-    optimizer = optim.RMSprop(q_network.parameters(), lr=config["lr"],
-                             **TRAINING_SETTINGS["optimizer_options"])
+    optimizers = {"RMSprop": optim.RMSprop, "Adam": optim.Adam}
+    if settings["optimizer"] not in optimizers:
+        raise ValueError(f"Unsupported optimizer: {settings['optimizer']}")
+    optimizer = optimizers[settings["optimizer"]](q_network.parameters(), lr=config["lr"],
+                                                  **settings["optimizer_options"])
 
     n_step_collector = None
     target_ensemble = None
@@ -112,8 +129,8 @@ def train_individual(
     state, _ = train_env.reset(seed=seed)
     eval_trajectory = []
 
-    epsilon = TRAINING_SETTINGS["epsilon_initial"]
-    epsilon_min = TRAINING_SETTINGS["epsilon_final"]
+    epsilon = settings["epsilon_initial"]
+    epsilon_min = settings["epsilon_final"]
     epsilon_decay = (epsilon - epsilon_min) / config["epsilon_decay_steps"]
     replay_start_size = config["replay_start_size"]
 
@@ -157,7 +174,8 @@ def train_individual(
             epsilon = max(epsilon_min, epsilon - epsilon_decay)
 
             batch_size = config["batch_size"]
-            can_train = len(replay_buffer) > batch_size
+            # update_period 1 (the RCT recipe) trains on every frame.
+            can_train = len(replay_buffer) > batch_size and (frame + 1) % update_period == 0
 
             if can_train:
                 is_weights = None
@@ -259,7 +277,9 @@ def train_individual(
 
         if (frame + 1) % eval_frequency == 0:
             try:
-                mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes)
+                mean_score = evaluate_agent(q_network, game_id, num_episodes=num_eval_episodes,
+                                            max_episode_steps=settings["evaluation_max_episode_steps"],
+                                            on_limit=eval_limit, truncation_log=eval_truncations)
             except BaseException:
                 train_env.close()
                 raise

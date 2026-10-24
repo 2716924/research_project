@@ -8,13 +8,18 @@ from rct.constants import EVAL_SEEDS, TRAINING_SETTINGS
 
 
 def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS,
-                   max_episode_steps=TRAINING_SETTINGS["evaluation_max_episode_steps"]):
+                   max_episode_steps=TRAINING_SETTINGS["evaluation_max_episode_steps"],
+                   on_limit="raise", truncation_log=None):
     """
     Run greedy evaluation episodes (no exploration).
 
     Uses a fixed set of environment seeds so scores are comparable
-    across individuals and algorithm variants.
+    across individuals and algorithm variants. With on_limit="truncate", an
+    episode that reaches max_episode_steps ends there and keeps its partial
+    return; the number of such episodes is appended to truncation_log.
     """
+    if on_limit not in ("raise", "truncate"):
+        raise ValueError(f"Unknown evaluation limit behaviour: {on_limit}")
     if not 1 <= num_episodes <= len(eval_seeds):
         raise ValueError(
             f"Requested {num_episodes} eval episodes but only "
@@ -25,6 +30,7 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS,
 
     eval_env = gym.make(env_name)
     total_rewards = []
+    capped_episodes = 0
     _state_buf = None  # Lazily initialised, reused across episodes.
 
     was_training = q_network.training
@@ -40,6 +46,9 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS,
 
             while not done:
                 if episode_steps >= max_episode_steps:
+                    if on_limit == "truncate":
+                        capped_episodes += 1
+                        break
                     raise RuntimeError(
                         f"Evaluation episode exceeded {max_episode_steps} steps in {env_name} "
                         f"(seed {eval_seeds[i]}). No partial return was recorded. "
@@ -63,6 +72,8 @@ def evaluate_agent(q_network, env_name, num_episodes=10, eval_seeds=EVAL_SEEDS,
     finally:
         eval_env.close()
         q_network.train(was_training)
+    if truncation_log is not None:
+        truncation_log.append(capped_episodes)
     return np.mean(total_rewards)
 
 
