@@ -2,9 +2,9 @@
 
 import gymnasium as gym
 
-from rct.constants import GAMES, VARIANT_LABELS
+from rct.constants import GAMES, POPULATION_SPACE, VARIANT_LABELS
 from rct.evaluation import compute_auc
-from rct.results import build_metadata, load_existing_results, result_path, save_results
+from rct.results import build_metadata, load_existing_results, result_path, save_results, training_settings
 from rct.sampling import sample_individuals
 from rct.slurm_utils import should_stop_for_time_limit
 from rct.torch_setup import DEVICE
@@ -23,6 +23,10 @@ def execute_rct_trial(
     pilot=False,
     log_every=1000,
     tracking=None,
+    individual_ids=None,
+    config_overrides=None,
+    recipe="shared",
+    eval_limit="raise",
 ):
     """
     Train one RCT arm (control or treatment) across games and individuals.
@@ -30,6 +34,10 @@ def execute_rct_trial(
     Results are written to JSON files and can be resumed if a cluster job
     is interrupted. Text logging goes to stdout (captured by SLURM .out files),
     with optional W&B/JSONL metrics in a separate tracking directory.
+
+    Follow-up runs may train only the cohort members in individual_ids (each
+    keeps its own seed), replace config values with config_overrides, and use
+    another recipe or evaluation-limit behaviour (see rct.constants.RECIPES).
     """
     import os
 
@@ -46,7 +54,22 @@ def execute_rct_trial(
     tracking.validate()
     os.makedirs(output_dir, exist_ok=True)
     games = games if games is not None else GAMES
-    individuals = sample_individuals(num_individuals)
+    settings = training_settings(recipe, eval_limit)
+    unknown = set(config_overrides or {}) - set(POPULATION_SPACE)
+    if unknown:
+        raise ValueError(f"Unknown config override keys: {sorted(unknown)}")
+    if individual_ids is not None:
+        individual_ids = sorted(set(individual_ids))
+        if not individual_ids or individual_ids[0] < 0:
+            raise ValueError("individual_ids must be non-negative and non-empty")
+        selected = set(individual_ids)
+        individuals = [ind for ind in sample_individuals(individual_ids[-1] + 1)
+                       if ind["individual_id"] in selected]
+        num_individuals = len(individuals)
+    else:
+        individuals = sample_individuals(num_individuals)
+    for individual in individuals:
+        individual["config"] = {**individual["config"], **(config_overrides or {})}
 
     print(f"Variant: {VARIANT_LABELS[variant]}")
     print(f"Using device: {DEVICE}")
@@ -70,7 +93,8 @@ def execute_rct_trial(
 
         out_path = result_path(output_dir, variant, game_id)
         metadata = build_metadata(
-            variant, game_id, total_frames, eval_frequency, num_eval_episodes
+            variant, game_id, total_frames, eval_frequency, num_eval_episodes,
+            recipe=recipe, eval_limit=eval_limit, config_overrides=config_overrides,
         )
         game_results, completed_ids = load_existing_results(out_path, metadata, individuals)
 
@@ -80,11 +104,11 @@ def execute_rct_trial(
                 f"already completed for {game_id}"
             )
 
-        for individual in individuals:
+        for position, individual in enumerate(individuals, 1):
             j = individual["individual_id"]
 
             if j in completed_ids:
-                print(f"--- Skipping Individual {j + 1}/{num_individuals} (already done) ---")
+                print(f"--- Skipping Individual {position}/{num_individuals} (id {j}; already done) ---")
                 continue
 
             if should_stop_for_time_limit():
@@ -95,10 +119,11 @@ def execute_rct_trial(
                 stopped_early = True
                 break
 
-            print(f"\n--- Individual {j + 1}/{num_individuals} ---")
+            print(f"\n--- Individual {position}/{num_individuals} (id {j}) ---")
             print(f"Seed: {individual['seed']} | Settings: {individual['config']}")
 
             tracker = AttemptTracker(tracking, metadata, individual, pilot=pilot)
+            eval_truncations = [] if eval_limit == "truncate" else None
             try:
                 eval_trajectory, finished = train_individual(
                     variant=variant,
@@ -111,11 +136,14 @@ def execute_rct_trial(
                     num_eval_episodes=num_eval_episodes,
                     log_every=log_every,
                     metrics_callback=tracker.log if tracking.mode != "disabled" else None,
+                    settings=settings,
+                    eval_limit=eval_limit,
+                    eval_truncations=eval_truncations,
                 )
                 if not finished:
                     tracker.finish("interrupted")
                     print(
-                        f"Individual {j + 1} incomplete (time limit) — "
+                        f"Individual id {j} incomplete (time limit) — "
                         "progress saved only for completed individuals."
                     )
                     stopped_early = True
@@ -131,6 +159,9 @@ def execute_rct_trial(
                     "final_return": eval_trajectory[-1],
                     "attempt_id": tracker.attempt_id,
                 })
+                if eval_truncations is not None:
+                    # Episodes per checkpoint that hit the step limit (partial returns).
+                    game_results[-1]["eval_truncated_episodes"] = eval_truncations
                 # Only mark W&B complete after the authoritative result is saved.
                 save_results(out_path, metadata, game_results)
                 completed_ids.add(j)

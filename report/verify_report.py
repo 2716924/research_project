@@ -254,6 +254,9 @@ d_sig = sorted(abs(A[k]["dz"]) for k in sig)
 cv = {g: 100 * sd["control", g] / mean["control", g] for g in GAMES}
 best_lr_exceptions = sorted((a, g) for a in ARMS for g in GAMES if int(np.argmax(by_lr[a, g])) != 0)
 
+from minatar import Environment  # state shape is 10x10xn, n = number of object channels
+channels = {g: Environment(g).state_shape()[2] for g in ("breakout", "asterix", "freeway", "space_invaders")}
+
 quotes = {
     "abstract: Averaged per cent": "by " + ", ".join(f"{A[g, 'averaged']['pct']:.1f}" for g in GAMES[1:3]) + f" and {A['spaceinvaders', 'averaged']['pct']:.1f} per cent",
     "abstract: DDQN per cent": f"by {A['spaceinvaders', 'ddqn']['pct']:.1f} per cent",
@@ -297,6 +300,8 @@ quotes = {
     "last ten: five of nine": "five of the nine remain significant" if sum(T["last10"][k]["pt"] <= ALPHA for k in sig) == 5 else None,
     "final: only three": "only three do" if sum(T["final"][k]["pt"] <= ALPHA for k in sig) == 3 else None,
     "directions agree": "agree in direction with all nine" if all(np.sign(T[k][key]["pct"]) == np.sign(A[key]["pct"]) for k in ("last10", "final") for key in sig) else None,
+    "n-step Asterix pct CI below -100": f"for n-step DQN in Asterix it is [{A['asterix', 'nstep']['lo']:+.1f}\\%, {A['asterix', 'nstep']['hi']:+.1f}\\%]" if A['asterix', 'nstep']['lo'] < -100 else None,
+    "MinAtar channels": "n=4 in Breakout and Asterix, " + f"{channels['freeway']} in Freeway and {channels['space_invaders']} in Space Invaders" if channels['breakout'] == channels['asterix'] == 4 else None,
     "none become significant": "No comparison that was not significant on the AUC became significant" if not nonsig_become else None,
     "Shapiro 6 of 16": f"for {sum(r['ps'] < .05 for r in A.values())} of the 16 comparisons",
     "probability range": f"probability of {min(30 - A[g, 'averaged']['wins'] for g in GAMES[1:]) / 30:.2f} to {max(30 - A[g, 'averaged']['wins'] for g in GAMES[1:]) / 30:.2f}",

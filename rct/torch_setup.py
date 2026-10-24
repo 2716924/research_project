@@ -20,7 +20,9 @@ torch.backends.nnpack.enabled = False
 DEVICE = torch.device("cpu")
 
 # Thread configuration for CPU parallelism.
-_num_threads = int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1))
+# RCT_TORCH_THREADS lets several follow-up runs share one node.
+_num_threads = int(os.environ.get("RCT_TORCH_THREADS")
+                   or os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1))
 torch.set_num_threads(_num_threads)
 # Inter-op threads handle parallel independent ops; keep low to avoid contention.
 torch.set_num_interop_threads(min(2, _num_threads))

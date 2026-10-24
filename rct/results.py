@@ -9,7 +9,7 @@ from copy import deepcopy
 from importlib.metadata import version
 from pathlib import Path
 
-from rct.constants import EVAL_SEEDS, VARIANT_LABELS, TRAINING_SETTINGS, TREATMENT_DEFAULTS
+from rct.constants import EVAL_SEEDS, VARIANT_LABELS, TREATMENT_DEFAULTS
 
 
 def result_path(output_dir, variant, game_id):
@@ -53,10 +53,14 @@ def save_results(out_path, metadata, game_results):
     os.replace(tmp_path, out_path)
 
 
-def build_metadata(variant, game_id, total_frames, eval_frequency, num_eval_episodes):
+def build_metadata(variant, game_id, total_frames, eval_frequency, num_eval_episodes,
+                   recipe="shared", eval_limit="raise", config_overrides=None):
+    """Result-file header. Follow-up options are recorded only when they differ
+    from the RCT defaults, so default metadata keeps its original form."""
     import torch
 
-    return {
+    settings = training_settings(recipe, eval_limit)
+    metadata = {
         "variant": variant,
         "variant_label": VARIANT_LABELS[variant],
         "game_id": game_id,
@@ -66,7 +70,7 @@ def build_metadata(variant, game_id, total_frames, eval_frequency, num_eval_epis
         "eval_seeds": EVAL_SEEDS[:num_eval_episodes],
         "training_protocol": {
             "schema_version": 2,
-            "shared_settings": deepcopy(TRAINING_SETTINGS),
+            "shared_settings": deepcopy(settings),
             "treatment_settings": deepcopy(TREATMENT_DEFAULTS.get(variant, {})),
         },
         "provenance": {
@@ -79,6 +83,24 @@ def build_metadata(variant, game_id, total_frames, eval_frequency, num_eval_epis
             "package_versions": {name: version(name) for name in ("numpy", "torch", "gymnasium", "minatar")},
         },
     }
+    if recipe != "shared":
+        metadata["training_protocol"]["recipe"] = recipe
+    if config_overrides:
+        metadata["training_protocol"]["config_overrides"] = deepcopy(config_overrides)
+    return metadata
+
+
+def training_settings(recipe="shared", eval_limit="raise"):
+    """The recipe's shared settings with the chosen evaluation-limit behaviour."""
+    from rct.constants import EVAL_LIMIT_BEHAVIORS, RECIPES
+
+    if recipe not in RECIPES:
+        raise ValueError(f"Unknown recipe: {recipe}")
+    if eval_limit not in EVAL_LIMIT_BEHAVIORS:
+        raise ValueError(f"Unknown evaluation limit behaviour: {eval_limit}")
+    settings = deepcopy(RECIPES[recipe])
+    settings["evaluation_limit_behavior"] = EVAL_LIMIT_BEHAVIORS[eval_limit]
+    return settings
 
 
 def _validate_completed_results(results, metadata, individuals=None):

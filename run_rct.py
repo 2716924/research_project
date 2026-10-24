@@ -15,12 +15,13 @@ Examples:
 """
 
 import argparse
+import json
 import os
 import sys
 import subprocess
 from pathlib import Path
 
-from rct.constants import GAMES, VARIANTS, VARIANT_LABELS
+from rct.constants import EVAL_LIMIT_BEHAVIORS, GAMES, RECIPES, VARIANTS, VARIANT_LABELS
 from rct.trial import execute_rct_trial
 from rct.tracking import TrackingSettings
 
@@ -61,7 +62,20 @@ def main():
     parser.add_argument("--tracking-dir", default=None,
                         help="W&B data and attempt JSONL directory; defaults beside results")
     parser.add_argument("--experiment-id", default=os.environ.get("RCT_EXPERIMENT_ID", "local"))
+    # Follow-up experiments (followup.py); the defaults reproduce the RCT exactly.
+    parser.add_argument("--individual-ids", default=None,
+                        help="Comma-separated cohort members to train instead of 0..N-1")
+    parser.add_argument("--config-override", default=None,
+                        help="JSON object of config values replacing the sampled ones")
+    parser.add_argument("--recipe", choices=sorted(RECIPES), default="shared")
+    parser.add_argument("--eval-limit", choices=sorted(EVAL_LIMIT_BEHAVIORS), default="raise",
+                        help="On reaching the evaluation step limit: abort the run or keep the partial return")
     args = parser.parse_args()
+    individual_ids = ([int(x) for x in args.individual_ids.split(",")]
+                      if args.individual_ids else None)
+    config_override = json.loads(args.config_override) if args.config_override else None
+    followup = dict(individual_ids=individual_ids, config_overrides=config_override,
+                    recipe=args.recipe, eval_limit=args.eval_limit)
     tracking = TrackingSettings(
         mode=args.wandb_mode, project=args.wandb_project, entity=args.wandb_entity,
         directory=args.tracking_dir or str(Path(args.output_dir).resolve().parent / "tracking"),
@@ -89,6 +103,7 @@ def main():
             pilot=True,
             log_every=args.log_every,
             tracking=tracking,
+            **followup,
         )
     else:
         stopped_early = execute_rct_trial(
@@ -102,6 +117,7 @@ def main():
             pilot=False,
             log_every=args.log_every,
             tracking=tracking,
+            **followup,
         )
 
     if stopped_early:
