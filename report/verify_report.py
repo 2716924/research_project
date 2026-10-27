@@ -357,6 +357,11 @@ both = lambda g, a: A[g, a]["pt"] <= ALPHA and A[g, a]["pw"] <= ALPHA
 nstep_obando_low = sorted(i for i, x in rec["asterix"]["ratio_obando"].items() if x < .5)
 cfg7 = [data["control", "asterix"][i]["config"] for i in IDS]
 L = lambda g, s_, a, k: LOW[g, s_][a][k]
+rms = [json.loads(o) for o in {json.dumps(json.load(open(f))["training_protocol"]["shared_settings"]["optimizer_options"], sort_keys=True)
+       for f in glob.glob(str(ROOT / "Results/corrected-rct-01/results/*/*/*.json"))}]
+sys.path.insert(0, str(ROOT))
+from rct.constants import POPULATION_SPACE as _POP
+POP_LR = _POP["lr"]
 
 claims = {
     # main trial
@@ -377,7 +382,7 @@ claims = {
         and curve["averaged", "freeway"][-10:].mean() > max(curve[a, "freeway"][-10:].mean() for a in ARMS if a != "averaged"),
     "smallest lr best except n-step Asterix and Freeway": best_lr_exceptions == [("nstep", "asterix"), ("nstep", "freeway")],
     "n-step Freeway fails at 1e-4, better at larger rates": by_lr["nstep", "freeway"][0] < min(by_lr["nstep", "freeway"][1:]),
-    "lr effect exceeds treatment in 15 of 16, exception n-step Freeway": exceeds == [("freeway", "nstep")] and REG["freeway", "nstep"]["ratio"] > 1,
+    "lr effect exceeds treatment in 15 of 16, exception n-step Freeway": exceeds == [("freeway", "nstep")],
     "ratio scale: seven of nine, exceptions Averaged Asterix and DDQN SI (gains)": len(ratio_sig) == 7
         and ratio_lost == [("asterix", "averaged"), ("spaceinvaders", "ddqn")] and all(A[k]["pct"] > 0 for k in ratio_lost),
     "Holm and per-game Bonferroni give the same nine": holm_k == 9 and {k for k, r in A.items() if r["pt"] <= .0125} == sig,
@@ -414,6 +419,14 @@ claims = {
     "DDQN Asterix gain disappears at low lr": L("asterix", "", "ddqn", "pct") > 0 and all(L("asterix", s_, "ddqn", "pct") < 0 for s_ in ("1e-05", "3e-05")),
     "PER loses every configuration at both low rates in Asterix and Freeway": all(L(g, s_, "per", "wins") == 0 for g in ("asterix", "freeway") for s_ in ("1e-05", "3e-05")),
     "PER helps in Breakout at the smallest rate": L("breakout", "1e-05", "per", "pct") > 0 and L("breakout", "1e-05", "per", "wins") >= 6,
+    "PER level with DQN in Breakout at 1e-4, beats it on six of seven at 1e-5": abs(L("breakout", "", "per", "pct")) < 1 and L("breakout", "1e-05", "per", "wins") == 6,
+    "Averaged at 3e-5: 7/7 Freeway, 2 Asterix, 5 SI; at most five at 1e-5": L("freeway", "3e-05", "averaged", "wins") == 7
+        and L("asterix", "3e-05", "averaged", "wins") == 2 and L("spaceinvaders", "3e-05", "averaged", "wins") == 5
+        and max(L(g, "1e-05", "averaged", "wins") for g in GAMES) == 5,
+    "at 1e-5 n-step largely recovers in Breakout, Freeway, SI and PER in Breakout, SI; neither in Asterix, PER not in Freeway":
+        all(L(g, "1e-05", "nstep", "pct") > -10 for g in ("breakout", "freeway", "spaceinvaders"))
+        and all(L(g, "1e-05", "per", "pct") > -10 for g in ("breakout", "spaceinvaders"))
+        and all(L("asterix", "1e-05", a, "pct") < -15 for a in ("per", "nstep")) and L("freeway", "1e-05", "per", "pct") < -15,
     "n-step Freeway: far behind at 3e-5, nearly caught up at 1e-5": L("freeway", "3e-05", "nstep", "pct") < -50 and L("freeway", "1e-05", "nstep", "pct") > -15,
     "n-step ahead in Breakout and SI at both low rates, behind in Asterix": all(L(g, s_, "nstep", "pct") > 0 for g in ("breakout", "spaceinvaders") for s_ in ("1e-05", "3e-05"))
         and all(L("asterix", s_, "nstep", "pct") < 0 for s_ in ("1e-05", "3e-05")),
@@ -422,6 +435,10 @@ claims = {
     "Seaquest: no other arm has both tests": not any(SQ[a]["pt"] <= SQA and SQ[a]["pw"] <= SQA for a in ("ddqn", "per", "nstep")),
     "Seaquest: DDQN higher mean, wins half": SQ["ddqn"]["pct"] > 0 and SQ["ddqn"]["wins"] == 15,
     "Seaquest: n-step loses most, Wilcoxon detects, t-test does not": SQ["nstep"]["wins"] < 15 and SQ["nstep"]["pw"] <= SQA < SQ["nstep"]["pt"],
+    "Seaquest: DQN SD more than twice its mean; n-step AUCs uniformly small": SQ["control"]["sd"] > 2 * SQ["control"]["mean"]
+        and SQ["nstep"]["sd"] < 1 and SQ["nstep"]["mean"] < 1,
+    "main-trial RMSProp uses PyTorch defaults (decay 0.99, eps 1e-8, not centred)": rms == [{"alpha": 0.99, "eps": 1e-8, "momentum": 0.0, "centered": False}],
+    "learning-rate candidates do not include 2.5e-4": 2.5e-4 not in POP_LR and min(POP_LR) < 2.5e-4 < max(POP_LR),
     "Seaquest: Averaged capped least and scores highest": min(SQ, key=lambda a: SQ[a]["capped"]) == "averaged" == max(SQ, key=lambda a: SQ[a]["mean"]),
     "Seaquest: aborted in every arm in which it ran (n-step's job never started)": seaquest_aborted == ["averaged", "control", "ddqn", "per"]
         and "mkdir: Already exists" in nstep_sq_err and "exceeded 100000 steps" not in nstep_sq_err,
@@ -440,9 +457,13 @@ quotes = {
     "MinAtar channels": "n=4 in Breakout and Asterix, " + f"{channels['freeway']} in Freeway and {channels['space_invaders']} in Space Invaders" if channels['breakout'] == channels['asterix'] == 4 else None,
     "software versions": "(version 2.13) with the Gymnasium \\citep{towers2024gymnasium} interface to MinAtar (version 1.0.15)" if versions == {("2.13.0", "1.0.15")} else None,
     "Seaquest points": f"has {len(pts):,} evaluation points (150 runs of 100 checkpoints), and {len(pts_cap):,} of them contain at least one capped episode. Their mean return is {np.mean(pts_cap):.2f}, against {np.mean(pts_free):.2f}" if len(pts) == 15000 else None,
-    "obando recipe": "the Adam optimiser \\citep{kingma2015adam} (\\epsilon=3.125\\times10^{-4}), one gradient step every four frames, and a final exploration rate of 0.01" if sh["optimizer"] == "Adam" and sh["update_period"] == 4 and sh["epsilon_final"] == 0.01 and sh["loss"] == "mse" and sh["optimizer_options"] == {"eps": 3.125e-4} else None,
+    "obando recipe": "the Adam optimiser \\citep{kingma2015adam} (stabilising constant 3.125\\times10^{-4}), one gradient step every four frames, and a final exploration rate of 0.01" if sh["optimizer"] == "Adam" and sh["update_period"] == 4 and sh["epsilon_final"] == 0.01 and sh["loss"] == "mse" and sh["optimizer_options"] == {"eps": 3.125e-4} else None,
     "published configuration": "(learning rate 2.5\\times10^{-4}, replay capacity 10^5, batch 32, target period 1000, exploration decay over 250,000 frames, warm-up 1,000)",
     "15 of 16": "in 15 of the 16 comparisons; the exception is n-step DQN in Freeway",
+    "15 of 16 reason": f"geometric-mean ratio of {R['freeway', 'nstep']['gm']:.2f} (a {1 / R['freeway', 'nstep']['gm']:.1f}-fold drop, Table \\ref{{tab:ratio}}) is a larger effect than DQN's adjusted learning-rate ratio of {REG['freeway', 'control']['ratio']:.2f} (a {1 / REG['freeway', 'control']['ratio']:.2f}-fold drop)",
+    "PER SI low lr": f"from {L('spaceinvaders', '', 'per', 'pct'):.1f}\\% at 10^{{-4}} to {L('spaceinvaders', '1e-05', 'per', 'pct'):.1f}\\% at 10^{{-5}}",
+    "PER Breakout low lr": f"it was {L('breakout', '1e-05', 'per', 'pct'):.1f}\\% better at 10^{{-5}}",
+    "PER effective power": f"power {2 + .6 * (1 - .4):.2f}",
 }
 for what, s in quotes.items():
     check(s is not None and s in text, f"text: {what}" + ("" if s is not None else " (claim not supported by data)"))
