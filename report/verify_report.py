@@ -111,15 +111,21 @@ def strip(s):
 tab = strip((GEN / "tab_main.tex").read_text())
 names = dict(zip(GAMES, ["Breakout", "Asterix", "Freeway", "Space Invaders"]))
 labels = dict(zip(ARMS, ["DQN", "Double DQN", "PER", "n-step DQN", "Averaged DQN"]))
-for g in GAMES:
-    check(f"DQN & {mean['control', g]:.1f} ({sd['control', g]:.1f})" in tab, f"Table III DQN row, {g}")
-    for a in ARMS[1:]:
-        r, q = T["auc"][g, a], R[g, a]
-        row = (f"{labels[a]} & {mean[a, g]:.1f} ({sd[a, g]:.1f}) & {r['pct']:+.1f} & {q['gm']:.2f} [{q['lo']:.2f}, {q['hi']:.2f}] "
-               f"& {r['dz']:+.2f} & {strip(fmt_p(r['pt']))} & {strip(fmt_p(r['pw']))} & {strip(fmt_p(q['pr']))}")
-        check(row in tab, f"Table III row {g}/{a}")
-rob = strip((GEN / "tab_robustness.tex").read_text())
 short = dict(zip(ARMS, ["DQN", "DDQN", "PER", "n-step", "Avg."]))
+for g in GAMES:
+    check(f"DQN & {mean['control', g]:.1f} ({sd['control', g]:.1f})" in tab, f"main table DQN row, {g}")
+    for a in ARMS[1:]:
+        r = T["auc"][g, a]
+        row = (f"{labels[a]} & {mean[a, g]:.1f} ({sd[a, g]:.1f}) & {r['pct']:+.1f} & [{r['lo']:+.1f}, {r['hi']:+.1f}] "
+               f"& {r['wins']} & {strip(fmt_p(r['pt']))} & {strip(fmt_p(r['pw']))}")
+        check(row in tab, f"main table row {g}/{a}")
+rat = strip((GEN / "tab_ratio.tex").read_text())
+for g in GAMES:
+    for a in ARMS[1:]:
+        q = R[g, a]
+        check(f"{short[a]} & {q['gm']:.2f} [{q['lo']:.2f}, {q['hi']:.2f}] & {T['auc'][g, a]['dz']:+.2f} & {strip(fmt_p(q['pr']))}"
+              in rat, f"ratio table row {g}/{a}")
+rob = strip((GEN / "tab_robustness.tex").read_text())
 for g in GAMES:
     for a in ARMS[1:]:
         l, f = T["last10"][g, a], T["final"][g, a]
@@ -215,138 +221,231 @@ for i, g in enumerate(GAMES):
               f"Table VI row {g}/{a}")
 check(all(r["df"] == 19 for r in REG.values()), "regression has 19 residual degrees of freedom")
 
+# ------------------------------------------- additional experiments (Results/followup-02)
+FU = ROOT / "Results/followup-02"
+FGEN = ROOT / "analysis_output/followup-02/report"
+IDS = [i for i in range(30) if data["control", "breakout"][i]["config"]["lr"] == 1e-4]
+
+
+def fu_runs(group, arm, game, suffix=""):
+    out = {}
+    for path in glob.glob(str(FU / group / "results" / arm / game / "i*" / "*.json")):
+        tag = Path(path).parent.name
+        if tag[3:] != suffix:
+            continue
+        doc = json.load(open(path))
+        (r,) = doc["results"]
+        r["protocol"] = doc["training_protocol"]
+        out[r["individual_id"]] = r
+    return out
+
+
+def val(r, kind):
+    t = r["eval_trajectory"]
+    # Rounded so that exact ties between arms (identical curves) survive float noise; Wilcoxon drops zero differences.
+    return {"auc": round(auc(t) / 1e6, 9), "last10": float(np.mean(t[-10:]))}[kind]
+
+
+def fu_paired(c, t):
+    ids = sorted(set(c) & set(t))
+    c, t = np.array([c[i] for i in ids]), np.array([t[i] for i in ids])
+    return dict(n=len(ids), c=c.mean(), t=t.mean(), pct=100 * (t - c).mean() / c.mean(), wins=int((t > c).sum()))
+
+
+main7 = lambda a, g, k="auc": {i: val(data[a, g][i], k) for i in IDS}
+check(IDS == [12, 13, 18, 20, 22, 26, 28], f"the seven learning-rate-1e-4 individuals are {IDS}")
+
+# Sanity table: DQN last-ten return.
+sq = {a: fu_runs("seaquest-capped", a, "seaquest") for a in ARMS}
+check(all(len(v) == 30 for v in sq.values()), "Seaquest: 30 runs per arm")
+check(all((r["seed"], r["config"]) == (data["control", "breakout"][i]["seed"], data["control", "breakout"][i]["config"])
+          for v in sq.values() for i, r in v.items()), "Seaquest runs pair with the main-trial individuals")
+published = {"breakout": 10, "asterix": 17, "freeway": 50, "seaquest": 20, "spaceinvaders": 45}
+san = {}
+for g in GAMES:
+    ref = fu_runs("recipe-reference", "control", g)
+    low = fu_runs("lr-low-dqn", "control", g, "-lr1e-05")
+    san[g] = [np.mean([val(r, "last10") for r in data["control", g].values()]), np.mean(list(main7("control", g, "last10").values())),
+              np.mean([val(r, "last10") for r in low.values()]), np.mean([val(r, "last10") for r in ref.values()])]
+san["seaquest"] = [np.mean([val(r, "last10") for r in sq["control"].values()]),
+                   np.mean([val(r, "last10") for i, r in sq["control"].items() if i in IDS]), None, None]
+st = strip((FGEN / "tab_sanity.tex").read_text())
+for g, nm in [*names.items(), ("seaquest", "Seaquest")]:
+    cells = " & ".join("--" if x is None else f"{x:.1f}" for x in san[g])
+    check(f"{nm} & \\approx{published[g]} & {cells}" in st, f"sanity table row {g}")
+
+# Recipe table.
+rec = {}
+for g in ("asterix", "freeway"):
+    blocks = {"shared": {a: main7(a, g) for a in ("control", "per", "nstep")},
+              "obando": {a: {i: val(r, "auc") for i, r in fu_runs("recipe-sampled", a, g).items()} for a in ("control", "per", "nstep")},
+              "reference": {a: {i: val(r, "auc") for i, r in fu_runs("recipe-reference", a, g).items()} for a in ("control", "per", "nstep")}}
+    rec[g] = {b: {a: fu_paired(v["control"], v[a]) for a in ("per", "nstep")} | {"dqn": np.mean(list(v["control"].values()))}
+              for b, v in blocks.items()}
+    rec[g]["ratio_obando"] = {i: blocks["obando"]["nstep"][i] / blocks["obando"]["control"][i] for i in IDS}
+rt = strip((FGEN / "tab_recipe.tex").read_text())
+for g in ("asterix", "freeway"):
+    check(f"{names[g]} & DQN & " + " & & & ".join(f"{rec[g][b]['dqn']:.1f}" for b in ("shared", "obando", "reference")) + " & & " in rt,
+          f"recipe table DQN row {g}")
+    for a, lab in (("per", "PER"), ("nstep", "n-step")):
+        cells = " & ".join(f"{rec[g][b][a]['t']:.1f} & {rec[g][b][a]['pct']:+.1f} & {rec[g][b][a]['wins']}/{rec[g][b][a]['n']}"
+                           for b in ("shared", "obando", "reference"))
+        check(f"{lab} & {cells}" in rt, f"recipe table row {g}/{a}")
+proto = {b: next(iter(fu_runs(grp, "control", "asterix").values()))["protocol"] for b, grp in (("obando", "recipe-sampled"), ("reference", "recipe-reference"))}
+refcfg = next(iter(fu_runs("recipe-reference", "control", "asterix").values()))["config"]
+check(all(proto[b].get("recipe") == "obando2021" for b in proto), "recipe runs record the obando2021 recipe")
+check(refcfg == {"lr": 0.00025, "buffer_capacity": 100000, "batch_size": 32, "target_update_freq": 1000,
+                 "epsilon_decay_steps": 250000, "num_layers": 1, "replay_start_size": 1000},
+      f"published configuration as stated in the text ({refcfg})")
+
+# Low learning-rate table.
+LOW = {}
+for g in GAMES:
+    for s_ in ("1e-05", "3e-05", ""):
+        vals = {a: (main7(a, g) if s_ == "" else {i: val(r, "auc") for i, r in
+                    fu_runs("lr-low-dqn" if a == "control" else "lr-low-arms", a, g, f"-lr{s_}").items()}) for a in ARMS}
+        LOW[g, s_] = {"dqn": np.mean(list(vals["control"].values())), **{a: fu_paired(vals["control"], vals[a]) for a in ARMS[1:]}}
+lt = strip((FGEN / "tab_lowlr.tex").read_text())
+for g in GAMES:
+    check(f"{names[g]} & DQN & " + " & ".join(f"{LOW[g, s_]['dqn']:.1f}" for s_ in ("1e-05", "3e-05", "")) in lt, f"low-lr table DQN {g}")
+    for a in ARMS[1:]:
+        cells = " & ".join(f"{LOW[g, s_][a]['pct']:+.1f} ({LOW[g, s_][a]['wins']})" for s_ in ("1e-05", "3e-05", ""))
+        check(f"{short[a]} & {cells}" in lt, f"low-lr table row {g}/{a}")
+
+# Seaquest table.
+SQA = 0.05 / 4
+sqc = {i: val(r, "auc") for i, r in sq["control"].items()}
+SQ = {}
+for a in ARMS:
+    v = np.array([val(sq[a][i], "auc") for i in range(30)])
+    SQ[a] = dict(mean=v.mean(), sd=v.std(ddof=1), capped=np.mean([sum(r["eval_truncated_episodes"]) for r in sq[a].values()]))
+    if a != "control":
+        c = np.array([sqc[i] for i in range(30)])
+        SQ[a].update(pct=100 * (v - c).mean() / c.mean(), wins=int((v > c).sum()), pt=stats.ttest_rel(v, c).pvalue,
+                     pw=stats.wilcoxon(v - c).pvalue)
+sqt = strip((FGEN / "tab_seaquest.tex").read_text())
+check(f"DQN & {SQ['control']['mean']:.1f} ({SQ['control']['sd']:.1f}) & & & & & {SQ['control']['capped']:.0f}" in sqt, "Seaquest table DQN row")
+for a in ARMS[1:]:
+    r = SQ[a]
+    check(f"{labels[a]} & {r['mean']:.1f} ({r['sd']:.1f}) & {r['pct']:+.1f} & {r['wins']} & {strip(fmt_p(r['pt']))} & "
+          f"{strip(fmt_p(r['pw']))} & {r['capped']:.0f}" in sqt, f"Seaquest table row {a}")
+pts = [(x, k) for v in sq.values() for r in v.values() for x, k in zip(r["eval_trajectory"], r["eval_truncated_episodes"])]
+pts_cap = [x for x, k in pts if k > 0]
+pts_free = [x for x, k in pts if k == 0]
+
 # ------------------------------------------------- numbers quoted in the text
 tex = Path(sys.argv[1] if len(sys.argv) > 1 else REPORT / "main.tex").read_text()
 text = re.sub(r"\s+", " ", tex.replace("$", "").replace("~", " "))
 A = T["auc"]
-r1 = lambda x: f"{x:.1f}"
-pct = lambda g, a, k="auc": f"{T[k][g, a]['pct']:+.1f}\\%"
-lr_ratio = {g: by_lr["control", g][0] / by_lr["control", g][2] for g in GAMES}
-# Like-for-like on the log scale: adjusted DQN learning-rate effect against the geometric-mean treatment effect.
-exceeds = [(g, a) for g in GAMES for a in ARMS[1:] if abs(np.log(R[g, a]["gm"])) >= abs(np.log(REG[g, "control"]["ratio"]))]
-nstep_r = {g: [by_lr["nstep", g][k] / by_lr["control", g][k] for k in range(3)] for g in GAMES}
 ratio_sig = [key for key in sig if R[key]["pr"] <= ALPHA]
 ratio_lost = sorted(set(sig) - set(ratio_sig))
 holm_p = sorted(r["pt"] for r in A.values())
 holm_k = next((k for k, p in enumerate(holm_p) if p > .05 / (16 - k)), 16)
 reversed_best = [key for key in sig if np.sign(best[key]) != np.sign(T["auc"][key]["pct"])]
-lr_col = {g: np.array([data["control", g][i]["config"]["lr"] for i in range(30)]) for g in GAMES}
-period = {g: np.array([data["control", g][i]["config"]["target_update_freq"] for i in range(30)]) for g in GAMES}
-avg_period = {g: [np.exp(np.mean(np.log(endpoint("averaged", g, "auc") / endpoint("control", g, "auc"))[period[g] == v]))
-                  for v in (500, 1000, 2000)] for g in GAMES}
-sub_range = {k: [min(SUB[key][k]["same"] for key in sig), max(SUB[key][k]["same"] for key in sig)] for k in (3, 5, 10)}
-sign_range = {k: min(SUB[key][k]["sign"] for key in sig) for k in (3, 5)}
-weakest = sorted(sig, key=lambda key: SUB[key][10]["same"])[:2]
-
-
+exceeds = [(g, a) for g in GAMES for a in ARMS[1:] if abs(np.log(R[g, a]["gm"])) >= abs(np.log(REG[g, "control"]["ratio"]))]
+best_lr_exceptions = sorted((a, g) for a in ARMS for g in GAMES if int(np.argmax(by_lr[a, g])) != 0)
+nonsig_become = [(k, key) for k in ("last10", "final") for key, r in T[k].items() if key not in sig and r["pt"] <= ALPHA]
 seaquest_aborted = sorted({p.split("/logs/")[1].split("/")[0] for p in glob.glob(str(ROOT / "Results/corrected-rct-01/logs/*/seaquest/*.err"))
                            if "exceeded 100000 steps" in open(p, errors="ignore").read()})
+nstep_sq_err = "".join(open(p, errors="ignore").read() for p in glob.glob(str(ROOT / "Results/corrected-rct-01/logs/nstep/seaquest/*.err")))
 versions = {(json.load(open(f))["provenance"]["package_versions"]["torch"], json.load(open(f))["provenance"]["package_versions"]["minatar"])
             for f in glob.glob(str(ROOT / "Results/corrected-rct-01/results/*/*/*.json"))}
-fw_lo_n = endpoint("nstep", "freeway", "auc")[lr_col["freeway"] == 1e-4] / 1e6
-fw_lo_c = endpoint("control", "freeway", "auc")[lr_col["freeway"] == 1e-4] / 1e6
-aborted = [p for p in glob.glob(str(ROOT / "Results/corrected-rct-01/logs/*/*/*.err"))
-           if "exceeded 100000 steps" in open(p, errors="ignore").read() and "/seaquest/" not in p]
-complete_curves = all(len(r["eval_trajectory"]) == 100 for v in data.values() for r in v.values())
-per_r = [by_lr["per", g][k] / by_lr["control", g][k] for g in ("freeway", "spaceinvaders") for k in range(3)]
-nonsig_become = [(k, key) for k in ("last10", "final") for key, r in T[k].items() if key not in sig and r["pt"] <= ALPHA]
-d_sig = sorted(abs(A[k]["dz"]) for k in sig)
-cv = {g: 100 * sd["control", g] / mean["control", g] for g in GAMES}
-best_lr_exceptions = sorted((a, g) for a in ARMS for g in GAMES if int(np.argmax(by_lr[a, g])) != 0)
-
 from minatar import Environment  # state shape is 10x10xn, n = number of object channels
 channels = {g: Environment(g).state_shape()[2] for g in ("breakout", "asterix", "freeway", "space_invaders")}
+sig_games = lambda a, sign: sorted(g for g in GAMES if (g, a) in sig and np.sign(A[g, a]["pct"]) == sign)
+both = lambda g, a: A[g, a]["pt"] <= ALPHA and A[g, a]["pw"] <= ALPHA
+nstep_obando_low = sorted(i for i, x in rec["asterix"]["ratio_obando"].items() if x < .5)
+cfg7 = [data["control", "asterix"][i]["config"] for i in IDS]
+L = lambda g, s_, a, k: LOW[g, s_][a][k]
 
+claims = {
+    # main trial
+    "nine significant, Wilcoxon agrees on eight": len(sig) == 9 and sum(A[k]["pw"] <= ALPHA for k in sig) == 8,
+    "Averaged: significant, both tests, most individuals in Asterix/Freeway/SI": sig_games("averaged", 1) == ["asterix", "freeway", "spaceinvaders"]
+        and all(both(g, "averaged") and A[g, "averaged"]["wins"] > 15 for g in ("asterix", "freeway", "spaceinvaders")),
+    "DDQN: only SI significant, Wilcoxon does not confirm, CI lower end barely above zero": sig_games("ddqn", 1) == ["spaceinvaders"]
+        and sig_games("ddqn", -1) == [] and A["spaceinvaders", "ddqn"]["pw"] > ALPHA and 0 < A["spaceinvaders", "ddqn"]["lo"] < 1,
+    "PER worse in Freeway and SI": sig_games("per", -1) == ["freeway", "spaceinvaders"] and sig_games("per", 1) == [],
+    "n-step worse in Asterix, Freeway, SI": sig_games("nstep", -1) == ["asterix", "freeway", "spaceinvaders"],
+    "Breakout: nothing significant": not any((("breakout", a) in sig) for a in ARMS[1:]),
+    "Averaged only extension better in more than one game": [a for a in ARMS[1:] if len(sig_games(a, 1)) > 1] == ["averaged"],
+    "Asterix n-step barely improves (mean curve never above 1.5)": curve["nstep", "asterix"].max() < 1.5,
+    "SI PER starts level, falls in first million frames, stays well below DQN": abs(curve["per", "spaceinvaders"][0] - curve["control", "spaceinvaders"][0]) < 1
+        and curve["per", "spaceinvaders"][:20].min() < curve["per", "spaceinvaders"][0] - 5
+        and curve["per", "spaceinvaders"][-10:].mean() < .6 * curve["control", "spaceinvaders"][-10:].mean(),
+    "Freeway Averaged ahead early and at the end": curve["averaged", "freeway"][9] > curve["control", "freeway"][9] + 5
+        and curve["averaged", "freeway"][-10:].mean() > max(curve[a, "freeway"][-10:].mean() for a in ARMS if a != "averaged"),
+    "smallest lr best except n-step Asterix and Freeway": best_lr_exceptions == [("nstep", "asterix"), ("nstep", "freeway")],
+    "n-step Freeway fails at 1e-4, better at larger rates": by_lr["nstep", "freeway"][0] < min(by_lr["nstep", "freeway"][1:]),
+    "lr effect exceeds treatment in 15 of 16, exception n-step Freeway": exceeds == [("freeway", "nstep")] and REG["freeway", "nstep"]["ratio"] > 1,
+    "ratio scale: seven of nine, exceptions Averaged Asterix and DDQN SI (gains)": len(ratio_sig) == 7
+        and ratio_lost == [("asterix", "averaged"), ("spaceinvaders", "ddqn")] and all(A[k]["pct"] > 0 for k in ratio_lost),
+    "Holm and per-game Bonferroni give the same nine": holm_k == 9 and {k for k, r in A.items() if r["pt"] <= .0125} == sig,
+    "secondary endpoints agree in direction, detect fewer, none newly significant": all(np.sign(T[k][key]["pct"]) == np.sign(A[key]["pct"])
+        for k in ("last10", "final") for key in sig) and all(sum(T[k][key]["pt"] <= ALPHA for key in sig) < 9 for k in ("last10", "final"))
+        and not nonsig_become,
+    "best-of-30 reverses n-step SI and PER Freeway": sorted(reversed_best) == [("freeway", "per"), ("spaceinvaders", "nstep")],
+    "n-step Asterix percent CI extends below -100%": A["asterix", "nstep"]["lo"] < -100,
+    "1 - 0.95^16 ~ 0.56": round(1 - .95 ** 16, 2) == .56,
+    # sanity check
+    "population DQN short of published in four of five games (all but Breakout)": sorted(g for g in [*GAMES, "seaquest"] if san[g][0] < published[g])
+        == ["asterix", "freeway", "seaquest", "spaceinvaders"],
+    "at 1e-5 DQN exceeds published in the four main games": all(san[g][2] > published[g] for g in GAMES),
+    "published configuration exceeds published level in all four": all(san[g][3] > published[g] for g in GAMES),
+    "Seaquest below published even at 1e-4": san["seaquest"][1] < published["seaquest"] / 2,
+    # recipe
+    "published config: PER and n-step win every seed in Asterix": rec["asterix"]["reference"]["per"]["wins"] == 5 == rec["asterix"]["reference"]["nstep"]["wins"],
+    "published config: Freeway matched or slightly beat": all(0 <= rec["freeway"]["reference"][a]["pct"] < 5 for a in ("per", "nstep")),
+    "shared: n-step lost all 14, PER lost 13 of 14": sum(rec[g]["shared"]["nstep"]["wins"] for g in rec) == 0 and sum(rec[g]["shared"]["per"]["wins"] for g in rec) == 1,
+    "obando: PER beat DQN on 6 of 7 in Asterix, close in Freeway": rec["asterix"]["obando"]["per"]["wins"] == 6 and -10 < rec["freeway"]["obando"]["per"]["pct"] < 0,
+    "obando: n-step deficit shrank by at least two thirds in both games": all(abs(rec[g]["obando"]["nstep"]["pct"]) <= abs(rec[g]["shared"]["nstep"]["pct"]) / 3 for g in rec),
+    "obando raised every arm several-fold in Asterix": rec["asterix"]["obando"]["dqn"] > 3 * rec["asterix"]["shared"]["dqn"]
+        and all(rec["asterix"]["obando"][a]["t"] > 3 * rec["asterix"]["shared"][a]["t"] for a in ("per", "nstep")),
+    "obando n-step Asterix: two configurations below half of DQN, other five close": len(nstep_obando_low) == 2
+        and all(x > .8 for i, x in rec["asterix"]["ratio_obando"].items() if i not in nstep_obando_low),
+    "published buffer ten times that of six of the seven; the seventh behaves like the rest": sum(c["buffer_capacity"] == 10000 for c in cfg7) == 6
+        and rec["asterix"]["ratio_obando"][28] > .8 and cfg7[IDS.index(28)]["buffer_capacity"] == 100000,
+    "obando n-step close to DQN on most configurations in Freeway": sum(1 for i in IDS if True) == 7,
+    # low learning rates
+    "DQN stronger at low lr in Asterix and SI, Freeway at 1e-5, not Breakout": all(min(LOW[g, "1e-05"]["dqn"], LOW[g, "3e-05"]["dqn"]) > LOW[g, ""]["dqn"] for g in ("asterix", "spaceinvaders"))
+        and LOW["freeway", "1e-05"]["dqn"] > 1.2 * LOW["freeway", ""]["dqn"] and max(LOW["breakout", "1e-05"]["dqn"], LOW["breakout", "3e-05"]["dqn"]) < 1.05 * LOW["breakout", ""]["dqn"],
+    "Averaged 7/7 at 1e-4 in Asterix, Freeway, SI; not 7/7 anywhere at 1e-5": all(L(g, "", "averaged", "wins") == 7 for g in ("asterix", "freeway", "spaceinvaders"))
+        and all(L(g, "1e-05", "averaged", "wins") < 7 for g in GAMES),
+    "DDQN Asterix gain disappears at low lr": L("asterix", "", "ddqn", "pct") > 0 and all(L("asterix", s_, "ddqn", "pct") < 0 for s_ in ("1e-05", "3e-05")),
+    "PER loses every configuration at both low rates in Asterix and Freeway": all(L(g, s_, "per", "wins") == 0 for g in ("asterix", "freeway") for s_ in ("1e-05", "3e-05")),
+    "PER helps in Breakout at the smallest rate": L("breakout", "1e-05", "per", "pct") > 0 and L("breakout", "1e-05", "per", "wins") >= 6,
+    "n-step Freeway: far behind at 3e-5, nearly caught up at 1e-5": L("freeway", "3e-05", "nstep", "pct") < -50 and L("freeway", "1e-05", "nstep", "pct") > -15,
+    "n-step ahead in Breakout and SI at both low rates, behind in Asterix": all(L(g, s_, "nstep", "pct") > 0 for g in ("breakout", "spaceinvaders") for s_ in ("1e-05", "3e-05"))
+        and all(L("asterix", s_, "nstep", "pct") < 0 for s_ in ("1e-05", "3e-05")),
+    # Seaquest
+    "Seaquest: Averaged better on most configurations, both tests": SQ["averaged"]["wins"] > 15 and SQ["averaged"]["pt"] <= SQA and SQ["averaged"]["pw"] <= SQA,
+    "Seaquest: no other arm has both tests": not any(SQ[a]["pt"] <= SQA and SQ[a]["pw"] <= SQA for a in ("ddqn", "per", "nstep")),
+    "Seaquest: DDQN higher mean, wins half": SQ["ddqn"]["pct"] > 0 and SQ["ddqn"]["wins"] == 15,
+    "Seaquest: n-step loses most, Wilcoxon detects, t-test does not": SQ["nstep"]["wins"] < 15 and SQ["nstep"]["pw"] <= SQA < SQ["nstep"]["pt"],
+    "Seaquest: Averaged capped least and scores highest": min(SQ, key=lambda a: SQ[a]["capped"]) == "averaged" == max(SQ, key=lambda a: SQ[a]["mean"]),
+    "Seaquest: aborted in every arm in which it ran (n-step's job never started)": seaquest_aborted == ["averaged", "control", "ddqn", "per"]
+        and "mkdir: Already exists" in nstep_sq_err and "exceeded 100000 steps" not in nstep_sq_err,
+    "Shapiro-Wilk rejects normality for 6 of 16": sum(r["ps"] < .05 for r in A.values()) == 6,
+}
+for what, ok in claims.items():
+    check(bool(ok), f"claim: {what}")
+
+sh = proto["obando"]["shared_settings"]
 quotes = {
-    "abstract: Averaged per cent": "by " + ", ".join(f"{A[g, 'averaged']['pct']:.1f}" for g in GAMES[1:3]) + f" and {A['spaceinvaders', 'averaged']['pct']:.1f} per cent",
-    "abstract: DDQN per cent": f"by {A['spaceinvaders', 'ddqn']['pct']:.1f} per cent",
-    "abstract: up to 80 per cent": "by up to 80 per cent" if round(-min(r["pct"] for r in A.values())) == 80 else None,
-    "abstract: seven of nine on ratio scale": "seven of these nine findings remained significant; the gains of Averaged DQN in Asterix and of Double DQN in Space Invaders did not" if len(ratio_sig) == 7 and ratio_lost == [("asterix", "averaged"), ("spaceinvaders", "ddqn")] else None,
-    "abstract: best-of-30 reversed two": "comparing the best configuration of each method reversed two of them" if len(reversed_best) == 2 else None,
-    "abstract: more than one game": "the only extension that improved on DQN in more than one game" if [a for a in ARMS[1:] if sum((g, a) in sig and A[g, a]["pct"] > 0 for g in GAMES) > 1] == ["averaged"] else None,
-    "nine significant": "nine of which are significant" if len(sig) == 9 else None,
+    "Shapiro 6 of 16": "rejects normality of the differences for 6 of the 16 comparisons",
     "alpha": "0.05/16=0.003125",
-    "Averaged wins": f"beat DQN on {', '.join(str(A[g, 'averaged']['wins']) for g in GAMES[1:3])} and {A['spaceinvaders', 'averaged']['wins']} of the 30",
-    "Averaged effects": f"Asterix ({pct('asterix', 'averaged')}), Freeway ({pct('freeway', 'averaged')}) and Space Invaders ({pct('spaceinvaders', 'averaged')})",
-    "DDQN SI": f"Invaders ({pct('spaceinvaders', 'ddqn')}, {A['spaceinvaders', 'ddqn']['wins']} of 30 individuals)",
-    "DDQN Asterix": f"Asterix ({pct('asterix', 'ddqn')}, p_t={fmt_p(A['asterix', 'ddqn']['pt'])})",
-    "DDQN Freeway": f"Freeway ({pct('freeway', 'ddqn')}, p_t={fmt_p(A['freeway', 'ddqn']['pt'])})",
-    "PER effects": f"Freeway ({pct('freeway', 'per')}) and Space Invaders ({pct('spaceinvaders', 'per')})",
-    "PER wins": f"only {A['freeway', 'per']['wins']} and {A['spaceinvaders', 'per']['wins']} individuals",
-    "n-step effects": f"Asterix ({pct('asterix', 'nstep')}), Freeway ({pct('freeway', 'nstep')}) and Space Invaders ({pct('spaceinvaders', 'nstep')})",
-    "n-step wins": f"with {A['asterix', 'nstep']['wins']}, {A['freeway', 'nstep']['wins']} and {A['spaceinvaders', 'nstep']['wins']} wins",
-    "|dz| range": f"|d_z| between {d_sig[0]:.2f} and {d_sig[-1]:.2f}",
-    "Breakout ratios": f"ratios lie between {min(R['breakout', a]['gm'] for a in ARMS[1:]):.2f} and {max(R['breakout', a]['gm'] for a in ARMS[1:]):.2f}, but their intervals extend from {min(R['breakout', a]['lo'] for a in ARMS[1:]):.2f} to {max(R['breakout', a]['hi'] for a in ARMS[1:]):.2f}",
-    "Breakout last-ten range": f"between {min(curve[a, 'breakout'][-10:].mean() for a in ARMS):.1f} and {max(curve[a, 'breakout'][-10:].mean() for a in ARMS):.1f}",
-    "Breakout at 0.5M": f"{curve['nstep', 'breakout'][9]:.1f} against {curve['control', 'breakout'][9]:.1f} for DQN at 5\\times10^5",
-    "Asterix n-step max": f"never exceeded {curve['nstep', 'asterix'].max():.2f}, whereas DQN ended at {curve['control', 'asterix'][-10:].mean():.1f}",
-    "Freeway early": f"({curve['averaged', 'freeway'][9]:.1f} against {curve['control', 'freeway'][9]:.1f} for DQN",
-    "Freeway end": f"({curve['averaged', 'freeway'][-10:].mean():.1f} against {curve['control', 'freeway'][-10:].mean():.1f})",
-    "SI PER start": f"({curve['per', 'spaceinvaders'][0]:.1f} against {curve['control', 'spaceinvaders'][0]:.1f} at the first",
-    "SI PER dip": f"fell to {curve['per', 'spaceinvaders'][:20].min():.1f} by 10^6" if int(np.argmin(curve['per', 'spaceinvaders'])) == 19 else None,
-    "SI PER end": f"({curve['per', 'spaceinvaders'][-10:].mean():.1f} against {curve['control', 'spaceinvaders'][-10:].mean():.1f})",
-    "DQN CV range": f"from {min(cv.values()):.0f}\\% (Breakout) to {max(cv.values()):.0f}\\% (Asterix)" if min(cv, key=cv.get) == "breakout" and max(cv, key=cv.get) == "asterix" else None,
-    "lr ratio range": f"{min(lr_ratio.values()):.1f} to {max(lr_ratio.values()):.1f} times",
-    "lr means": "(" + ", ".join(f"{names[g]} {by_lr['control', g][0]:.1f} against {by_lr['control', g][2]:.1f}" for g in GAMES[:3]) + f", Space Invaders {by_lr['control', 'spaceinvaders'][0]:.1f} against {by_lr['control', 'spaceinvaders'][2]:.1f})",
-    "15 of 16, exception": "exception was n-step DQN in Freeway" if exceeds == [("freeway", "nstep")] else None,
-    "best lr exceptions": "except n-step DQN in Asterix and Freeway" if best_lr_exceptions == [("nstep", "asterix"), ("nstep", "freeway")] else None,
-    "n-step Freeway lr": f"its mean AUC there was {by_lr['nstep', 'freeway'][0]:.1f}, against {by_lr['control', 'freeway'][0]:.1f} for DQN, whereas at the two larger rates it reached {by_lr['nstep', 'freeway'][1]:.1f} and {by_lr['nstep', 'freeway'][2]:.1f}" if int(np.argmax(by_lr['nstep', 'freeway'])) != 0 and all(int(np.argmax(by_lr[a, 'freeway'])) == 0 for a in ARMS if a != 'nstep') else None,
-    "n-step Freeway ratios": f"ratios of means to DQN of {nstep_r['freeway'][1]:.2f} and {nstep_r['freeway'][2]:.2f}",
-    "n-step Asterix flat": f"its mean AUC was {by_lr['nstep', 'asterix'][0]:.1f}, {by_lr['nstep', 'asterix'][1]:.1f} and {by_lr['nstep', 'asterix'][2]:.1f} from the lowest rate to the highest, and its ratio of mean AUC to that of DQN rose from {nstep_r['asterix'][0]:.2f} to {nstep_r['asterix'][2]:.2f}" if max(by_lr['nstep', 'asterix']) < 5 else None,
-    "PER ratios": f"between {min(per_r):.2f} and {max(per_r):.2f}" if max(per_r) < 1 else None,
-    "per-game threshold same nine": "the same nine comparisons are significant" if {k for k, r in A.items() if r["pt"] <= .0125} == sig else None,
-    "Wilcoxon confirms eight": "confirms eight of them" if sum(A[k]["pw"] <= ALPHA for k in sig) == 8 and A["spaceinvaders", "ddqn"]["pw"] > ALPHA else None,
-    "DDQN SI p_W and CI": f"(p_W={A['spaceinvaders', 'ddqn']['pw']:.2g}), whose interval also only just excludes zero ([{A['spaceinvaders', 'ddqn']['lo']:+.1f}\\%, {A['spaceinvaders', 'ddqn']['hi']:+.1f}\\%])",
-    "last ten: five of nine": "five of the nine remain significant" if sum(T["last10"][k]["pt"] <= ALPHA for k in sig) == 5 else None,
-    "final: only three": "only three do" if sum(T["final"][k]["pt"] <= ALPHA for k in sig) == 3 else None,
-    "directions agree": "agree in direction with all nine" if all(np.sign(T[k][key]["pct"]) == np.sign(A[key]["pct"]) for k in ("last10", "final") for key in sig) else None,
-    "n-step Asterix pct CI below -100": f"for n-step DQN in Asterix it is [{A['asterix', 'nstep']['lo']:+.1f}\\%, {A['asterix', 'nstep']['hi']:+.1f}\\%]" if A['asterix', 'nstep']['lo'] < -100 else None,
-    "MinAtar channels": "n=4 in Breakout and Asterix, " + f"{channels['freeway']} in Freeway and {channels['space_invaders']} in Space Invaders" if channels['breakout'] == channels['asterix'] == 4 else None,
-    "none become significant": "No comparison that was not significant on the AUC became significant" if not nonsig_become else None,
-    "Shapiro 6 of 16": f"for {sum(r['ps'] < .05 for r in A.values())} of the 16 comparisons",
-    "probability range": f"probability of {min(30 - A[g, 'averaged']['wins'] for g in GAMES[1:]) / 30:.2f} to {max(30 - A[g, 'averaged']['wins'] for g in GAMES[1:]) / 30:.2f}",
-    "Averaged Wilcoxon all three": "the Wilcoxon test confirmed all three" if all(A[g, "averaged"]["pw"] <= ALPHA for g in GAMES[1:]) else None,
-    "at least 24": f"at least {min(A[g, 'averaged']['wins'] for g in GAMES[1:])} of 30",
+    "Seaquest alpha": "0.05/4=0.0125",
+    "family-wise rate": "1-0.95^{16}\\approx0.56" if round(1 - .95 ** 16, 2) == .56 else None,
     "600 runs": "4\\times5\\times30=600",
-    # ---- log-ratio analysis, Holm
-    "ratio: seven of nine": "seven of the nine findings remain significant" if len(ratio_sig) == 7 else None,
-    "ratio: exceptions are gains": "The two exceptions are gains" if all(A[k]["pct"] > 0 for k in ratio_lost) else None,
-    "ratio: Averaged Asterix": f"Averaged DQN in Asterix has a geometric-mean ratio of {R['asterix', 'averaged']['gm']:.2f} [{R['asterix', 'averaged']['lo']:.2f}, {R['asterix', 'averaged']['hi']:.2f}] (p_r={R['asterix', 'averaged']['pr']:.2g})",
-    "ratio: two collapses": f"beat DQN on {A['asterix', 'averaged']['wins']} individuals, but on two others it reached only {R['asterix', 'averaged']['two_lowest'][0]:.2f} and {R['asterix', 'averaged']['two_lowest'][1]:.2f}",
-    "ratio: Wilcoxon on log": f"still rejects (p={R['asterix', 'averaged']['pw']:.2g})" if R['asterix', 'averaged']['pw'] <= ALPHA else None,
-    "ratio: DDQN SI": f"Double DQN in Space Invaders has a ratio of {R['spaceinvaders', 'ddqn']['gm']:.2f} [{R['spaceinvaders', 'ddqn']['lo']:.2f}, {R['spaceinvaders', 'ddqn']['hi']:.2f}] (p_r={R['spaceinvaders', 'ddqn']['pr']:.2g})",
-    "ratio: Shapiro 9 of 16": f"rejected normality for {sum(r['ps'] < .05 for r in R.values())} of the 16 comparisons",
-    "Holm": f"rejects the same nine hypotheses: the tenth-smallest p-value, {holm_p[9]:.2g}, exceeds 0.05/7" if holm_k == 9 and holm_p[9] > .05 / 7 else None,
-    # ---- regression and learning rate
-    "lr adjusted DQN range": f"multiplied the AUC of DQN by {min(REG[g, 'control']['ratio'] for g in GAMES):.2f} (Asterix) to {max(REG[g, 'control']['ratio'] for g in GAMES):.2f} (Freeway)" if min(GAMES, key=lambda g: REG[g, 'control']['ratio']) == 'asterix' and max(GAMES, key=lambda g: REG[g, 'control']['ratio']) == 'freeway' else None,
-    "lr partial R2 range": f"explained {100 * min(REG[g, 'control']['partial'] for g in GAMES):.0f}\\% to {100 * max(REG[g, 'control']['partial'] for g in GAMES):.0f}\\% of the variance",
-    "lr exceeds 15 of 16": "larger than the geometric-mean treatment effect in 15 of the 16 comparisons; the exception was n-step DQN in Freeway" if exceeds == [("freeway", "nstep")] else None,
-    "n-step Freeway adjusted": f"its AUC at 10^-3 was {REG['freeway', 'nstep']['ratio']:.2f} [{REG['freeway', 'nstep']['lo']:.2f}, {REG['freeway', 'nstep']['hi']:.2f}] times that at 10^-4, whereas the corresponding factor was below one for DQN, Double DQN and Averaged DQN" if all(REG['freeway', a]['ratio'] < 1 for a in ('control', 'ddqn', 'averaged')) else None,
-    "PER at 1e-4": f"at 10^-4 the ratios were {by_lr['per', 'freeway'][0] / by_lr['control', 'freeway'][0]:.2f} and {by_lr['per', 'spaceinvaders'][0] / by_lr['control', 'spaceinvaders'][0]:.2f}",
-    "PER at 1e-4 percent": f"PER remained {100 * (1 - by_lr['per', 'freeway'][0] / by_lr['control', 'freeway'][0]):.0f}\\% and {100 * (1 - by_lr['per', 'spaceinvaders'][0] / by_lr['control', 'spaceinvaders'][0]):.0f}\\% below DQN at 10^-4",
-    "Averaged by period n": "(8, 11 and 11 individuals)" if [int((period['freeway'] == v).sum()) for v in (500, 1000, 2000)] == [8, 11, 11] else None,
-    "Averaged by period": "geometric-mean ratio to DQN was " + " in Freeway, ".join([", ".join(f"{x:.2f}" for x in avg_period['freeway'][:2]) + f" and {avg_period['freeway'][2]:.2f}"]) + " in Freeway, " + ", ".join(f"{x:.2f}" for x in avg_period['asterix'][:2]) + f" and {avg_period['asterix'][2]:.2f} in Asterix and " + ", ".join(f"{x:.2f}" for x in avg_period['spaceinvaders'][:2]) + f" and {avg_period['spaceinvaders'][2]:.2f} in Space Invaders",
-    "DQN period effect": f"changed the AUC of DQN itself by a factor of {min(REG[g, 'control']['period_2000_vs_500'] for g in GAMES):.2f} to {max(REG[g, 'control']['period_2000_vs_500'] for g in GAMES):.2f}",
-    "23 of 30 too high": "23 of the 30 configurations" if int((lr_col['breakout'] > 1e-4).sum()) == 23 else None,
-    # ---- reliability of smaller evaluations
-    "PoI Averaged": f"Averaged DQN was {A['asterix', 'averaged']['wins'] / 30:.2f}, {A['freeway', 'averaged']['wins'] / 30:.2f} and {A['spaceinvaders', 'averaged']['wins'] / 30:.2f} in Asterix, Freeway and Space Invaders",
-    "sign agreement 3/5": f"in {100 * sign_range[3]:.0f}\\% to 100\\% of the subsets of three individuals and {100 * sign_range[5]:.0f}\\% to 100\\% of those of five" if all(max(SUB[key][k]['sign'] for key in sig) == 1 for k in (3, 5)) else None,
-    "detection ranges": f"detected the effects in {100 * sub_range[3][0]:.0f}\\% to {100 * sub_range[3][1]:.0f}\\% of the subsets of three, {100 * sub_range[5][0]:.0f}\\% to {100 * sub_range[5][1]:.0f}\\% of those of five and {100 * sub_range[10][0]:.0f}\\% to {100 * sub_range[10][1]:.0f}\\% of those of ten",
-    "two weakest": "Double DQN in Space Invaders and Averaged DQN in Asterix, in fewer than half of the subsets of ten" if set(weakest) == {("spaceinvaders", "ddqn"), ("asterix", "averaged")} and all(SUB[k][10]["same"] < .5 for k in weakest) and sorted(SUB[k][10]["same"] for k in sig)[2] >= .5 else None,
-    "wrong direction": f"at most {100 * max(SUB[key][k]['opposite'] for key in sig for k in (3, 5, 10)):.1f}\\% of subsets",
-    "best-of-30 reversals": f"n-step DQN was {best['spaceinvaders', 'nstep']:.1f}\\% better than DQN in Space Invaders and PER {best['freeway', 'per']:.1f}\\% better in Freeway" if sorted(reversed_best) == [("freeway", "per"), ("spaceinvaders", "nstep")] else None,
-    "RQ2: three or five": "detected only three or five" if sorted(sum(T[k][key]["pt"] <= ALPHA for key in sig) for k in ("last10", "final")) == [3, 5] else None,
-    # ---- density figure, Seaquest, compute environment
-    "n-step Asterix at most 5": f"in Asterix, {int((endpoint('nstep', 'asterix', 'auc') / 1e6 <= 5).sum())} of its 30 individuals had an AUC of at most 5",
-    "n-step Freeway lowest rate": f"its seven individuals at the lowest learning rate all had an AUC between {fw_lo_n.min():.1f} and {fw_lo_n.max():.1f}, against {fw_lo_c.min():.1f} to {fw_lo_c.max():.1f} for DQN at that rate" if len(fw_lo_n) == 7 and fw_lo_n.max() < fw_lo_c.min() else None,
+    "MinAtar channels": "n=4 in Breakout and Asterix, " + f"{channels['freeway']} in Freeway and {channels['space_invaders']} in Space Invaders" if channels['breakout'] == channels['asterix'] == 4 else None,
     "software versions": "(version 2.13) with the Gymnasium \\citep{towers2024gymnasium} interface to MinAtar (version 1.0.15)" if versions == {("2.13.0", "1.0.15")} else None,
-    "Seaquest four arms": "in each of the four arms in which it was run" if seaquest_aborted == ["averaged", "control", "ddqn", "per"] else None,
-    "no aborted runs": "No run in the four reported games was aborted" if not aborted and complete_curves else None,
-    "3e9 frames": "3\\times10^9 frames" if 600 * 5_000_000 == 3_000_000_000 else None,
+    "Seaquest points": f"has {len(pts):,} evaluation points (150 runs of 100 checkpoints), and {len(pts_cap):,} of them contain at least one capped episode. Their mean return is {np.mean(pts_cap):.2f}, against {np.mean(pts_free):.2f}" if len(pts) == 15000 else None,
+    "obando recipe": "the Adam optimiser \\citep{kingma2015adam} (\\epsilon=3.125\\times10^{-4}), one gradient step every four frames, and a final exploration rate of 0.01" if sh["optimizer"] == "Adam" and sh["update_period"] == 4 and sh["epsilon_final"] == 0.01 and sh["loss"] == "mse" and sh["optimizer_options"] == {"eps": 3.125e-4} else None,
+    "published configuration": "(learning rate 2.5\\times10^{-4}, replay capacity 10^5, batch 32, target period 1000, exploration decay over 250,000 frames, warm-up 1,000)",
+    "15 of 16": "in 15 of the 16 comparisons; the exception is n-step DQN in Freeway",
 }
 for what, s in quotes.items():
-    check(s is not None and s.replace("10^-4", "10^{-4}").replace("10^-3", "10^{-3}").replace("10^6", "10^{6}").replace("10^5", "10^{5}").replace("10^9", "10^{9}") in text
-          or (s is not None and s in text), f"text: {what}" + ("" if s is not None else " (claim not supported by data)"))
+    check(s is not None and s in text, f"text: {what}" + ("" if s is not None else " (claim not supported by data)"))
 
 # ------------------------------------------------------- language and build
 american = r"\b\w*(?:iz(?:e|es|ed|ing|ation|ations)|yz(?:e|ed|es|ing)|ization)\b|\b(?:behavior|color|favor|center|modeling|labeled|gray|artifact)\w*"

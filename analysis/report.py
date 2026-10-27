@@ -205,22 +205,36 @@ def fmt_pct(x):
 
 
 def table_main(res):
+    """Primary analysis only: paired t-test on the AUC, with the Wilcoxon test as the one sensitivity check."""
     rows = []
     for g in GAMES:
         d = res["desc"][g]
-        rows.append(rf"{NAMES[g]} & DQN & {d['control']['mean']:.1f} ({d['control']['sd']:.1f}) "
-                    r"& & & & & & \\")
+        rows.append(rf"{NAMES[g]} & DQN & {d['control']['mean']:.1f} ({d['control']['sd']:.1f}) & & & & & \\")
         for a in TREATMENTS:
-            r, q = res["tests"]["auc"][g][a], res["ratio"][g][a]
+            r = res["tests"]["auc"][g][a]
             rows.append(rf" & {LABELS[a]} & {d[a]['mean']:.1f} ({d[a]['sd']:.1f}) & {fmt_pct(r['pct'])} "
-                        rf"& ${q['ratio']:.2f}$ $[{q['low']:.2f}, {q['high']:.2f}]$ & ${r['dz']:+.2f}$ "
-                        rf"& {fmt_p(r['p_t'], r['p_t'] <= ALPHA)} & {fmt_p(r['p_w'], r['p_w'] <= ALPHA)} "
-                        rf"& {fmt_p(q['p_r'], q['p_r'] <= ALPHA)} \\")
+                        rf"& $[{r['ci_low_pct']:+.1f}, {r['ci_high_pct']:+.1f}]$ & {r['wins']} "
+                        rf"& {fmt_p(r['p_t'], r['p_t'] <= ALPHA)} & {fmt_p(r['p_w'], r['p_w'] <= ALPHA)} \\")
         rows.append(r"\midrule")
     rows[-1] = r"\bottomrule"
-    head = (r"\begin{tabular}{llrrrrrrr}" "\n" r"\toprule" "\n"
-            r"Game & Arm & AUC & $\Delta$ (\%) & Ratio (99.69\% CI) & $d_z$ & $p_t$ & $p_W$ & $p_r$ \\" "\n"
+    head = (r"\begin{tabular}{llrrrrrr}" "\n" r"\toprule" "\n"
+            r"Game & Arm & AUC & $\Delta$ (\%) & 99.69\% CI (\%) & Wins & $p_t$ & $p_W$ \\" "\n"
             r"\midrule")
+    return "\n".join([head, *rows, r"\end{tabular}"]) + "\n"
+
+
+def table_ratio(res):
+    """Appendix: geometric-mean AUC ratio, standardised effect and the one-sample t-test of the log ratios."""
+    rows = []
+    for g in GAMES:
+        for k, a in enumerate(TREATMENTS):
+            r, q = res["tests"]["auc"][g][a], res["ratio"][g][a]
+            rows.append(rf"{NAMES[g] if k == 0 else ''} & {SHORT[a]} & ${q['ratio']:.2f}$ "
+                        rf"$[{q['low']:.2f}, {q['high']:.2f}]$ & ${r['dz']:+.2f}$ & {fmt_p(q['p_r'], q['p_r'] <= ALPHA)} \\")
+        rows.append(r"\midrule")
+    rows[-1] = r"\bottomrule"
+    head = (r"\begin{tabular}{llrrr}" "\n" r"\toprule" "\n"
+            r"Game & Arm & Ratio (99.69\% CI) & $d_z$ & $p_r$ \\" "\n" r"\midrule")
     return "\n".join([head, *rows, r"\end{tabular}"]) + "\n"
 
 
@@ -425,6 +439,7 @@ def main():
     res = analyse(data)
     (OUT / "numbers.json").write_text(json.dumps(res, indent=1, default=float))
     (OUT / "tab_main.tex").write_text(table_main(res))
+    (OUT / "tab_ratio.tex").write_text(table_ratio(res))
     (OUT / "tab_robustness.tex").write_text(table_robustness(res))
     (OUT / "tab_population.tex").write_text(table_population(res))
     (OUT / "tab_reliability.tex").write_text(table_reliability(res))

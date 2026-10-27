@@ -1,0 +1,11 @@
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Arm & AUC & $\Delta$ (\%) & Wins & $p_t$ & $p_W$ & Capped \\
+\midrule
+DQN & 7.2 (17.8) & & & & & 207 \\
+Double DQN & 11.5 (23.2) & $+58.9$ & 15 & $0.019$ & $0.38$ & 340 \\
+PER & 3.0 (3.1) & $-58.8$ & 11 & $0.15$ & $0.14$ & 237 \\
+$n$-step DQN & 0.8 (0.6) & $-89.3$ & 7 & $0.052$ & $\mathbf{3.5\times10^{-5}}$ & 252 \\
+Averaged DQN & 13.3 (20.5) & $+84.3$ & 26 & $\mathbf{0.0066}$ & $\mathbf{9.9\times10^{-5}}$ & 77 \\
+\bottomrule
+\end{tabular}
