@@ -9,8 +9,8 @@ The groups and the code that trained them are in `provenance/FOLLOWUP_README.md`
 | `recipe-sampled` | 42 | complete (23 Oct 2026) | DQN/PER/n-step on Asterix + Freeway under the Obando-Ceron & Castro (2021) recipe, on the 7 individuals with lr 1e-4 |
 | `recipe-reference` | 40 | complete (23 Oct 2026) | Their published MinAtar DQN configuration, seeds 1337–1341 (positive control) |
 | `lr-low-dqn` | 56 | complete (24 Oct 2026) | DQN on the same 7 individuals at lr 3e-5 and 1e-5 |
-| `seaquest-capped` | 150 | not yet run | All arms × 30 individuals on Seaquest; greedy episodes cut at 100k steps |
-| `lr-low-arms` | 224 | not yet run | The four treatments at lr 3e-5 and 1e-5 |
+| `seaquest-capped` | 150 | complete (archived 27 Oct 2026) | All arms × 30 individuals on Seaquest; greedy episodes cut at 100k steps |
+| `lr-low-arms` | 224 | complete (archived 27 Oct 2026) | The four treatments at lr 3e-5 and 1e-5 |
 
 Current coverage: `.venv/bin/python followup.py status --root $PWD/Results/followup-02` (from the repo root).
 
@@ -46,7 +46,7 @@ the sampled individuals 0–4. `.row.lock` files are empty locks written by `fol
 
 Files were moved, never edited, merged or deleted. `scripts/archive_followup.py move` checksums every file
 before and after its move and appends it to `tables/file_moves.csv`; first batch: 1,625 files from
-`dist/followup/followup/` on 24 Oct 2026, cross-checked against an independent `shasum -a 256` manifest
+`dist/followup/followup/` on 24 Oct 2026; second batch: 4,303 files from `followup/` on 27 Oct 2026, cross-checked against an independent `shasum -a 256` manifest
 taken before the move. Re-check at any time:
 
 ```sh

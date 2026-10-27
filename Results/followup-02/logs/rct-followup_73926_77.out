@@ -1,0 +1,28 @@
+Job end time: 1792933047 (stop 900s before)
+
+Using Python: /home-mscluster/mkhosa/.conda/envs/mltest/bin/python
+Python 3.11.14
+
+W&B:         0.26.1
+Environment check passed.
+Python:      3.11.14
+Executable:  /home-mscluster/mkhosa/.conda/envs/mltest/bin/python
+Torch:       2.13.0+cu130
+Device:      CPU (GPU disabled)
+CUDA visible devices: 
+
+############################################################
+#  RCT FOLLOW-UP — array task 77
+#  Started:     2026-10-24 12:58:37 UTC
+#  Job ID:      73931  Node: mscluster138.ms.wits.ac.za  Partition: batch
+#  Experiment:  /home-mscluster/mkhosa/dist/followup/experiments/followup-02
+#  Rows:        304 305 306 307  (3 torch threads each, 12 cores)
+#  Resubmits:   0 so far (max 3)
+############################################################
+Row 304: exit 0 (log logs/rct-followup/rows/row304_73931.log)
+Row 305: exit 0 (log logs/rct-followup/rows/row305_73931.log)
+Row 306: exit 0 (log logs/rct-followup/rows/row306_73931.log)
+Row 307: exit 0 (log logs/rct-followup/rows/row307_73931.log)
+Task 77 finished at Sat Oct 24 07:08:38 PM UTC 2026 with exit 0
+Unfinished rows: none
+All rows of task 77 are complete.

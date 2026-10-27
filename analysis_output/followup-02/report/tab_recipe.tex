@@ -1,0 +1,15 @@
+\begin{tabular}{@{}llrrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{Shared recipe, 7 configurations} & \multicolumn{3}{c}{Obando-Ceron--Castro recipe, same 7} & \multicolumn{3}{c@{}}{Published configuration, 5 seeds} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(l){9-11}
+Game & Arm & AUC & $\Delta$ (\%) & Wins & AUC & $\Delta$ (\%) & Wins & AUC & $\Delta$ (\%) & Wins \\
+\midrule
+Asterix & DQN & 35.1 &  &  & 170.6 &  &  & 145.9 &  &  \\
+ & PER & 23.1 & $-34.1$ & 1/7 & 195.0 & $+14.3$ & 6/7 & 187.3 & $+28.4$ & 5/5 \\
+ & $n$-step & 3.0 & $-91.5$ & 0/7 & 127.7 & $-25.1$ & 0/7 & 175.7 & $+20.4$ & 5/5 \\
+\midrule
+Freeway & DQN & 205.4 &  &  & 280.3 &  &  & 281.5 &  &  \\
+ & PER & 145.4 & $-29.2$ & 0/7 & 266.2 & $-5.0$ & 0/7 & 283.5 & $+0.7$ & 4/5 \\
+ & $n$-step & 16.1 & $-92.2$ & 0/7 & 256.4 & $-8.5$ & 5/7 & 291.5 & $+3.6$ & 5/5 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,16 @@
+{"time":"2026-10-24T12:58:33.658542585Z","level":"INFO","msg":"main: starting server","port-filename":"/tmp/tmpy8r3nluq/port-35780.txt","pid":35780,"detached":false,"idle-timeout":600000000000,"log-level":0,"disable-analytics":false,"shutdown-on-parent-exit":false,"enable-dcgm-profiling":false}
+{"time":"2026-10-24T12:58:33.658838689Z","level":"INFO","msg":"server: will exit if parent process dies","ppid":35780}
+{"time":"2026-10-24T12:58:33.658831108Z","level":"INFO","msg":"server: accepting connections","addr":{"Name":"/tmp/wandb-35780-36100-2451476095/socket","Net":"unix"}}
+{"time":"2026-10-24T12:58:33.815678154Z","level":"INFO","msg":"connection: ManageConnectionData: new connection created","id":"1(@)"}
+{"time":"2026-10-24T12:58:33.82575436Z","level":"INFO","msg":"handleInformInit: received","streamId":"5c6843fdfeda428892128a427f6f3097","id":"1(@)"}
+{"time":"2026-10-24T12:58:33.934219028Z","level":"INFO","msg":"handleInformInit: stream started","streamId":"5c6843fdfeda428892128a427f6f3097","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.281568672Z","level":"INFO","msg":"handleInformFinish: finish message received","streamId":"5c6843fdfeda428892128a427f6f3097","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.285609211Z","level":"INFO","msg":"handleInformFinish: stream closed","streamId":"5c6843fdfeda428892128a427f6f3097","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286323383Z","level":"INFO","msg":"handleInformTeardown: server teardown initiated","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286371269Z","level":"INFO","msg":"server is shutting down"}
+{"time":"2026-10-24T21:13:15.286380301Z","level":"INFO","msg":"handleInformTeardown: server shutdown complete","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286400774Z","level":"INFO","msg":"connection: closing","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286465866Z","level":"INFO","msg":"server: listener closed","addr":{"Name":"/tmp/wandb-35780-36100-2451476095/socket","Net":"unix"}}
+{"time":"2026-10-24T21:13:15.286506617Z","level":"INFO","msg":"connection: closed successfully","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286536944Z","level":"INFO","msg":"connection: ManageConnectionData: connection closed","id":"1(@)"}
+{"time":"2026-10-24T21:13:15.286562758Z","level":"INFO","msg":"server is closed"}
