@@ -416,6 +416,8 @@ claims = {
         and LOW["freeway", "1e-05"]["dqn"] > 1.2 * LOW["freeway", ""]["dqn"] and max(LOW["breakout", "1e-05"]["dqn"], LOW["breakout", "3e-05"]["dqn"]) < 1.05 * LOW["breakout", ""]["dqn"],
     "Averaged 7/7 at 1e-4 in Asterix, Freeway, SI; not 7/7 anywhere at 1e-5": all(L(g, "", "averaged", "wins") == 7 for g in ("asterix", "freeway", "spaceinvaders"))
         and all(L(g, "1e-05", "averaged", "wins") < 7 for g in GAMES),
+    "DDQN significant only in SI; Asterix gain not significant": sig_games("ddqn", 1) == ["spaceinvaders"] and A["asterix", "ddqn"]["pt"] > ALPHA,
+    "DQN not stronger at low lr in Breakout (so 'in most games')": max(LOW["breakout", s_]["dqn"] for s_ in ("1e-05", "3e-05")) < 1.05 * LOW["breakout", ""]["dqn"],
     "DDQN Asterix gain disappears at low lr": L("asterix", "", "ddqn", "pct") > 0 and all(L("asterix", s_, "ddqn", "pct") < 0 for s_ in ("1e-05", "3e-05")),
     "PER loses every configuration at both low rates in Asterix and Freeway": all(L(g, s_, "per", "wins") == 0 for g in ("asterix", "freeway") for s_ in ("1e-05", "3e-05")),
     "PER helps in Breakout at the smallest rate": L("breakout", "1e-05", "per", "pct") > 0 and L("breakout", "1e-05", "per", "wins") >= 6,
@@ -443,6 +445,13 @@ claims = {
     "Seaquest: aborted in every arm in which it ran (n-step's job never started)": seaquest_aborted == ["averaged", "control", "ddqn", "per"]
         and "mkdir: Already exists" in nstep_sq_err and "exceeded 100000 steps" not in nstep_sq_err,
     "Shapiro-Wilk rejects normality for 6 of 16": sum(r["ps"] < .05 for r in A.values()) == 6,
+    # framing added for the supervisor's 2026-10-28 feedback
+    "Averaged improves in three of four games": len(sig_games("averaged", 1)) == 3,
+    "PER and n-step are the only harmful arms (so 'the most harmful additions')": [a for a in ARMS[1:] if sig_games(a, -1)] == ["per", "nstep"],
+    "evidence table: PER and n-step deficits confirmed by both tests": all(both(g, "per") for g in sig_games("per", -1))
+        and all(both(g, "nstep") for g in sig_games("nstep", -1)) and all(both(g, "averaged") for g in sig_games("averaged", 1)),
+    "three learning rates span one decade, roughly log-centred on 2.5e-4": sorted(POP_LR) == [1e-4, 5e-4, 1e-3]
+        and abs(np.log10(np.sqrt(min(POP_LR) * max(POP_LR))) - np.log10(2.5e-4)) < .15,
 }
 for what, ok in claims.items():
     check(bool(ok), f"claim: {what}")
@@ -460,10 +469,14 @@ quotes = {
     "obando recipe": "the Adam optimiser \\citep{kingma2015adam} (stabilising constant 3.125\\times10^{-4}), one gradient step every four frames, and a final exploration rate of 0.01" if sh["optimizer"] == "Adam" and sh["update_period"] == 4 and sh["epsilon_final"] == 0.01 and sh["loss"] == "mse" and sh["optimizer_options"] == {"eps": 3.125e-4} else None,
     "published configuration": "(learning rate 2.5\\times10^{-4}, replay capacity 10^5, batch 32, target period 1000, exploration decay over 250,000 frames, warm-up 1,000)",
     "15 of 16": "in 15 of the 16 comparisons; the exception is n-step DQN in Freeway",
-    "15 of 16 reason": f"geometric-mean ratio of {R['freeway', 'nstep']['gm']:.2f} (a {1 / R['freeway', 'nstep']['gm']:.1f}-fold drop, Table \\ref{{tab:ratio}}) is a larger effect than DQN's adjusted learning-rate ratio of {REG['freeway', 'control']['ratio']:.2f} (a {1 / REG['freeway', 'control']['ratio']:.2f}-fold drop)",
+    "15 of 16 reason": f"geometric-mean ratio of {R['freeway', 'nstep']['gm']:.2f} (Table \\ref{{tab:ratio}}) lies further below one than DQN's adjusted learning-rate ratio of {REG['freeway', 'control']['ratio']:.2f}",
+    "DDQN SI low lr": f"it went from +{L('spaceinvaders', '', 'ddqn', 'pct'):.1f}\\% at 10^{{-4}} to +{L('spaceinvaders', '3e-05', 'ddqn', 'pct'):.1f}\\% at 3\\times10^{{-5}} and {L('spaceinvaders', '1e-05', 'ddqn', 'pct'):.1f}\\% at 10^{{-5}}",
     "PER SI low lr": f"from {L('spaceinvaders', '', 'per', 'pct'):.1f}\\% at 10^{{-4}} to {L('spaceinvaders', '1e-05', 'per', 'pct'):.1f}\\% at 10^{{-5}}",
     "PER Breakout low lr": f"it was {L('breakout', '1e-05', 'per', 'pct'):.1f}\\% better at 10^{{-5}}",
     "PER effective power": f"power {2 + .6 * (1 - .4):.2f}",
+    "Averaged three of four (abstract and conclusion)": "Averaged DQN improved on DQN in three of four games" if len(sig_games("averaged", 1)) == 3 else None,
+    "lr range log-centred": "span one order of magnitude and are roughly centred, on a logarithmic scale",
+    "DQN better at smaller rates in three of four": "in three of the four games, DQN did better at smaller rates",
 }
 for what, s in quotes.items():
     check(s is not None and s in text, f"text: {what}" + ("" if s is not None else " (claim not supported by data)"))

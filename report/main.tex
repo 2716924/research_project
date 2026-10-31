@@ -23,7 +23,7 @@
 
 \title{INVESTIGATING DEEP Q-LEARNING
 MODIFICATIONS WITH RANDOMISED
-CONTROLLED TRIALS}
+CONTROL TRIALS}
 
 \author{\IEEEauthorblockN{Matimu Khosa}
 \IEEEauthorblockA{\textit{School of Computer Science}\\
@@ -47,25 +47,27 @@ Johannesburg, South Africa}}
 \maketitle
 
 \begin{abstract}
-Extensions to the deep Q-network (DQN) are usually evaluated with their own tuned hyperparameters and a handful of
-random seeds, so a reported gain may belong to the configuration rather than to the extension. We test four
-extensions, namely Double DQN, prioritised experience replay (PER), multi-step returns and Averaged DQN, in a paired
-randomised controlled trial on the MinAtar suite. Thirty hyperparameter configurations were sampled from a shared
-population, and every configuration was trained with DQN and with each extension, so that each extension is compared
-with DQN on exactly the same configuration and seed. The outcome is the area under the evaluation curve, a measure of
-sample efficiency. Under one shared training recipe, and in a population whose learning rates mostly lie above the
-best rate for DQN, Averaged DQN was the only extension that improved on DQN in more than one game, Double DQN helped
-little, and PER and multi-step returns were harmful, which contradicts earlier component studies. Three smaller,
-exploratory experiments suggest why. With the training recipe and configuration of an earlier MinAtar study, PER and
-multi-step returns matched or beat DQN, as that study reported, which suggests that the harm comes from our recipe
-rather than from the implementations. Lowering the learning rate made DQN much stronger and removed most of the
-advantage of Averaged DQN, which suggests that Averaged DQN mainly stabilises updates that are too large. The results
-also show that evaluations based on one checkpoint, a few configurations or the best configuration of each method can
-miss or even reverse these effects.
+Extensions to the deep Q-network (DQN) are usually evaluated with their own training recipe, their own tuned
+hyperparameters and a handful of random seeds, so a reported gain may belong to the setting rather than to the
+extension. We test four extensions, namely Double DQN, prioritised experience replay (PER), multi-step returns and
+Averaged DQN, in a paired randomised control trial on the MinAtar suite. Thirty hyperparameter configurations were
+sampled from a shared population, and every configuration was trained with DQN and with each extension, so that each
+extension is compared with DQN on exactly the same configuration and seed. The outcome is the area under the
+evaluation curve, a measure of sample efficiency. Our central finding is that the apparent benefit of an extension
+depends strongly on the training recipe and the hyperparameters it is tested with. Under one shared recipe, in a
+population whose learning rates mostly lie above the best rate for DQN, Averaged DQN improved on DQN in three of four
+games, Double DQN helped little, and PER and multi-step returns reduced performance, unlike in earlier component
+studies that used different recipes. Smaller, exploratory experiments suggest why. With the recipe and configuration
+of an earlier MinAtar study, our PER and multi-step agents matched or beat DQN, as that study reported, and lowering
+the learning rate made DQN much stronger in most games and removed most of Averaged DQN's advantage. These experiments
+point to an interaction between the optimiser, the learning rate and the extension, although they do not isolate its
+cause. Evaluations based on one checkpoint, a few configurations or the best configuration of each method would have
+missed or even reversed some of these effects. Conclusions about which DQN extensions matter should therefore be read
+as conditional on the recipe and configurations under which they were obtained.
 \end{abstract}
 
 \begin{IEEEkeywords}
-deep reinforcement learning, deep Q-network, experimental design, randomised controlled trial, MinAtar, sample
+deep reinforcement learning, deep Q-network, experimental design, randomised control trial, MinAtar, sample
 efficiency
 \end{IEEEkeywords}
 
@@ -89,7 +91,7 @@ details \citep{henderson2018deep}, and comparisons often rest on a few runs \cit
 beats DQN under one tuned configuration, we therefore cannot tell whether the gain belongs to the extension or to the
 configuration.
 
-We address this problem with a randomised controlled trial, following \citet{pretorius2020dropout}. In a medical
+We address this problem with a randomised control trial, following \citet{pretorius2020dropout}. In a medical
 trial, patients are drawn from a population and receive treatments; here, the ``patients'' are hyperparameter
 configurations drawn at random from a shared population, and the ``treatments'' are the extensions. Every
 configuration receives every treatment, so each extension is compared with DQN on exactly the same configuration and
@@ -107,22 +109,28 @@ training recipe and on the learning rate?
 configuration of each method, have reached the same conclusions?
 \end{itemize}
 
-Our contributions are as follows.
+Our central contribution is not a ranking of the extensions. It is evidence that the conclusion one reaches about an
+extension depends strongly on the training recipe and the hyperparameter range it is evaluated with, and that common
+evaluation shortcuts can hide or reverse this dependence. Specifically, we contribute the following.
 \begin{itemize}
-\item A paired trial of four DQN extensions on 30 sampled configurations and four MinAtar games, 600 runs in total.
-\item Evidence that, under the shared recipe, only Averaged DQN improves on DQN in more than one game, while PER and
-$n$-step returns are harmful.
-\item A positive control in which our PER and $n$-step DQN help with the recipe and configuration of an earlier
-MinAtar study, which suggests that their harm in the main trial comes from the recipe.
+\item A paired trial of four DQN extensions on 30 sampled configurations and four MinAtar games, 600 runs in total,
+in which, under the shared recipe, only Averaged DQN improves on DQN in more than one game, while PER and $n$-step
+returns reduce performance.
+\item A positive control in which the same PER and $n$-step implementations help with the recipe and configuration of
+an earlier MinAtar study, which suggests that their deficit in the main trial is specific to our recipe rather than to
+the extensions or to our code.
 \item Evidence that the learning rate matters as much as any extension, and exploratory evidence that the advantage of
-Averaged DQN largely disappears at the smallest learning rate we tested.
-\item Evidence that single-checkpoint, small and best-configuration evaluations can miss or reverse these effects.
+Averaged DQN largely disappears at smaller learning rates, which points to an interaction between the learning rate
+and the extension.
+\item Evidence that single-checkpoint, small and best-configuration evaluations can miss or reverse these effects,
+and practical recommendations for evaluating reinforcement learning algorithms that follow from our results.
 \end{itemize}
 
 Section~\ref{sec:background} explains DQN and the four extensions, Section~\ref{sec:method} describes the trial and the
-additional experiments, Section~\ref{sec:results} reports the results, Section~\ref{sec:related} relates them to earlier
-work, Section~\ref{sec:discussion} interprets them, Section~\ref{sec:limitations} states the limitations and
-Section~\ref{sec:conclusion} concludes.
+additional experiments, Section~\ref{sec:results} reports the results and Section~\ref{sec:related} describes related
+work. Section~\ref{sec:discussion} separates what the main trial establishes from what the additional experiments
+suggest, relates the findings to earlier component studies and draws practical implications.
+Section~\ref{sec:limitations} states the limitations and Section~\ref{sec:conclusion} concludes.
 
 % =====================================================================================
 \section{Background}\label{sec:background}
@@ -270,7 +278,8 @@ same as in DQN.
 \section{Method}\label{sec:method}
 
 This section first describes the main trial: its design, the environments, the training recipe, the outcome and the
-statistics. It then describes three additional experiments designed to help explain the results.
+statistics. It then describes three additional experiments: two designed to help explain the results, and one that repairs the
+evaluation of Seaquest.
 
 \begin{figure}[t]
 \centering
@@ -299,7 +308,7 @@ under all five arms, so each treatment is compared with DQN on the same configur
 \label{fig:design}
 \end{figure}
 
-\subsection{Trial Design}
+\subsection{Trial Design}\label{sec:design}
 Fig.~\ref{fig:design} summarises the design. The population $\Lambda$ contains every combination of the candidate
 values of six shared hyperparameters (Table~\ref{tab:population}). Each of the $N=30$ individuals $\lambda_j$ was drawn
 by sampling each hyperparameter independently and uniformly from its candidates with a seeded random generator, and
@@ -314,13 +323,23 @@ Table~\ref{tab:population} are not perfectly balanced.
 \input{\results/tab_population.tex}
 \end{table}
 
-The candidate values were chosen around the MinAtar DQN baseline. \citet{young2019minatar} scaled DQN's replay
-capacity, target-update period, exploration schedule and replay warm-up down by a factor of ten relative to
+The population defines the question the trial answers: the effect of an extension averaged over configurations that a
+practitioner might reasonably use with DQN, rather than its effect at one tuned configuration. We therefore chose the
+candidate values around the MinAtar DQN baseline. \citet{young2019minatar} scaled DQN's replay capacity,
+target-update period, exploration schedule and replay warm-up down by a factor of ten relative to
 \citet{mnih2015human}, giving $10^5$, 1000, $10^5$ and 5,000 steps. Each candidate range in Table~\ref{tab:population}
 contains the corresponding baseline value, as do the batch size of 32 and the single hidden layer of the baseline. The
-learning-rate candidates span the $2.5\times10^{-4}$ used by \citet{mnih2015human} and by the MinAtar baseline, although
-that value is not itself one of them. Every run starts by filling the
-buffer with 5,000 transitions from uniformly random actions, the baseline's warm-up.
+three learning rates span one order of magnitude and are roughly centred, on a logarithmic scale, on the
+$2.5\times10^{-4}$ used by \citet{mnih2015human} and by the MinAtar baseline, although that value is not itself one of
+them. Every run starts by filling the buffer with 5,000 transitions from uniformly random actions, the baseline's
+warm-up.
+
+The learning-rate range was set from published values that were tuned for RMSProp with other constants
+(Section~\ref{sec:recipedesc}), and we did not check before the trial that it contained the best rate for DQN under our
+recipe. The additional experiments show that it did not: in three of the four games, DQN did better at smaller rates
+(Section~\ref{sec:lowlr}). The main trial's effects are therefore averages over a population in which most
+configurations use too large a learning rate for DQN under our recipe. This does not bias the paired comparisons within
+the population, but it limits the population to which they apply, and some effects change outside it.
 
 Five arms were trained on every individual: DQN as the control and the four extensions as treatments. Within an
 individual, all arms share the configuration, the training seed and the evaluation seeds, so every comparison with
@@ -330,7 +349,7 @@ DQN, as in Rainbow \citep{hessel2018rainbow}; and $K=10$ for Averaged DQN, one o
 \citet{anschel2017averaged}. PER's priority constant, $\kappa=10^{-6}$, is our choice; it only has to be small
 enough not to change the priorities of transitions with non-zero error.
 
-\subsection{Environments}
+\subsection{Environments}\label{sec:env}
 \begin{figure*}[t]
 \centering
 \setlength{\tabcolsep}{2pt}
@@ -342,9 +361,8 @@ enough not to change the priorities of transitions with non-zero error.
 \includegraphics[width=0.19\textwidth]{annotated_space_invaders.png} \\
 \emph{Seaquest} & \emph{Breakout} & \emph{Asterix} & \emph{Freeway} & \emph{Space Invaders}
 \end{tabular}
-\caption{Visualisation of each MinAtar environment. Colour indicates active channel at each spatial location, but
-note that the representation provided by the environment consists of binary values for each channel and not RGB
-values. Reproduced from \citet{young2019minatar}.}
+\caption{Visualisation of each MinAtar environment. Colour indicates the active channel at each spatial location;
+the representation provided by the environment consists of binary values for each channel, not RGB values. Reproduced from \citet{young2019minatar}.}
 \label{fig:minatar}
 \end{figure*}
 
@@ -362,7 +380,7 @@ killed and its episode never ends. The main trial aborted any run whose evaluati
 Seaquest jobs started for four of the five arms (the $n$-step DQN job failed at start-up), and this guard stopped all
 four. The additional experiments below repeat Seaquest with the evaluation episode capped instead.
 
-\subsection{Agent and Shared Training Recipe}
+\subsection{Agent and Shared Training Recipe}\label{sec:recipedesc}
 Table~\ref{tab:settings} lists the training settings. All arms use the network of the MinAtar DQN
 baseline \citep{young2019minatar}: one convolutional layer of 16 filters followed by one or two hidden layers of 128
 units. This is much smaller than the network of \citet{mnih2015human}, which has three convolutional layers of 32, 64
@@ -431,16 +449,22 @@ learning rates did best (Sections~\ref{sec:variation} and~\ref{sec:lowlr}).
 
 We used the plain squared TD error of~\eqref{eq:loss}, without clipping. DQN clipped its error terms, which is
 equivalent to the Huber loss, and the MinAtar baseline uses the Huber loss. We chose the squared error because it is
-the loss in which DQN and every extension above are written, so that no arm's errors are clipped;
-\citet{obandoceron2021revisiting} found the squared loss better than the Huber loss on MinAtar when combined with Adam,
-although with RMSProp they found that the Huber loss tended to do better. One gradient step per frame, the same for
+the loss in which DQN and every extension above are written, so that no arm's errors are clipped.
+\citet{obandoceron2021revisiting} found the squared loss much better than the Huber loss with Adam in every
+environment they tested, including MinAtar; in their comparison on 60 Atari games, however, the Huber loss tended to do
+better with RMSProp. One gradient step per frame, the same for
 every arm, matches the MinAtar baseline; DQN updated once every four agent steps. The discount 0.99 and final
 exploration rate 0.1 are those of both. Taken together, RMSProp with these constants, an unclipped squared loss and an
 update every frame make a recipe that is shared by all arms but not standard.
 
-The recipe is not tuned for any arm, and that is deliberate. Changing one component under a fixed recipe is what
-isolates the component's effect. The price is that the main trial's results describe the components under this
-recipe, not in general; the additional experiments measure how much depends on that.
+The recipe is not tuned for any arm, and that is deliberate. Because every arm uses the same recipe and the same
+configurations, any difference between arms is caused by the extension, so the comparisons are internally consistent.
+This answers the question faced by a practitioner who adds an extension to an existing DQN pipeline without re-tuning
+it. It does not answer which algorithm is best when each is properly tuned: an extension may need a different recipe
+from DQN, as PER needed a smaller step size in \citet{schaul2016prioritized}, and a recipe that suits one arm may
+handicap another. A negative result in the main trial therefore means that the extension did not help under this
+recipe and in this population, not that it cannot help. The additional experiments measure how much the conclusions
+depend on this choice.
 
 The extensions were implemented as follows. PER stores priorities in a sum tree and draws each mini-batch by
 stratified sampling: the total priority is split into equal segments and one transition is drawn from each.
@@ -519,9 +543,10 @@ All other analyses are exploratory and are reported in the appendices: the ratio
 endpoints, the reliability of smaller evaluations and a regression on the sampled hyperparameters.
 
 \subsection{Additional Experiments}\label{sec:additional}
-The main trial found PER and $n$-step returns harmful, against earlier component studies, and found the smallest
-learning rate best for almost every arm (Section~\ref{sec:variation}). We ran three additional experiments to explain
-these findings. All of them use the same code, environments and evaluation as the main trial.
+Under the shared recipe, the main trial found PER and $n$-step returns harmful, unlike earlier component studies,
+and found the smallest
+learning rate best for almost every arm (Section~\ref{sec:variation}). We ran two additional experiments to help explain
+these findings, and a third that repeats Seaquest with a corrected evaluation. All of them use the same code, environments and evaluation as the main trial.
 
 \emph{Recipe and positive control.} If our PER and $n$-step DQN are correct, they should help in a setting where they are
 known to help. \citet{obandoceron2021revisiting} found multi-step returns to be the most useful addition to DQN on
@@ -611,7 +636,8 @@ DQN's. $p_t$: two-sided paired $t$-test (primary); $p_W$: Wilcoxon signed-rank t
 \end{table*}
 
 Table~\ref{tab:main} gives the 16 comparisons. Nine of them are significant in the primary $t$-test, and the Wilcoxon
-test agrees on eight of the nine.
+test agrees on eight of the nine. Every effect in this subsection is relative to DQN under the shared recipe and in the
+sampled population.
 
 Averaged DQN is the clearest success. It was significantly better than DQN in Asterix, Freeway and Space Invaders, it
 beat DQN on most individuals in each of these games, and both tests agree.
@@ -619,8 +645,8 @@ beat DQN on most individuals in each of these games, and both tests agree.
 Double DQN helped little. Its only significant gain, in Space Invaders, is the weakest of the nine findings: the
 Wilcoxon test does not confirm it, and the lower end of its confidence interval is barely above zero.
 
-PER and $n$-step DQN were harmful. PER was significantly worse in Freeway and Space Invaders, and $n$-step DQN in
-Asterix, Freeway and Space Invaders. Both rarely beat DQN on any individual in these games.
+Under this recipe, PER and $n$-step DQN were harmful. PER was significantly worse in Freeway and Space Invaders, and
+$n$-step DQN in Asterix, Freeway and Space Invaders. Both rarely beat DQN on any individual in these games.
 
 No extension changed the result in Breakout. The confidence intervals there are narrow enough to rule out large effects
 in either direction.
@@ -742,14 +768,11 @@ learning-rate range therefore stopped above the best rate for DQN in most games.
 The advantage of Averaged DQN shrank at the smaller rates and was gone at the smallest. At $10^{-4}$ it beat DQN on all
 seven configurations in Asterix, Freeway and Space Invaders. At $3\times10^{-5}$ it still beat DQN on all seven in
 Freeway, but on only two in Asterix and five in Space Invaders; at $10^{-5}$ it beat DQN on at most five of the seven
-in any game. Double DQN's gain in Asterix had already disappeared at $3\times10^{-5}$. These results suggest that both
-extensions help mainly when the updates are too large, but they rest on seven configurations selected for their
-learning rate.
+in any game. Double DQN's gain in Asterix had already disappeared at $3\times10^{-5}$. These results rest on seven
+configurations selected for their learning rate.
 
 PER stayed harmful at the smaller rates in Asterix and Freeway, where it lost to DQN on every configuration at both
-rates. In these two games, a step size that is too large for PER is therefore not the main cause of its deficit, even
-though \citet{schaul2016prioritized} reduced the step size for PER. In the other two games it appears to be part of
-the cause. In Space Invaders, PER's deficit shrank from $-39.4\%$ at $10^{-4}$ to $-7.6\%$ at $10^{-5}$, and in
+rates. In the other two games it recovered. In Space Invaders, PER's deficit shrank from $-39.4\%$ at $10^{-4}$ to $-7.6\%$ at $10^{-5}$, and in
 Breakout, where PER was level with DQN at $10^{-4}$, it was $29.9\%$ better at $10^{-5}$ and beat DQN on six of the
 seven configurations.
 
@@ -759,33 +782,12 @@ rates; in Asterix it stayed behind. In the main trial, other configurations with
 better in Freeway (Section~\ref{sec:variation}). This suggests that its failure there depends on the combination of
 the learning rate with the other hyperparameters, not on the step size alone.
 
-\subsection{What Happens in Seaquest When Evaluation Is Capped?}\label{sec:seaquest}
-
-\begin{table}[t]
-\caption{Seaquest with Capped Evaluation (AUC, $10^{6}$, $n=30$ per Arm)}
-\label{tab:seaquest}
-\centering
-\footnotesize
-\setlength{\tabcolsep}{2.5pt}
-\input{\fresults/tab_seaquest.tex}\\[3pt]
-\parbox{\columnwidth}{\scriptsize $\Delta$, wins, $p_t$ and $p_W$ as in Table~\ref{tab:main}; bold: $p\le0.05/4$.
-Capped: mean number of evaluation episodes per run, out of 1,000, stopped at the 100,000-step cap.}
-\end{table}
-
-Table~\ref{tab:seaquest} shows the same pattern as the main trial. Averaged DQN was better than DQN on most
-configurations, and both tests agree.
-
-No other extension gave a result that both tests agree on. Double DQN's mean is higher but it won on only half of the
-configurations, so its mean rests on a few runs. $n$-step DQN lost on most configurations, which the Wilcoxon test
-detects, but the $t$-test does not. The $n$-step AUCs are uniformly small; the large values are DQN's, on the few
-configurations on which DQN learnt something (its standard deviation is more than twice its mean), and these few
-large differences inflate the variance of the paired differences.
-
-The scores are very low for every arm, and capped episodes explain why. A capped episode is one in which the agent
-stayed at the surface without dying, and evaluations that contain such an episode have an average return close to
-zero, against a modest positive return for evaluations without one (Appendix~\ref{app:seaquest}). Learning to dive, collect
-divers and resurface is the exploration problem that \citet{young2019minatar} identified in this game; under greedy
-evaluation, an agent that has not solved it can avoid death indefinitely by not diving.
+\subsection{Does Averaged DQN Also Help in Seaquest?}\label{sec:seaquest}
+With capped evaluation, Seaquest shows the same pattern as the main trial (Appendix~\ref{app:seaquest},
+Table~\ref{tab:seaquest}). Averaged DQN was better than DQN on most of the 30 configurations, both tests agree, and no
+other extension gave a result that both tests agree on. The scores are very low for every arm, because a greedy agent
+that has not learnt to dive and resurface, the exploration problem that \citet{young2019minatar} identified in this
+game, can survive at the surface indefinitely without scoring.
 
 \subsection{RQ3: Would Smaller Evaluations Have Agreed?}\label{sec:reliability}
 Appendix~\ref{app:reliability} repeats the main comparisons as smaller or more typical studies would have run them, and
@@ -808,13 +810,12 @@ This section describes the studies closest to ours and explains how our work dif
 \emph{Component studies.} \citet{hessel2018rainbow} combined six extensions into Rainbow and removed each in turn on 57
 Atari games; removing prioritised replay or multi-step returns hurt most. Their ablation removes one component from a
 tuned combination, with one configuration. We instead add one component to DQN, over a random population of
-configurations, and find that the same two components can hurt DQN under a different recipe.
+configurations; Section~\ref{sec:literature} discusses what our results imply for theirs.
 
 \citet{obandoceron2021revisiting} repeated Rainbow's additive and ablative studies on small environments, including
 MinAtar, with Adam and a learning rate swept for each component, and found multi-step returns to be the most useful
 addition to DQN on MinAtar. Their study varies the component and the learning rate with the rest fixed; ours varies six
-hyperparameters at random and pairs every comparison. Our positive control reproduces their finding under their recipe,
-and our main trial shows that it does not carry over to ours.
+hyperparameters at random and pairs every comparison.
 
 \citet{fedus2020revisiting} showed that uncorrected $n$-step returns benefit from a larger replay capacity, whereas DQN
 does not. Their experiment varies the replay setting directly; in our population the replay capacity is one of six
@@ -826,17 +827,15 @@ result; our trial is an empirical test of PER with one loss and one optimiser, a
 the equivalence to interpret PER's deficit.
 
 \citet{anschel2017averaged} introduced Averaged DQN and showed on Atari that it reduces the variance of the target and
-stabilises learning. They compared it with DQN on fixed configurations. Our trial confirms its benefit across a
-population of configurations, and our exploratory runs suggest that the benefit shrinks when the learning rate is
-small.
+stabilises learning. They compared it with DQN on fixed configurations; we compare it over a population of
+configurations.
 
 \emph{Evaluation methodology.} \citet{henderson2018deep} showed that hyperparameters, seeds, environments and codebases
 can each change reported results substantially. We take this as the motivation for our design: rather than fixing these
 factors, we sample the hyperparameters and pair every comparison on them.
 
 \citet{machado2018revisiting} revisited the evaluation protocols of the Arcade Learning Environment and introduced sticky
-actions. We follow their recommendation through MinAtar's sticky actions, and our Seaquest results show how an
-evaluation protocol choice, aborting versus capping long episodes, can decide whether a game can be evaluated at all.
+actions. We follow their recommendation through MinAtar's sticky actions.
 
 \citet{colas2018many} related the number of seeds to the error rates of statistical tests, and \citet{agarwal2021deep}
 showed that point estimates over few runs can mislead and recommended interval estimates and the probability of
@@ -849,7 +848,7 @@ question, and evaluated algorithms whose hyperparameters are drawn at random fro
 sampling hyperparameters from a distribution, but give every arm the same draws, which turns each comparison into a
 paired one.
 
-\citet{pretorius2020dropout} brought the randomised controlled trial to deep learning, sampling network designs from a
+\citet{pretorius2020dropout} brought the randomised control trial to deep learning, sampling network designs from a
 population and training identical copies under every intervention. We apply their design to reinforcement learning,
 where training is noisier and each run far more expensive, and to algorithmic extensions rather than network
 initialisation.
@@ -857,23 +856,57 @@ initialisation.
 % =====================================================================================
 \section{Discussion}\label{sec:discussion}
 
-\subsection{RQ1: Which Extensions Help Under the Shared Recipe?}
-Averaged DQN was the only extension that improved on DQN in more than one game, and it did so on most configurations in
-each of those games. Double DQN's single gain was fragile, and PER and $n$-step returns were harmful. Under one fixed
-recipe and a random population of configurations, most of which use too large a learning rate for DQN, the
-extensions' published benefits therefore appeared only for Averaged DQN. These are findings about this population and
-this recipe, not about the extensions at their best settings.
+\subsection{What the Evidence Supports}\label{sec:evidence}
 
-\subsection{RQ2: Why Do Our Results Differ from Published Ones?}
-Each difference from published results has an explanation that our runs are consistent with. The experiments behind
-these explanations are small and exploratory, so we offer them as hypotheses that the data suggest, not as
-established causes.
+\begin{table}[t]
+\caption{Strength of the Evidence for Each Conclusion}
+\label{tab:evidence}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.44\columnwidth}>{\raggedright\arraybackslash}p{0.31\columnwidth}>{\raggedright\arraybackslash}p{0.19\columnwidth}@{}}
+\toprule
+Conclusion & Evidence & Status \\
+\midrule
+Under the shared recipe, Averaged DQN improves on DQN in Asterix, Freeway and Space Invaders & Main trial, $n=30$,
+both tests & Established \\
+Under the shared recipe, PER reduces the AUC in Freeway and Space Invaders, and $n$-step DQN in Asterix, Freeway and
+Space Invaders & Main trial, $n=30$, both tests & Established \\
+Double DQN improves on DQN in Space Invaders & Main trial, $t$-test only & Weak \\
+No extension has a large effect in Breakout & Main trial, narrow intervals & Established \\
+Our PER and $n$-step DQN can help DQN & Published configuration, 5 seeds, 2 games & Suggested \\
+The shared recipe causes their deficit & 7 configurations, 2 games; recipe components changed together &
+Suggested; cause not isolated \\
+Averaged and Double DQN help mainly when the learning rate is too large & 7 configurations selected by learning rate
+& Suggested \\
+Small, single-checkpoint and best-configuration evaluations can miss or reverse effects & Resampling of the main
+trial & Established for these data \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Our DQN is weaker on average than the published MinAtar DQN because most of our configurations use too large a
-learning rate. At a learning rate of $10^{-5}$, or with a published configuration, it exceeds the published level in
-every game except Seaquest (Section~\ref{sec:sanity}).
+Our experiments differ in how much weight they can bear, and Table~\ref{tab:evidence} separates them. The main trial,
+with 30 randomly sampled configurations, a pre-specified outcome and a correction for 16 tests, establishes how each
+extension changed sample efficiency under the shared recipe and in this population. It does not establish how the
+extensions compare when each is tuned, or under other recipes.
 
-PER and $n$-step returns are harmful in our main trial, unlike in Rainbow and in the MinAtar study of
+The additional experiments are exploratory (Section~\ref{sec:additional}). They show that the main trial's
+conclusions can change when the recipe or the learning rate changes, but they do not isolate why: the recipe experiment changes the optimiser, the update frequency and the final
+exploration rate together, and the learning-rate experiment uses seven configurations selected for their learning
+rate. The explanations below are therefore hypotheses that fit the data, not established causes.
+
+\subsection{RQ2: Why Do Our Results Differ from Published Ones?}\label{sec:why}
+The differences share a common thread: the effect of an extension appears to depend on how it interacts with the
+optimiser and the learning rate. The learning rate alone does not fix the size of an update. RMSProp divides each
+gradient by a running root mean square, so its constants change the effective step at a given rate
+(Section~\ref{sec:recipedesc}), and Adam, which Rainbow used because it was less sensitive to the learning rate than
+RMSProp \citep{hessel2018rainbow}, behaves differently again. The extensions in turn change the errors that drive the
+updates: PER replays the transitions with the largest errors more often, $n$-step targets sum several rewards and so
+vary more than one-step targets \citep{sutton2018reinforcement}, and Averaged and Double DQN produce steadier or less
+optimistic targets. Whether an extension helps can therefore depend on whether the base updates are too large or too
+small. Our data are consistent with this in each case below.
+
+PER and $n$-step returns are harmful in our main trial, unlike in the MinAtar study of
 \citet{obandoceron2021revisiting}, and the positive control suggests that the recipe is responsible. With that
 study's recipe and configuration, both extensions help, as reported there (Section~\ref{sec:recipe}). Since both
 recipes use the squared loss, the difference lies in the optimiser and its constants, the update frequency or the
@@ -881,80 +914,106 @@ final exploration rate (Table~\ref{tab:recipes}). Our experiments change these t
 them matters.
 
 PER's deficit is not caused by the step size alone. \citet{schaul2016prioritized} lowered the step size for PER because
-prioritised samples have larger errors and give larger gradients. A smaller learning rate did remove most of PER's
-deficit in Space Invaders and turned it into a gain in Breakout, but PER remained worse than DQN on every
-configuration at both smaller rates in Asterix and Freeway (Section~\ref{sec:lowlr}).
+prioritised samples have larger errors and give larger gradients, and a smaller learning rate did help PER in Space
+Invaders and Breakout, but not in Asterix and Freeway (Section~\ref{sec:lowlr}).
 
-The equivalence of \citet{fujimoto2020equivalence} suggests a reason that involves the loss. PER draws transition $i$
-with probability proportional to $|\delta_i|^{\alpha}$ and multiplies its loss by a weight proportional to
-$(|\mathcal{D}|P(i))^{-\beta}$, so the product is proportional to $|\delta_i|^{\alpha(1-\beta)}$. With the squared loss,
-PER's expected gradient is therefore the gradient of a uniformly sampled loss proportional to
-$|\delta|^{2+\alpha(1-\beta)}$. With $\alpha=0.6$ and $\beta_0=0.4$, our PER starts out behaving like DQN with a loss of
+The equivalence of \citet{fujimoto2020equivalence} suggests a reason that involves the loss. If the priorities were up
+to date, PER would draw transition $i$ with probability proportional to its current $|\delta_i|^{\alpha}$ and multiply its loss by a weight proportional to
+$(|\mathcal{D}|P(i))^{-\beta}$, so the product would be proportional to $|\delta_i|^{\alpha(1-\beta)}$. With the squared loss,
+PER's expected gradient would then be the gradient of a uniformly sampled loss proportional to
+$|\delta|^{2+\alpha(1-\beta)}$. In practice the priorities are stale, because each is updated only when its
+transition is replayed, so this holds only approximately. With $\alpha=0.6$ and $\beta_0=0.4$, our PER starts out behaving roughly like DQN with a loss of
 power 2.36, which weights large errors even more heavily than the squared loss does, and the power falls to two only
 as $\beta$ reaches one at the end of training. \citet{schaul2016prioritized} instead combined PER with clipped errors,
 for which the power for large errors lies between one and two, and \citet{fujimoto2020equivalence} use this
 equivalence to argue that prioritisation suits the Huber loss better than the squared loss. Under our recipe, the
 update direction may thus be dominated by the few transitions with the largest errors. The loss cannot be the whole
 explanation, because the recipe of \citet{obandoceron2021revisiting} also uses the squared loss and PER helped there
-in Asterix; if the loss matters, it matters in combination with the optimiser or the update frequency. Recording the
-TD errors and importance weights during training would test this.
+in Asterix; if the loss matters, it matters in combination with the optimiser or the update frequency.
 
-$n$-step DQN's deficit depends on both the learning rate and the recipe. At the smallest learning rate it nearly
-caught up with DQN in Freeway and overtook it in Breakout and Space Invaders, and under the other recipe it came close to DQN on most
-configurations in both games tested. Only in Asterix under the shared recipe did it fail at every learning rate, and
-with the published configuration it beat DQN there on every seed. That configuration has a replay capacity ten times
+$n$-step DQN's deficit depends on both the learning rate and the recipe: it shrank or reversed at smaller learning
+rates in three games and under the other recipe in both games tested (Sections~\ref{sec:recipe}
+and~\ref{sec:lowlr}). Only in Asterix under the shared recipe did it fail at every learning rate, and with the
+published configuration it beat DQN there on every seed. That configuration has a replay capacity ten times
 that of six of the seven configurations we retrained, and \citet{fedus2020revisiting} found that uncorrected $n$-step
 returns benefit from a larger replay capacity; but the configuration differs in other ways too, and the one retrained
 configuration with the larger capacity behaved like the rest, so we cannot attribute the difference to replay capacity.
 
-Averaged DQN's gain agrees with \citet{anschel2017averaged}, who presented it as a way to stabilise learning, and our
-learning-rate experiment suggests when this matters: its advantage was large at $10^{-4}$, persisted in Freeway at
-$3\times10^{-5}$, and was gone at $10^{-5}$. One possible reason is that averaging ten target networks smooths the
-target, which compensates for updates that are too large; when the updates are already small, there is little left
-to smooth. We did not measure the variance of the target, so this remains a hypothesis.
+Averaged DQN's gain agrees with \citet{anschel2017averaged}, who presented it as a way to stabilise learning, and its
+disappearance at smaller learning rates (Section~\ref{sec:lowlr}) suggests when this matters. One possible reason is
+that averaging ten target networks smooths the target, which compensates for updates that are too large; when the
+updates are already small, there is little left to smooth.
 
 Double DQN helped less than in \citet{vanhasselt2016deep}, whose Atari agents showed large overestimation. We did not
 record Q-value estimates, so we cannot tell whether overestimation was small in MinAtar or whether reducing it did not
-raise the AUC. This was a missed opportunity: logging the mean predicted value of the greedy action on the evaluation
-episodes, next to the discounted return actually obtained, would have cost almost nothing and would have tested
-Double DQN's mechanism directly. Its gain in Asterix, like that of Averaged DQN, disappeared at smaller learning rates.
+raise the AUC. Double DQN's effect also shrank at smaller learning rates, as Averaged DQN's did. In
+Space Invaders, the only game where its gain was significant, it went from $+9.7\%$ at $10^{-4}$ to $+7.8\%$ at
+$3\times10^{-5}$ and $-2.9\%$ at $10^{-5}$; its non-significant gain in Asterix disappeared already at $3\times10^{-5}$.
 
-Seaquest scores are far below the published ones because of the evaluation protocol. Greedy evaluation lets an agent
-that has not learnt to dive and resurface survive at the surface without scoring, while the published curve averages
-training episodes, during which exploration moves the submarine. We did not run Seaquest at smaller learning rates or
-with the published configuration, so we cannot say how much of the gap these would close.
+Together, these results suggest that no extension has a fixed effect; its effect depends on the optimiser and the
+learning rate it is combined with. Averaged DQN and Double DQN appear to help mainly when the updates are too large, so
+a population dominated by large learning rates flatters them. PER and $n$-step DQN appear to be hurt by the shared
+recipe, and the learning rate is only part of the reason, since lowering it alone restored neither of them in
+Asterix.
 
-Together, these results suggest that the effect of an extension depends on the recipe and the learning rate it is
-combined with. Averaged DQN and Double DQN appear to help mainly when the updates are too large, in which case a
-population dominated by large learning rates flatters them. PER and $n$-step DQN were hurt by the shared recipe. When
-the learning rate alone was lowered, $n$-step DQN largely recovered in Breakout, Freeway and Space Invaders, and PER in
-Breakout and Space Invaders, but neither recovered in Asterix, and PER did not in Freeway.
+\subsection{Implications for Component Studies}\label{sec:literature}
+\citet{hessel2018rainbow} found prioritised replay and multi-step returns to be the two most crucial components of
+Rainbow, in that removing either caused a large drop in median performance. Our main trial finds the same two
+components to be the most harmful additions to DQN. The two results need not conflict, because they were obtained
+under different recipes. Rainbow used Adam, chose a learning rate four times smaller than DQN's from a sweep,
+prioritised transitions by its distributional loss rather than by the TD error, and tuned $n$; its ablations then
+removed each component from this tuned combination. Our trial added each component to DQN under RMSProp, with mostly
+large learning rates and no tuning. When we moved towards a recipe like Rainbow's, the conclusion moved towards
+Rainbow's: with Adam and a published configuration, both extensions helped, and with Adam on our own configurations,
+or at smaller learning rates under RMSProp, they partly recovered.
+Rainbow's ranking is therefore best read as a statement about components within its recipe, not as an intrinsic
+property of the components.
 
-\subsection{RQ3: How Reliable Are Smaller Evaluations?}
-The single-checkpoint endpoints reached the same conclusions as the AUC but detected fewer effects, so they waste data
-rather than mislead. Small trials and best-configuration comparisons are more dangerous: the first often miss real
-effects, and the second reversed two of our findings, because the effects depend on the configuration. Pairing over a
-random population avoids both problems.
+The same holds for the MinAtar study of \citet{obandoceron2021revisiting}. We reproduce their finding that multi-step
+returns help DQN under their recipe, and we find the opposite under ours. Their conclusion and ours are both correct
+for the recipes they were obtained under, and neither, on its own, tells us how the component behaves under a third.
+
+The reverse can also happen. Averaged DQN is not part of Rainbow, yet under our recipe it was the only extension that
+helped in more than one game. A component study that evaluates a fixed set of components under one recipe can
+therefore overstate the components that suit its recipe and miss those that matter under others. This is the concern
+of \citet{henderson2018deep} and \citet{jordan2020evaluating}, applied to the question of which components matter.
+
+\subsection{Practical Implications}\label{sec:implications}
+Our results suggest six practices for researchers who design experiments or evaluate new reinforcement learning
+algorithms. Each follows from a specific result above.
+\begin{enumerate}
+\item \emph{Treat the training recipe as part of the claim.} Report the optimiser and its constants, the loss and the
+update frequency in full, and test a claim that an extension helps under more than one recipe. In our trial, PER and
+$n$-step returns went from harmful to helpful with the recipe and configuration of an earlier study, and most of their
+deficit disappeared under that recipe on our own configurations (Section~\ref{sec:recipe}).
+\item \emph{Check that the hyperparameter range contains the baseline's best setting under the recipe actually used.}
+Ranges taken from studies with another optimiser can miss it, as ours did, and some effects changed outside our range
+(Section~\ref{sec:lowlr}). A short pilot of the control arm over a wider range could reveal this cheaply.
+\item \emph{Run a positive control.} Before reporting that an extension does not help, reproduce a published setting
+in which it does. This separates a faulty implementation from a recipe effect (Section~\ref{sec:recipe}).
+\item \emph{Pair comparisons over a random population of configurations, and report win counts as well as means.}
+Pairing removes the configuration from each comparison, and the population makes the result about more than one
+setting. Comparing the best configuration of each method reversed two of our findings, and trials with a few
+configurations usually missed real effects (Section~\ref{sec:reliability}).
+\item \emph{Use a whole-curve outcome and check the evaluation protocol in every environment.} Single-checkpoint
+endpoints agreed with the AUC but detected fewer effects, and in Seaquest the handling of long evaluation episodes
+decided whether the game could be evaluated at all (Sections~\ref{sec:env} and~\ref{sec:seaquest}).
+\item \emph{Record the quantities each extension is meant to change.} We recorded only returns, so the explanations
+of Section~\ref{sec:why} remain hypotheses. Logging the mean predicted value of the greedy action next to the
+discounted return actually obtained, the variance of the target, and PER's TD errors and importance weights would have
+cost almost nothing and would have tested each mechanism directly.
+\end{enumerate}
 
 % =====================================================================================
 \section{Limitations}\label{sec:limitations}
 Each configuration was trained with one seed, so within an individual the effects of the configuration and of the seed
 cannot be separated. Both are shared across arms, so the comparisons remain paired.
 
-The main trial's conclusions hold for one shared recipe, RMSProp with PyTorch's default constants, an unclipped
-squared loss and one update per frame, which is not the recipe of DQN or of the MinAtar baseline
-(Table~\ref{tab:recipes}). They also hold only for a learning-rate range that, as the additional experiments show,
-lies above the best rate for DQN in most games. Its effects describe the extensions in this population, not at their
-best settings.
-
-The additional experiments are small and exploratory. The recipe experiment covers two games and seven configurations
-and changes the optimiser, the update frequency and the exploration rate together. The learning-rate experiment uses
-seven configurations that were selected because they had the population's smallest learning rate, so they are not a
-random sample. Seaquest was not run at smaller learning rates.
-
-We recorded returns but no internal quantities. Without Q-value estimates, the variance of the target or PER's TD
-errors and importance weights, we cannot test the mechanisms by which the extensions are meant to work, and the
-explanations in Section~\ref{sec:discussion} remain hypotheses.
+The main trial's conclusions are conditional on one non-standard recipe (Table~\ref{tab:recipes}) and on a
+learning-rate range that lies above the best rate for DQN in most games (Section~\ref{sec:design}). The additional
+experiments that probe this are small, use selected configurations and change several factors together
+(Section~\ref{sec:evidence}), and Seaquest was not run at smaller learning rates. We recorded returns but no internal
+quantities, so the mechanisms behind the effects remain untested.
 
 The extensions' own settings were fixed rather than sampled. With more compute, the population could also randomise the
 optimiser, the loss, the update frequency, the number of steps $n$ and PER's exponent $\alpha$, so that the trial would
@@ -962,16 +1021,17 @@ cover the recipe as well as the configuration.
 
 % =====================================================================================
 \section{Conclusion}\label{sec:conclusion}
-In a paired randomised controlled trial of four DQN extensions over 30 sampled configurations on MinAtar, only Averaged
-DQN improved on DQN in more than one game, Double DQN helped little, and PER and multi-step returns were harmful. These
-findings hold under the shared recipe and in a population whose learning rates mostly lie above the best rate for DQN.
-Smaller, exploratory experiments suggest why they disagree with earlier studies: with an earlier study's recipe and
-configuration, PER and multi-step returns helped as reported, and at smaller learning rates DQN became much stronger
-while most of Averaged DQN's advantage disappeared. Evaluations based on one checkpoint, few configurations or the best
-configuration of each method would have missed or reversed some of these effects. Our results suggest that an
-extension's value depends on the recipe it is tested with, and that comparisons should be paired over a population of
-configurations that includes the recipe and should record the internal quantities, such as Q-value estimates, that
-each extension is meant to change.
+We compared four DQN extensions in a paired randomised control trial over 30 sampled configurations on MinAtar.
+Under one shared recipe, Averaged DQN improved on DQN in three of four games, Double DQN helped little, and PER and
+multi-step returns reduced performance. The central lesson, however, is not this ranking but how conditional it is.
+With the recipe of an earlier study, PER and multi-step returns helped as reported there; at smaller learning rates,
+DQN became much stronger in most games and most of Averaged DQN's advantage disappeared; and smaller or best-configuration
+evaluations would have missed or reversed some effects. The follow-up experiments are small and do not isolate the
+cause, but together they point to an interaction between the optimiser, the learning rate and the extension. Claims
+that an extension matters, including those of component studies such as Rainbow, should therefore be read as claims
+about the recipe and configurations under which they were made, and tested across recipes and populations of
+configurations, with paired comparisons, positive controls and records of the quantities each extension is meant to
+change.
 
 \section*{Acknowledgement}
 I express my sincere gratitude to my supervisors, Dr.\ Steven James and Prof.\ Benjamin Rosman,
@@ -1055,8 +1115,8 @@ sampled hyperparameters, each coded as a categorical factor with its first value
 $10^{-4}$: the factor by which the AUC changes when only the learning rate is raised. The partial $R^2$ is the share of
 the variance left by the other five factors that the learning rate explains. For DQN, the adjusted learning-rate effect
 is larger than the geometric-mean effect of the extension in 15 of the 16 comparisons; the exception is $n$-step DQN in
-Freeway, whose geometric-mean ratio of 0.31 (a 3.2-fold drop, Table~\ref{tab:ratio}) is a larger effect than DQN's
-adjusted learning-rate ratio of 0.57 (a 1.74-fold drop).
+Freeway, whose geometric-mean ratio of 0.31 (Table~\ref{tab:ratio}) lies further below one than DQN's adjusted
+learning-rate ratio of 0.57.
 
 \begin{table}[h]
 \caption{Adjusted Learning-Rate Effect on Log AUC}
@@ -1069,7 +1129,26 @@ $10^{-3}$, adjusted for the other five hyperparameters, with 95\% $t$-interval. 
 given the other factors. $R^2$: of the full model.}
 \end{table}
 
-\section{Capped Episodes in Seaquest}\label{app:seaquest}
+\section{Seaquest with Capped Evaluation}\label{app:seaquest}
+
+\begin{table}[h]
+\caption{Seaquest with Capped Evaluation (AUC, $10^{6}$, $n=30$ per Arm)}
+\label{tab:seaquest}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\input{\fresults/tab_seaquest.tex}\\[3pt]
+\parbox{\columnwidth}{\scriptsize $\Delta$, wins, $p_t$ and $p_W$ as in Table~\ref{tab:main}; bold: $p\le0.05/4$.
+Capped: mean number of evaluation episodes per run, out of 1,000, stopped at the 100,000-step cap.}
+\end{table}
+
+Table~\ref{tab:seaquest} gives the Seaquest comparisons, tested as a family of four. Averaged DQN was better than DQN
+on most configurations, and both tests agree. No other extension gave a result that both tests agree on. Double DQN's
+mean is higher but it won on only half of the configurations, so its mean rests on a few runs. $n$-step DQN lost on
+most configurations, which the Wilcoxon test detects, but the $t$-test does not. The $n$-step AUCs are uniformly small;
+the large values are DQN's, on the few configurations on which DQN learnt something (its standard deviation is more
+than twice its mean), and these few large differences inflate the variance of the paired differences.
+
 Across all arms and configurations, the Seaquest experiment has 15,000 evaluation points (150 runs of 100 checkpoints),
 and 3,786 of them contain at least one capped episode. Their mean return is 0.04, against 1.92 for evaluation points
 without a capped episode. A capped episode thus marks an agent that survives without scoring. Averaged DQN, the arm
